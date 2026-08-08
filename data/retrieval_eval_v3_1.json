@@ -1,0 +1,77 @@
+[
+  {
+    "id": "pool-paraphrase-01",
+    "query": "业务请求拿不到数据库会话，大量线程卡在资源借用阶段",
+    "expected_doc": "RB-101"
+  },
+  {
+    "id": "pool-paraphrase-02",
+    "query": "存储侧 CPU 正常，但结算接口越来越慢，应用内部可用连接接近零",
+    "expected_doc": "RB-101"
+  },
+  {
+    "id": "pool-paraphrase-03",
+    "query": "checkout 请求排队等待数据库资源，延迟突然超过两秒",
+    "expected_doc": "RB-101"
+  },
+  {
+    "id": "queue-paraphrase-01",
+    "query": "生产任务的速度持续超过消费者，未处理发票越积越多",
+    "expected_doc": "RB-104"
+  },
+  {
+    "id": "queue-paraphrase-02",
+    "query": "税务下游健康但最老消息年龄上涨，需要增加处理实例",
+    "expected_doc": "RB-104"
+  },
+  {
+    "id": "queue-paraphrase-03",
+    "query": "invoice worker 吞吐跟不上入队速度，待办数量无法下降",
+    "expected_doc": "RB-104"
+  },
+  {
+    "id": "credential-paraphrase-01",
+    "query": "合作方网关网络正常却一直未授权，怀疑访问凭据已超过有效期",
+    "expected_doc": "RB-203"
+  },
+  {
+    "id": "credential-paraphrase-02",
+    "query": "TLS 没问题但 partner 接口拒绝身份，需要安全人员轮换密钥",
+    "expected_doc": "RB-203"
+  },
+  {
+    "id": "credential-paraphrase-03",
+    "query": "调用第三方出现大量 401，日志只允许保留密钥指纹和版本",
+    "expected_doc": "RB-203"
+  },
+  {
+    "id": "cache-paraphrase-01",
+    "query": "后台价格已经修改，用户查询到的仍然是旧商品信息",
+    "expected_doc": "RB-310"
+  },
+  {
+    "id": "cache-paraphrase-02",
+    "query": "数据库版本正确，某个租户读取的目录数据没有同步更新",
+    "expected_doc": "RB-310"
+  },
+  {
+    "id": "cache-paraphrase-03",
+    "query": "只清理受影响品类的数据副本，不允许全局清空高速缓存",
+    "expected_doc": "RB-310"
+  },
+  {
+    "id": "rate-limit-paraphrase-01",
+    "query": "上游要求稍后再试，本地反复重放导致请求量进一步放大",
+    "expected_doc": "RB-429"
+  },
+  {
+    "id": "rate-limit-paraphrase-02",
+    "query": "实例资源健康但依赖方拒绝过多请求，应尊重退避时间并转人工",
+    "expected_doc": "RB-429"
+  },
+  {
+    "id": "rate-limit-paraphrase-03",
+    "query": "recommendation 调用收到配额限制，不能靠重启扩容或换凭据掩盖",
+    "expected_doc": "RB-429"
+  }
+]
