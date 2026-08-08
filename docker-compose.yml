@@ -1,0 +1,178 @@
+x-agent-environment: &agent-environment
+  APP_ENV: production-demo
+  DEMO_MODE: "true"
+  DATABASE_URL: "postgresql://harbor:${POSTGRES_PASSWORD:-harbor-local-db}@database:5432/harbor"
+  VECTOR_BACKEND: pgvector
+  EMBEDDING_BACKEND: "${EMBEDDING_BACKEND:-lexical-feature-baseline}"
+  EMBEDDING_ENDPOINT: "${COMPOSE_EMBEDDING_ENDPOINT:-}"
+  EMBEDDING_MODEL: "${EMBEDDING_MODEL:-OpenVINO/Qwen3-Embedding-0.6B-int4-cw-ov}"
+  EMBEDDING_API_KEY: "${EMBEDDING_API_KEY:-harbor-local-embedding-token}"
+  MODEL_ENABLED: "${MODEL_ENABLED:-true}"
+  MODEL_FIXTURE_MODE: "false"
+  MODEL_PROVIDER: "${MODEL_PROVIDER:-local-openvino}"
+  MODEL_NAME: "${MODEL_NAME:-OpenVINO/Qwen3-VL-8B-Instruct-int4-ov}"
+  MODEL_ENDPOINT: "${COMPOSE_MODEL_ENDPOINT:-http://host.docker.internal:8091/v1}"
+  MODEL_API_KEY: "${MODEL_API_KEY:-harbor-local-model-token}"
+  MODEL_TIMEOUT_SECONDS: "${MODEL_TIMEOUT_SECONDS:-180}"
+  TOOL_MODE: remote
+  TOOL_SANDBOX_URL: http://ops-sandbox:8092
+  TOOL_SANDBOX_TOKEN: "${OPS_HEALTH_TOKEN:-harbor-local-health-token}"
+  LAB_ORACLE_TOKEN: "${OPS_ORACLE_TOKEN:-harbor-local-oracle-token-change-me}"
+  AUTH_SIGNING_SECRET: "${AUTH_SIGNING_SECRET:-harbor-local-auth-signing-secret-change-me}"
+  CAPABILITY_SIGNING_SECRET: "${CAPABILITY_SIGNING_SECRET:-harbor-local-capability-secret-change-me}"
+  DEMO_PASSWORD: "${DEMO_PASSWORD:-harbor-demo-2026}"
+  WORKER_LEASE_SECONDS: "30"
+  WORKER_HEARTBEAT_SECONDS: "8"
+  FRONTEND_ORIGIN: http://localhost:8080
+
+services:
+  database:
+    image: pgvector/pgvector:pg16@sha256:a36250871de0833b8757561c72f2477ef1ddd1101afa4e617fb552e0de514c6b
+    environment:
+      POSTGRES_DB: harbor
+      POSTGRES_USER: harbor
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-harbor-local-db}"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U harbor -d harbor"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    volumes:
+      - harbor_postgres:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  ops-sandbox:
+    build:
+      context: .
+      dockerfile: ops_sandbox/Dockerfile
+    environment:
+      OPS_HEALTH_TOKEN: "${OPS_HEALTH_TOKEN:-harbor-local-health-token}"
+      OPS_ORACLE_TOKEN: "${OPS_ORACLE_TOKEN:-harbor-local-oracle-token-change-me}"
+      CAPABILITY_SIGNING_SECRET: "${CAPABILITY_SIGNING_SECRET:-harbor-local-capability-secret-change-me}"
+      OPS_DATABASE_PATH: /data/harbor-fault-lab.db
+      OPS_FAULT_INJECTION: "true"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import os,urllib.request; r=urllib.request.Request('http://127.0.0.1:8092/health',headers={'Authorization':'Bearer '+os.environ['OPS_HEALTH_TOKEN']}); urllib.request.urlopen(r,timeout=2)\""]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    volumes:
+      - harbor_fault_lab:/data
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=64m
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    init: true
+    ports:
+      - "127.0.0.1:8092:8092"
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      <<: *agent-environment
+      EMBEDDED_WORKER: "false"
+      WORKER_ID: api-no-worker
+    depends_on:
+      database:
+        condition: service_healthy
+      ops-sandbox:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health',timeout=2)"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=64m
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    init: true
+    ports:
+      - "127.0.0.1:8000:8000"
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    command: ["python", "-m", "app.worker_main"]
+    environment:
+      <<: *agent-environment
+      EMBEDDED_WORKER: "false"
+      WORKER_ID: "compose-{hostname}"
+      WORKER_METRICS_PORT: "9101"
+    depends_on:
+      database:
+        condition: service_healthy
+      ops-sandbox:
+        condition: service_healthy
+    expose:
+      - "9101"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:9101/metrics',timeout=2)"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=64m
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    init: true
+    stop_grace_period: 210s
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=64m
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    init: true
+    ports:
+      - "127.0.0.1:8080:8080"
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:v3.5.0@sha256:63805ebb8d2b3920190daf1cb14a60871b16fd38bed42b857a3182bc621f4996
+    command: ["--config.file=/etc/prometheus/prometheus.yml", "--storage.tsdb.retention.time=7d"]
+    volumes:
+      - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - harbor_prometheus:/prometheus
+    depends_on:
+      backend:
+        condition: service_healthy
+      ops-sandbox:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:9090:9090"
+    restart: unless-stopped
+
+volumes:
+  harbor_postgres:
+  harbor_fault_lab:
+  harbor_prometheus:

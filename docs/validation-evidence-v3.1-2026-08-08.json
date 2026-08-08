@@ -1,0 +1,159 @@
+{
+  "project": "Harbor AgentOps",
+  "version": "3.1.0",
+  "validated_at": "2026-08-08",
+  "validation_scope": "local Windows workstation; SQLite API runtime; real OpenVINO Qwen3 Embedding CPU sidecar; stateful fault lab; desktop and 390x844 in-app browser; static Compose validation",
+  "semantic_embedding": {
+    "model_id": "OpenVINO/Qwen3-Embedding-0.6B-int4-cw-ov",
+    "device": "CPU",
+    "quantization": "INT4",
+    "dimensions": 1024,
+    "pooling": "last-token",
+    "normalization": "l2",
+    "load_seconds": 1.099,
+    "full_api_integration": {
+      "passed": true,
+      "runtime_elapsed_ms": 2652.87,
+      "health_vector_quality": "semantic",
+      "run_id": "RUN-35FEBAECACFE",
+      "run_status": "completed",
+      "selected_write_tool": "refresh_cache",
+      "evidence_leak_check": "passed"
+    },
+    "retrieval_evaluation": {
+      "calibration_cases": 15,
+      "holdout_cases": 15,
+      "calibration": {
+        "lexical_recall_at_1": 0.9333,
+        "semantic_recall_at_1": 1.0,
+        "semantic_recall_at_3": 1.0,
+        "semantic_mrr": 1.0
+      },
+      "holdout": {
+        "lexical_recall_at_1": 0.9333,
+        "lexical_recall_at_3": 1.0,
+        "lexical_mrr": 0.9667,
+        "semantic_recall_at_1": 0.9333,
+        "semantic_recall_at_3": 1.0,
+        "semantic_mrr": 0.9667,
+        "semantic_mean_query_ms": 94.43,
+        "semantic_p95_query_ms": 108.59
+      },
+      "gate": "passed",
+      "claim_limit": "The 15-case holdout demonstrates non-regression on a small AIOps paraphrase set; it does not demonstrate population-level semantic lift."
+    }
+  },
+  "tenant_and_four_eyes": {
+    "run_tenant_filtering": [
+      "list",
+      "detail",
+      "jobs",
+      "metrics",
+      "evidence",
+      "decision",
+      "retry",
+      "cancel"
+    ],
+    "cross_tenant_known_id_response": 404,
+    "observer_start_response": 403,
+    "observer_cancel_response": 403,
+    "medium_risk_quorum": 1,
+    "high_risk_quorum": 2,
+    "requester_self_approval_response": 403,
+    "duplicate_subject_vote_response": 409,
+    "write_before_high_risk_quorum": false,
+    "two_distinct_hash_bound_votes_required": true,
+    "capability_control_tenant_tamper_response": 403
+  },
+  "browser_e2e": {
+    "run_id": "RUN-F1C60AC7F3DF",
+    "tenant_id": "xm-ops",
+    "risk": "high",
+    "requester": "admin@harbor.local",
+    "quorum_sequence": [
+      "0/2",
+      "1/2",
+      "2/2"
+    ],
+    "requester_self_approval_disabled": true,
+    "duplicate_subject_vote_disabled": true,
+    "write_before_second_distinct_vote": false,
+    "completed_after_second_distinct_vote": true,
+    "write_tool": "restart_service",
+    "verification": {
+      "p95_ms": 540,
+      "error_rate": 0.4,
+      "passed": true
+    },
+    "approval_pipeline_label_after_completion": "2/2 票",
+    "cross_tenant_known_run_visible": false,
+    "cross_tenant_client_cache_cleared": true,
+    "mobile_viewport": "390x844",
+    "page_level_horizontal_overflow": false,
+    "console_warnings": 0,
+    "console_errors": 0
+  },
+  "sealed_fixture_evaluation": {
+    "cases": 15,
+    "fault_families": 5,
+    "score": 100.0,
+    "unsafe_action_rate": 0.0,
+    "capability_enforcement": 100.0,
+    "claim_limit": "Fixture score validates deterministic orchestration and safety, not natural-language model accuracy."
+  },
+  "local_generation_model": {
+    "model_id": "OpenVINO/Qwen3-VL-8B-Instruct-int4-ov",
+    "device": "CPU",
+    "quantization": "INT4",
+    "v3_0_regression_evidence": {
+      "sealed_final_code_cases": 3,
+      "passed": 3,
+      "unsafe_action_rate": 0.0,
+      "observed_case_latency_ms": "56284-57340"
+    },
+    "claim_limit": "Generation code was unchanged in V3.1, but the three live-model samples were executed on V3.0 and were not rerun as a full 15-case V3.1 suite."
+  },
+  "failure_and_recovery": {
+    "concurrent_job_claimers": 32,
+    "successful_claims_for_one_job": 1,
+    "expired_lease_recovered_with_next_fencing_token": true,
+    "stale_fencing_write_rejected": true,
+    "response_loss_after_commit_http_status": 503,
+    "same_key_replay_status": "skipped",
+    "side_effect_count_after_replay": 1,
+    "fake_success_detected": true,
+    "automatic_compensation_verified": true,
+    "terminal_error_code": "VERIFICATION_FAILED_ROLLED_BACK"
+  },
+  "automated_tests": {
+    "backend": {
+      "passed": 33,
+      "failed": 0,
+      "statement_coverage_percent": 79
+    },
+    "frontend": {
+      "passed": 14,
+      "failed": 0
+    },
+    "typescript": "passed",
+    "production_build": "passed",
+    "python_compileall": "passed",
+    "compose_config": "passed",
+    "docker_image_build": "not_run_docker_daemon_unavailable"
+  },
+  "frontend_build": {
+    "javascript_kb": 272.59,
+    "javascript_gzip_kb": 85.25,
+    "css_kb": 62.31,
+    "css_gzip_kb": 14.05
+  },
+  "postgres_pgvector": {
+    "implementation": "dimension-qualified derived tables plus cosine HNSW index",
+    "dimension_switch": "256-d fallback and 1024-d Qwen use separate tables",
+    "runtime_validation": "not_run_postgres_or_docker_unavailable"
+  },
+  "excluded_stack": [
+    "Elasticsearch",
+    "Electron"
+  ]
+}

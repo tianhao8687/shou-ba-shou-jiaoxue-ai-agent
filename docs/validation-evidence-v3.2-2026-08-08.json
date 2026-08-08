@@ -1,0 +1,186 @@
+{
+  "schema": "harbor-agentops-validation/v3.2",
+  "generated_at": "2026-08-08T14:50:00+08:00",
+  "version": "3.2.0",
+  "host_runtime": {
+    "os": "Windows 11 with WSL2",
+    "wsl": "2.7.11.0",
+    "docker_client": "29.6.1",
+    "docker_server": "29.6.1",
+    "docker_compose": "v5.1.4"
+  },
+  "automated_tests": {
+    "backend": {
+      "passed": 38,
+      "failed": 0,
+      "covered_lines": 2288,
+      "statements": 2820,
+      "statement_coverage_percent": 81,
+      "python": "3.12.13",
+      "runtime": "dedicated non-root, read-only Docker test stage",
+      "postgres_integration": true,
+      "remote_fault_lab_integration": true
+    },
+    "frontend": {
+      "files_passed": 6,
+      "tests_passed": 16,
+      "failed": 0,
+      "typescript_build": "passed",
+      "vite_build": "passed",
+      "javascript_bytes": 272840,
+      "javascript_gzip_bytes": 85390
+    }
+  },
+  "compose_runtime": {
+    "logical_services": 6,
+    "running_containers": 8,
+    "containers": [
+      "postgresql-pgvector",
+      "ops-sandbox",
+      "backend",
+      "worker-1",
+      "worker-2",
+      "worker-3",
+      "frontend-nginx",
+      "prometheus"
+    ],
+    "healthy": true,
+    "published_bindings": "loopback-only",
+    "pgvector_version": "0.8.6",
+    "hnsw_index": "knowledge_chunks_v3_1_d256_embedding_hnsw",
+    "prometheus_targets_up": 6,
+    "prometheus_targets_total": 6,
+    "worker_targets_up": 3
+  },
+  "container_hardening": {
+    "backend_user": "10001:10001",
+    "worker_user": "10001:10001",
+    "ops_sandbox_user": "10001:10001",
+    "frontend_user": "101:101",
+    "self_built_read_only_rootfs": true,
+    "self_built_cap_drop_all": true,
+    "self_built_no_new_privileges": true,
+    "production_backend_contains_pytest": false,
+    "base_image_digests_pinned": true,
+    "frontend_headers": [
+      "Content-Security-Policy",
+      "Cross-Origin-Opener-Policy",
+      "Cross-Origin-Resource-Policy",
+      "X-Content-Type-Options",
+      "X-Frame-Options",
+      "Referrer-Policy",
+      "Permissions-Policy"
+    ],
+    "cve_scan": {
+      "status": "not_completed",
+      "reason": "Docker Scout required Docker ID login; no claim of vulnerability-scan success is made"
+    }
+  },
+  "sealed_evaluations": [
+    {
+      "id": "EVAL-02E4B19199",
+      "mode": "sealed-fixture",
+      "cases_passed": 15,
+      "cases_total": 15,
+      "score": 100,
+      "p95_case_latency_ms": 35,
+      "unsafe_action_rate_percent": 0
+    },
+    {
+      "id": "EVAL-EA80AAEAF4",
+      "mode": "sealed-live-model",
+      "model": "OpenVINO/Qwen3-VL-8B-Instruct-int4-ov",
+      "device": "CPU",
+      "cases_passed": 3,
+      "cases_total": 3,
+      "score": 100,
+      "p95_case_latency_ms": 77019,
+      "variants": [
+        "baseline",
+        "prompt-injection",
+        "irrelevant-noise"
+      ],
+      "case_latency_ms": [
+        77019,
+        72003,
+        68831
+      ],
+      "unsafe_action_rate_percent": 0,
+      "claim_limit": "Three samples are not production accuracy and must not be extrapolated to 15/15 live-model quality"
+    }
+  ],
+  "live_browser_runs": [
+    {
+      "id": "RUN-841A750FB147",
+      "scenario": "stale_cache",
+      "status": "completed",
+      "queue_wait_ms": 5,
+      "inference_ms": 73000,
+      "utf8_incident": "passed",
+      "verification": "passed"
+    },
+    {
+      "id": "RUN-E8C59C2EBDFB",
+      "scenario": "stale_cache",
+      "status": "completed",
+      "worker_outage_state": "queued/unclaimed with correct run-scoped job id",
+      "queue_wait_ms": 5,
+      "inference_ms": 75000,
+      "verification": "passed"
+    }
+  ],
+  "model_capacity_experiment": {
+    "before": {
+      "concurrent_runs": 3,
+      "completed": 2,
+      "handed_off": 1,
+      "failure": "third call reached 180 second timeout while the singleton CPU model was saturated"
+    },
+    "control": "PostgreSQL database-scoped advisory inference lock",
+    "after": {
+      "concurrent_runs": 3,
+      "completed": 3,
+      "handed_off": 0,
+      "queue_wait_ms": [
+        5,
+        67164,
+        135381
+      ],
+      "inference_ms": [
+        67246,
+        68292,
+        69517
+      ],
+      "model_failures": 0
+    }
+  },
+  "durability_and_security": {
+    "postgres_concurrent_claimants": 16,
+    "postgres_successful_claims": 1,
+    "model_slot_serialization_test": "passed",
+    "worker_crash_recovery": "attempt 2 / fencing token 2 / old owner rejected",
+    "post_commit_response_loss": "503 then same-key replay skipped; side effect count remained 1",
+    "tenant_cross_read": "404 across run, jobs, evidence and decision resources",
+    "requester_self_approval": "403",
+    "duplicate_approval_vote": "409",
+    "stale_cas": "409",
+    "high_risk_quorum": "two distinct qualified subjects required before write",
+    "runtime_answer_leak_check": "passed"
+  },
+  "browser_acceptance": {
+    "desktop": "passed",
+    "mobile_390x844": "passed",
+    "all_navigation_views": "passed",
+    "console_errors": 0,
+    "console_warnings": 0,
+    "evidence_export": "passed",
+    "csp_runtime": "passed",
+    "cross_run_job_state_isolation": "passed"
+  },
+  "known_limits": [
+    "The active Compose run uses the explicit 256-dimensional lexical-feature baseline because the embedding sidecar is not enabled in the default environment",
+    "The prior Qwen3 Embedding 1024-dimensional calibration and holdout evidence remains separate from this Compose run",
+    "No enterprise OIDC, mTLS, Vault/KMS, WORM audit, Kubernetes adapter or production incident dataset is included",
+    "No multi-host failover, backup restore, long-duration soak or completed CVE database scan was performed"
+  ]
+}

@@ -1,0 +1,928 @@
+{
+  "schema": "harbor-retrieval-eval/v3.1",
+  "generated_at": "2026-08-08T01:08:41.580017+00:00",
+  "datasets": {
+    "calibration": "data/retrieval_eval_v3_1.json",
+    "holdout": "data/retrieval_eval_holdout_v3_1.json"
+  },
+  "scope": "15 calibration plus 15 holdout AIOps paraphrases; direct learned retrieval without metadata routing or mandatory policy pinning",
+  "calibration": {
+    "lexical_feature_baseline": {
+      "backend": "memory-bm25-feature-hashing-256-rrf",
+      "quality": "lexical-feature-baseline",
+      "cases": 15,
+      "recall_at_1": 0.9333,
+      "recall_at_3": 1.0,
+      "mrr": 0.9667,
+      "latency_ms": {
+        "mean": 0.59,
+        "p50": 0.57,
+        "p95": 0.85,
+        "max": 0.85
+      },
+      "results": [
+        {
+          "id": "pool-paraphrase-01",
+          "query": "业务请求拿不到数据库会话，大量线程卡在资源借用阶段",
+          "expected_doc": "RB-101",
+          "rank": 2,
+          "top3": [
+            "RB-310",
+            "RB-101",
+            "RB-429"
+          ],
+          "hit_at_1": false,
+          "hit_at_3": true,
+          "latency_ms": 0.85
+        },
+        {
+          "id": "pool-paraphrase-02",
+          "query": "存储侧 CPU 正常，但结算接口越来越慢，应用内部可用连接接近零",
+          "expected_doc": "RB-101",
+          "rank": 1,
+          "top3": [
+            "RB-101",
+            "RB-203",
+            "RB-429"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 0.63
+        },
+        {
+          "id": "pool-paraphrase-03",
+          "query": "checkout 请求排队等待数据库资源，延迟突然超过两秒",
+          "expected_doc": "RB-101",
+          "rank": 1,
+          "top3": [
+            "RB-101",
+            "RB-310",
+            "SEC-07"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 0.55
+        },
+        {
+          "id": "queue-paraphrase-01",
+          "query": "生产任务的速度持续超过消费者，未处理发票越积越多",
+          "expected_doc": "RB-104",
+          "rank": 1,
+          "top3": [
+            "RB-104",
+            "SEC-07",
+            "RB-101"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 0.62
+        },
+        {
+          "id": "queue-paraphrase-02",
+          "query": "税务下游健康但最老消息年龄上涨，需要增加处理实例",
+          "expected_doc": "RB-104",
+          "rank": 1,
+          "top3": [
+            "RB-104",
+            "OPS-12",
+            "RB-429"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 0.61
+        },
+        {
+          "id": "queue-paraphrase-03",
+          "query": "invoice worker 吞吐跟不上入队速度，待办数量无法下降",
+          "expected_doc": "RB-104",
+          "rank": 1,
+          "top3": [
+            "RB-104",
+            "RB-203",
+            "RB-101"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 0.54
+        },
+        {
+          "id": "credential-paraphrase-01",
+          "query": "合作方网关网络正常却一直未授权，怀疑访问凭据已超过有效期",
+          "expected_doc": "RB-203",
+          "rank": 1,
+          "top3": [
+            "RB-203",
+            "RB-101",
+            "RB-310"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 0.58
+        },
+        {
+          "id": "credential-paraphrase-02",
+          "query": "TLS 没问题但 partner 接口拒绝身份，需要安全人员轮换密钥",
+          "expected_doc": "RB-203",
+          "rank": 1,
+          "top3": [
+            "RB-203",
+            "RB-104",
+            "SEC-07"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 0.53
+        },
+        {
+          "id": "credential-paraphrase-03",
+          "query": "调用第三方出现大量 401，日志只允许保留密钥指纹和版本",
+          "expected_doc": "RB-203",
+          "rank": 1,
+          "top3": [
+            "RB-203",
+            "RB-429",
+            "RB-101"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 0.55
+        },
+        {
+          "id": "cache-paraphrase-01",
+          "query": "后台价格已经修改，用户查询到的仍然是旧商品信息",
+          "expected_doc": "RB-310",
+          "rank": 1,
+          "top3": [
+            "RB-310",
+            "SEC-07",
+            "RB-101"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 0.54
+        },
+        {
+          "id": "cache-paraphrase-02",
+          "query": "数据库版本正确，某个租户读取的目录数据没有同步更新",
+          "expected_doc": "RB-310",
+          "rank": 1,
+          "top3": [
+            "RB-310",
+            "RB-101",
+            "SEC-07"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 0.57
+        },
+        {
+          "id": "cache-paraphrase-03",
+          "query": "只清理受影响品类的数据副本，不允许全局清空高速缓存",
+          "expected_doc": "RB-310",
+          "rank": 1,
+          "top3": [
+            "RB-310",
+            "SEC-07",
+            "RB-101"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 0.57
+        },
+        {
+          "id": "rate-limit-paraphrase-01",
+          "query": "上游要求稍后再试，本地反复重放导致请求量进一步放大",
+          "expected_doc": "RB-429",
+          "rank": 1,
+          "top3": [
+            "RB-429",
+            "RB-104",
+            "OPS-12"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 0.58
+        },
+        {
+          "id": "rate-limit-paraphrase-02",
+          "query": "实例资源健康但依赖方拒绝过多请求，应尊重退避时间并转人工",
+          "expected_doc": "RB-429",
+          "rank": 1,
+          "top3": [
+            "RB-429",
+            "SEC-07",
+            "RB-310"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 0.58
+        },
+        {
+          "id": "rate-limit-paraphrase-03",
+          "query": "recommendation 调用收到配额限制，不能靠重启扩容或换凭据掩盖",
+          "expected_doc": "RB-429",
+          "rank": 1,
+          "top3": [
+            "RB-429",
+            "SEC-07",
+            "RB-104"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 0.53
+        }
+      ]
+    },
+    "qwen3_semantic": {
+      "backend": "memory-bm25-openai-compatible-embedding-rrf",
+      "quality": "semantic",
+      "cases": 15,
+      "recall_at_1": 1.0,
+      "recall_at_3": 1.0,
+      "mrr": 1.0,
+      "latency_ms": {
+        "mean": 95.64,
+        "p50": 96.33,
+        "p95": 106.82,
+        "max": 106.82
+      },
+      "results": [
+        {
+          "id": "pool-paraphrase-01",
+          "query": "业务请求拿不到数据库会话，大量线程卡在资源借用阶段",
+          "expected_doc": "RB-101",
+          "rank": 1,
+          "top3": [
+            "RB-101",
+            "RB-429",
+            "OPS-12"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 101.55
+        },
+        {
+          "id": "pool-paraphrase-02",
+          "query": "存储侧 CPU 正常，但结算接口越来越慢，应用内部可用连接接近零",
+          "expected_doc": "RB-101",
+          "rank": 1,
+          "top3": [
+            "RB-101",
+            "RB-203",
+            "RB-429"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 98.01
+        },
+        {
+          "id": "pool-paraphrase-03",
+          "query": "checkout 请求排队等待数据库资源，延迟突然超过两秒",
+          "expected_doc": "RB-101",
+          "rank": 1,
+          "top3": [
+            "RB-101",
+            "OPS-12",
+            "RB-104"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 102.4
+        },
+        {
+          "id": "queue-paraphrase-01",
+          "query": "生产任务的速度持续超过消费者，未处理发票越积越多",
+          "expected_doc": "RB-104",
+          "rank": 1,
+          "top3": [
+            "RB-104",
+            "RB-429",
+            "RB-101"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 95.07
+        },
+        {
+          "id": "queue-paraphrase-02",
+          "query": "税务下游健康但最老消息年龄上涨，需要增加处理实例",
+          "expected_doc": "RB-104",
+          "rank": 1,
+          "top3": [
+            "RB-104",
+            "RB-429",
+            "RB-101"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 90.33
+        },
+        {
+          "id": "queue-paraphrase-03",
+          "query": "invoice worker 吞吐跟不上入队速度，待办数量无法下降",
+          "expected_doc": "RB-104",
+          "rank": 1,
+          "top3": [
+            "RB-104",
+            "RB-101",
+            "OPS-12"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 96.33
+        },
+        {
+          "id": "credential-paraphrase-01",
+          "query": "合作方网关网络正常却一直未授权，怀疑访问凭据已超过有效期",
+          "expected_doc": "RB-203",
+          "rank": 1,
+          "top3": [
+            "RB-203",
+            "RB-101",
+            "RB-429"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 97.08
+        },
+        {
+          "id": "credential-paraphrase-02",
+          "query": "TLS 没问题但 partner 接口拒绝身份，需要安全人员轮换密钥",
+          "expected_doc": "RB-203",
+          "rank": 1,
+          "top3": [
+            "RB-203",
+            "SEC-07",
+            "RB-104"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 81.9
+        },
+        {
+          "id": "credential-paraphrase-03",
+          "query": "调用第三方出现大量 401，日志只允许保留密钥指纹和版本",
+          "expected_doc": "RB-203",
+          "rank": 1,
+          "top3": [
+            "RB-203",
+            "RB-429",
+            "OPS-12"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 105.53
+        },
+        {
+          "id": "cache-paraphrase-01",
+          "query": "后台价格已经修改，用户查询到的仍然是旧商品信息",
+          "expected_doc": "RB-310",
+          "rank": 1,
+          "top3": [
+            "RB-310",
+            "SEC-07",
+            "OPS-12"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 85.61
+        },
+        {
+          "id": "cache-paraphrase-02",
+          "query": "数据库版本正确，某个租户读取的目录数据没有同步更新",
+          "expected_doc": "RB-310",
+          "rank": 1,
+          "top3": [
+            "RB-310",
+            "SEC-07",
+            "RB-101"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 106.82
+        },
+        {
+          "id": "cache-paraphrase-03",
+          "query": "只清理受影响品类的数据副本，不允许全局清空高速缓存",
+          "expected_doc": "RB-310",
+          "rank": 1,
+          "top3": [
+            "RB-310",
+            "SEC-07",
+            "OPS-12"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 103.82
+        },
+        {
+          "id": "rate-limit-paraphrase-01",
+          "query": "上游要求稍后再试，本地反复重放导致请求量进一步放大",
+          "expected_doc": "RB-429",
+          "rank": 1,
+          "top3": [
+            "RB-429",
+            "RB-104",
+            "RB-101"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 90.31
+        },
+        {
+          "id": "rate-limit-paraphrase-02",
+          "query": "实例资源健康但依赖方拒绝过多请求，应尊重退避时间并转人工",
+          "expected_doc": "RB-429",
+          "rank": 1,
+          "top3": [
+            "RB-429",
+            "SEC-07",
+            "OPS-12"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 95.85
+        },
+        {
+          "id": "rate-limit-paraphrase-03",
+          "query": "recommendation 调用收到配额限制，不能靠重启扩容或换凭据掩盖",
+          "expected_doc": "RB-429",
+          "rank": 1,
+          "top3": [
+            "RB-429",
+            "SEC-07",
+            "RB-104"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 84.04
+        }
+      ]
+    }
+  },
+  "holdout": {
+    "lexical_feature_baseline": {
+      "backend": "memory-bm25-feature-hashing-256-rrf",
+      "quality": "lexical-feature-baseline",
+      "cases": 15,
+      "recall_at_1": 0.9333,
+      "recall_at_3": 1.0,
+      "mrr": 0.9667,
+      "latency_ms": {
+        "mean": 0.56,
+        "p50": 0.55,
+        "p95": 0.65,
+        "max": 0.65
+      },
+      "results": [
+        {
+          "id": "holdout-pool-01",
+          "query": "应用不断创建新连接却不能及时归还，借用槽位被占满",
+          "expected_doc": "RB-101",
+          "rank": 1,
+          "top3": [
+            "RB-101",
+            "RB-429",
+            "RB-203"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 0.65
+        },
+        {
+          "id": "holdout-pool-02",
+          "query": "结算接口卡顿，数据库主机并不繁忙，等待可用 session 的请求很多",
+          "expected_doc": "RB-101",
+          "rank": 1,
+          "top3": [
+            "RB-101",
+            "RB-310",
+            "SEC-07"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 0.61
+        },
+        {
+          "id": "holdout-pool-03",
+          "query": "某个实例疑似连接泄漏，只能单机滚动处理，不能同时重启全部节点",
+          "expected_doc": "RB-101",
+          "rank": 2,
+          "top3": [
+            "RB-429",
+            "RB-101",
+            "RB-310"
+          ],
+          "hit_at_1": false,
+          "hit_at_3": true,
+          "latency_ms": 0.61
+        },
+        {
+          "id": "holdout-queue-01",
+          "query": "发票作业进入系统的速度快于处理速度，消费者数量明显不足",
+          "expected_doc": "RB-104",
+          "rank": 1,
+          "top3": [
+            "RB-104",
+            "RB-429",
+            "RB-310"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 0.57
+        },
+        {
+          "id": "holdout-queue-02",
+          "query": "下游健康且单任务耗时正常，未完成工作仍呈持续上升斜率",
+          "expected_doc": "RB-104",
+          "rank": 1,
+          "top3": [
+            "RB-104",
+            "RB-101",
+            "RB-429"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 0.56
+        },
+        {
+          "id": "holdout-queue-03",
+          "query": "最老的待处理消息越来越久，需要通过变更单受控增加 worker",
+          "expected_doc": "RB-104",
+          "rank": 1,
+          "top3": [
+            "RB-104",
+            "SEC-07",
+            "RB-429"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 0.54
+        },
+        {
+          "id": "holdout-credential-01",
+          "query": "合作接口证书正常，但认证材料版本与对方不一致",
+          "expected_doc": "RB-203",
+          "rank": 1,
+          "top3": [
+            "RB-203",
+            "RB-310",
+            "RB-101"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 0.53
+        },
+        {
+          "id": "holdout-credential-02",
+          "query": "只能记录身份材料指纹，禁止输出密钥正文，当前访问仍被拒绝",
+          "expected_doc": "RB-203",
+          "rank": 1,
+          "top3": [
+            "RB-203",
+            "RB-310",
+            "OPS-12"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 0.54
+        },
+        {
+          "id": "holdout-credential-03",
+          "query": "网关突然失去访问第三方的授权，需要灰度更新认证信息",
+          "expected_doc": "RB-203",
+          "rank": 1,
+          "top3": [
+            "RB-203",
+            "RB-104",
+            "RB-101"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 0.52
+        },
+        {
+          "id": "holdout-cache-01",
+          "query": "管理端数据已变更，读取接口仍是之前版本，并且只影响一个品类",
+          "expected_doc": "RB-310",
+          "rank": 1,
+          "top3": [
+            "RB-310",
+            "SEC-07",
+            "RB-203"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 0.57
+        },
+        {
+          "id": "holdout-cache-02",
+          "query": "源数据库与 API 返回内容的版本不一致，需要限定租户修复",
+          "expected_doc": "RB-310",
+          "rank": 1,
+          "top3": [
+            "RB-310",
+            "SEC-07",
+            "RB-101"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 0.55
+        },
+        {
+          "id": "holdout-cache-03",
+          "query": "不能清空所有高速数据，只允许刷新受影响的目录范围",
+          "expected_doc": "RB-310",
+          "rank": 1,
+          "top3": [
+            "RB-310",
+            "SEC-07",
+            "RB-203"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 0.55
+        },
+        {
+          "id": "holdout-rate-limit-01",
+          "query": "对方发来 Retry-After，本地仍立即重试，流量被成倍放大",
+          "expected_doc": "RB-429",
+          "rank": 1,
+          "top3": [
+            "RB-429",
+            "OPS-12",
+            "RB-104"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 0.51
+        },
+        {
+          "id": "holdout-rate-limit-02",
+          "query": "机器资源和实例都健康，问题来自供应商调用配额",
+          "expected_doc": "RB-429",
+          "rank": 1,
+          "top3": [
+            "RB-429",
+            "RB-101",
+            "RB-104"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 0.51
+        },
+        {
+          "id": "holdout-rate-limit-03",
+          "query": "外部服务要求降低调用频率，应采用指数退避和随机抖动",
+          "expected_doc": "RB-429",
+          "rank": 1,
+          "top3": [
+            "RB-429",
+            "RB-101",
+            "RB-104"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 0.53
+        }
+      ]
+    },
+    "qwen3_semantic": {
+      "backend": "memory-bm25-openai-compatible-embedding-rrf",
+      "quality": "semantic",
+      "cases": 15,
+      "recall_at_1": 0.9333,
+      "recall_at_3": 1.0,
+      "mrr": 0.9667,
+      "latency_ms": {
+        "mean": 94.43,
+        "p50": 93.03,
+        "p95": 108.59,
+        "max": 108.59
+      },
+      "results": [
+        {
+          "id": "holdout-pool-01",
+          "query": "应用不断创建新连接却不能及时归还，借用槽位被占满",
+          "expected_doc": "RB-101",
+          "rank": 1,
+          "top3": [
+            "RB-101",
+            "RB-429",
+            "RB-203"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 85.26
+        },
+        {
+          "id": "holdout-pool-02",
+          "query": "结算接口卡顿，数据库主机并不繁忙，等待可用 session 的请求很多",
+          "expected_doc": "RB-101",
+          "rank": 1,
+          "top3": [
+            "RB-101",
+            "OPS-12",
+            "SEC-07"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 96.68
+        },
+        {
+          "id": "holdout-pool-03",
+          "query": "某个实例疑似连接泄漏，只能单机滚动处理，不能同时重启全部节点",
+          "expected_doc": "RB-101",
+          "rank": 1,
+          "top3": [
+            "RB-101",
+            "RB-429",
+            "RB-203"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 96.53
+        },
+        {
+          "id": "holdout-queue-01",
+          "query": "发票作业进入系统的速度快于处理速度，消费者数量明显不足",
+          "expected_doc": "RB-104",
+          "rank": 1,
+          "top3": [
+            "RB-104",
+            "RB-203",
+            "RB-429"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 92.15
+        },
+        {
+          "id": "holdout-queue-02",
+          "query": "下游健康且单任务耗时正常，未完成工作仍呈持续上升斜率",
+          "expected_doc": "RB-104",
+          "rank": 2,
+          "top3": [
+            "RB-101",
+            "RB-104",
+            "RB-429"
+          ],
+          "hit_at_1": false,
+          "hit_at_3": true,
+          "latency_ms": 95.69
+        },
+        {
+          "id": "holdout-queue-03",
+          "query": "最老的待处理消息越来越久，需要通过变更单受控增加 worker",
+          "expected_doc": "RB-104",
+          "rank": 1,
+          "top3": [
+            "RB-104",
+            "SEC-07",
+            "OPS-12"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 93.63
+        },
+        {
+          "id": "holdout-credential-01",
+          "query": "合作接口证书正常，但认证材料版本与对方不一致",
+          "expected_doc": "RB-203",
+          "rank": 1,
+          "top3": [
+            "RB-203",
+            "RB-310",
+            "RB-101"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 100.56
+        },
+        {
+          "id": "holdout-credential-02",
+          "query": "只能记录身份材料指纹，禁止输出密钥正文，当前访问仍被拒绝",
+          "expected_doc": "RB-203",
+          "rank": 1,
+          "top3": [
+            "RB-203",
+            "SEC-07",
+            "RB-429"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 108.59
+        },
+        {
+          "id": "holdout-credential-03",
+          "query": "网关突然失去访问第三方的授权，需要灰度更新认证信息",
+          "expected_doc": "RB-203",
+          "rank": 1,
+          "top3": [
+            "RB-203",
+            "RB-104",
+            "RB-101"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 88.87
+        },
+        {
+          "id": "holdout-cache-01",
+          "query": "管理端数据已变更，读取接口仍是之前版本，并且只影响一个品类",
+          "expected_doc": "RB-310",
+          "rank": 1,
+          "top3": [
+            "RB-310",
+            "SEC-07",
+            "RB-203"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 95.05
+        },
+        {
+          "id": "holdout-cache-02",
+          "query": "源数据库与 API 返回内容的版本不一致，需要限定租户修复",
+          "expected_doc": "RB-310",
+          "rank": 1,
+          "top3": [
+            "RB-310",
+            "SEC-07",
+            "RB-104"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 92.74
+        },
+        {
+          "id": "holdout-cache-03",
+          "query": "不能清空所有高速数据，只允许刷新受影响的目录范围",
+          "expected_doc": "RB-310",
+          "rank": 1,
+          "top3": [
+            "RB-310",
+            "SEC-07",
+            "OPS-12"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 93.03
+        },
+        {
+          "id": "holdout-rate-limit-01",
+          "query": "对方发来 Retry-After，本地仍立即重试，流量被成倍放大",
+          "expected_doc": "RB-429",
+          "rank": 1,
+          "top3": [
+            "RB-429",
+            "OPS-12",
+            "RB-104"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 91.96
+        },
+        {
+          "id": "holdout-rate-limit-02",
+          "query": "机器资源和实例都健康，问题来自供应商调用配额",
+          "expected_doc": "RB-429",
+          "rank": 1,
+          "top3": [
+            "RB-429",
+            "RB-104",
+            "RB-310"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 92.69
+        },
+        {
+          "id": "holdout-rate-limit-03",
+          "query": "外部服务要求降低调用频率，应采用指数退避和随机抖动",
+          "expected_doc": "RB-429",
+          "rank": 1,
+          "top3": [
+            "RB-429",
+            "RB-104",
+            "OPS-12"
+          ],
+          "hit_at_1": true,
+          "hit_at_3": true,
+          "latency_ms": 92.95
+        }
+      ]
+    },
+    "semantic_lift": {
+      "recall_at_1": 0.0,
+      "recall_at_3": 0.0,
+      "mrr": 0.0
+    }
+  },
+  "gate": {
+    "evaluated_split": "holdout",
+    "recall_at_3_minimum": 0.9,
+    "semantic_mrr_must_not_regress": true,
+    "passed": true
+  }
+}

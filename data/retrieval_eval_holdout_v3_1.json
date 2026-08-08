@@ -1,0 +1,77 @@
+[
+  {
+    "id": "holdout-pool-01",
+    "query": "应用不断创建新连接却不能及时归还，借用槽位被占满",
+    "expected_doc": "RB-101"
+  },
+  {
+    "id": "holdout-pool-02",
+    "query": "结算接口卡顿，数据库主机并不繁忙，等待可用 session 的请求很多",
+    "expected_doc": "RB-101"
+  },
+  {
+    "id": "holdout-pool-03",
+    "query": "某个实例疑似连接泄漏，只能单机滚动处理，不能同时重启全部节点",
+    "expected_doc": "RB-101"
+  },
+  {
+    "id": "holdout-queue-01",
+    "query": "发票作业进入系统的速度快于处理速度，消费者数量明显不足",
+    "expected_doc": "RB-104"
+  },
+  {
+    "id": "holdout-queue-02",
+    "query": "下游健康且单任务耗时正常，未完成工作仍呈持续上升斜率",
+    "expected_doc": "RB-104"
+  },
+  {
+    "id": "holdout-queue-03",
+    "query": "最老的待处理消息越来越久，需要通过变更单受控增加 worker",
+    "expected_doc": "RB-104"
+  },
+  {
+    "id": "holdout-credential-01",
+    "query": "合作接口证书正常，但认证材料版本与对方不一致",
+    "expected_doc": "RB-203"
+  },
+  {
+    "id": "holdout-credential-02",
+    "query": "只能记录身份材料指纹，禁止输出密钥正文，当前访问仍被拒绝",
+    "expected_doc": "RB-203"
+  },
+  {
+    "id": "holdout-credential-03",
+    "query": "网关突然失去访问第三方的授权，需要灰度更新认证信息",
+    "expected_doc": "RB-203"
+  },
+  {
+    "id": "holdout-cache-01",
+    "query": "管理端数据已变更，读取接口仍是之前版本，并且只影响一个品类",
+    "expected_doc": "RB-310"
+  },
+  {
+    "id": "holdout-cache-02",
+    "query": "源数据库与 API 返回内容的版本不一致，需要限定租户修复",
+    "expected_doc": "RB-310"
+  },
+  {
+    "id": "holdout-cache-03",
+    "query": "不能清空所有高速数据，只允许刷新受影响的目录范围",
+    "expected_doc": "RB-310"
+  },
+  {
+    "id": "holdout-rate-limit-01",
+    "query": "对方发来 Retry-After，本地仍立即重试，流量被成倍放大",
+    "expected_doc": "RB-429"
+  },
+  {
+    "id": "holdout-rate-limit-02",
+    "query": "机器资源和实例都健康，问题来自供应商调用配额",
+    "expected_doc": "RB-429"
+  },
+  {
+    "id": "holdout-rate-limit-03",
+    "query": "外部服务要求降低调用频率，应采用指数退避和随机抖动",
+    "expected_doc": "RB-429"
+  }
+]

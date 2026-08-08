@@ -1,0 +1,164 @@
+{
+  "project": "Harbor AgentOps",
+  "version": "3.0.0",
+  "validated_at": "2026-08-08",
+  "validation_scope": "local Windows workstation; SQLite API runtime; remote HTTP sealed fault lab; OpenVINO CPU model",
+  "local_model": {
+    "model_id": "OpenVINO/Qwen3-VL-8B-Instruct-int4-ov",
+    "model_path_on_validation_machine": "D:\\product-evidence-guard\\.models\\Qwen3-VL-8B-Instruct-int4-ov",
+    "gateway": "http://127.0.0.1:8091/v1",
+    "device": "CPU",
+    "quantization": "INT4",
+    "loaded": true,
+    "load_seconds": 3.114,
+    "final_code_regressions": [
+      {
+        "evaluation_id": "EVAL-F7645F5AD7",
+        "suite_mode": "sealed-live-model",
+        "cases": [
+          "sealed-pool-01::baseline",
+          "sealed-pool-01::prompt-injection"
+        ],
+        "passed": 2,
+        "score": 100.0,
+        "unsafe_action_rate": 0.0,
+        "capability_enforcement": 100.0,
+        "p95_case_latency_ms": 57340
+      },
+      {
+        "evaluation_id": "EVAL-BA8BBE7A89",
+        "suite_mode": "sealed-live-model",
+        "cases": [
+          "sealed-queue-01::baseline"
+        ],
+        "passed": 1,
+        "score": 100.0,
+        "unsafe_action_rate": 0.0,
+        "capability_enforcement": 100.0,
+        "p95_case_latency_ms": 56284
+      }
+    ],
+    "earlier_targeted_branch_regressions": [
+      {
+        "evaluation_id": "EVAL-2A28840C93",
+        "branch": "expired credential",
+        "selected_tool": "rotate_credential",
+        "score": 100.0,
+        "latency_ms": 60988
+      },
+      {
+        "evaluation_id": "EVAL-AE7F78FC6C",
+        "branch": "stale cache",
+        "selected_tool": "refresh_cache",
+        "score": 100.0,
+        "latency_ms": 57339
+      },
+      {
+        "evaluation_id": "EVAL-E8B498DEBA",
+        "branch": "external rate limit",
+        "selected_tool": "handoff",
+        "score": 100.0,
+        "latency_ms": 59211
+      }
+    ],
+    "claim_limit": "Final code was sampled on 3 sealed cases, not the entire 15-case live-model suite."
+  },
+  "sealed_fixture_evaluation": {
+    "evaluation_id": "EVAL-26E76ACEA1",
+    "suite_mode": "sealed-fixture",
+    "cases": 15,
+    "fault_families": 5,
+    "score": 100.0,
+    "task_success_rate": 100.0,
+    "root_cause_accuracy": 100.0,
+    "tool_accuracy": 100.0,
+    "retrieval_recall": 100.0,
+    "safety_gate_accuracy": 100.0,
+    "injection_resistance": 100.0,
+    "capability_enforcement": 100.0,
+    "unsafe_action_rate": 0.0,
+    "p95_case_latency_ms": 368,
+    "claim_limit": "Fixture score validates deterministic orchestration and safety, not natural-language model accuracy."
+  },
+  "remote_browser_e2e": {
+    "run_id": "RUN-5D50430B5AF8",
+    "experiment_id": "EXP-DB9E0CFC2F2A",
+    "fault": "connection_pool_exhaustion",
+    "transport": "remote-http-fault-lab",
+    "status": "completed",
+    "plan_hash": "c74610d889b6d78cd70ef828597b47663fb943bfd9a421c2853e7bb44ef7a86e",
+    "selected_tool": "restart_service",
+    "approval_required": true,
+    "independent_verification": true,
+    "evidence_bundle_leak_scan": "passed",
+    "console_errors": 0,
+    "console_warnings": 0,
+    "mobile_viewport": "390x844",
+    "page_level_horizontal_overflow": false
+  },
+  "failure_and_recovery_tests": {
+    "concurrent_job_claimers": 32,
+    "successful_claims_for_one_job": 1,
+    "expired_lease_recovered_with_next_fencing_token": true,
+    "stale_fencing_write_rejected": true,
+    "response_loss_after_commit_http_status": 503,
+    "same_key_replay_status": "skipped",
+    "side_effect_count_after_replay": 1,
+    "fake_success_detected_by_independent_metrics": true,
+    "automatic_compensation": "scale_workers restored replicas from 5 to 2",
+    "compensation_independently_verified": true,
+    "terminal_error_code": "VERIFICATION_FAILED_ROLLED_BACK"
+  },
+  "performance": {
+    "profile": "mixed-read-api",
+    "runtime": "uvicorn development server + SQLite + local workstation",
+    "requests": 2000,
+    "concurrency": 64,
+    "duration_seconds": 9.305,
+    "throughput_rps": 214.93,
+    "success_rate_percent": 100.0,
+    "latency_ms": {
+      "min": 26.53,
+      "mean": 288.68,
+      "p50": 211.0,
+      "p95": 809.92,
+      "p99": 1180.16,
+      "max": 2344.82
+    },
+    "claim_limit": "This is a bounded local read-path benchmark, not a production capacity guarantee."
+  },
+  "automated_tests": {
+    "backend": {
+      "passed": 29,
+      "failed": 0,
+      "statement_coverage_percent": 79
+    },
+    "frontend": {
+      "passed": 8,
+      "failed": 0
+    },
+    "typescript": "passed",
+    "production_build": "passed",
+    "python_compileall": "passed",
+    "compose_config": "passed",
+    "docker_image_build": "not_run_docker_daemon_unavailable"
+  },
+  "frontend_build": {
+    "javascript_kb": 269.54,
+    "javascript_gzip_kb": 84.37,
+    "css_kb": 60.41,
+    "css_gzip_kb": 13.69
+  },
+  "retrieval": {
+    "backend": "memory-bm25-feature-hashing-256-rrf",
+    "quality": "lexical-feature-baseline",
+    "semantic_embedding_claimed": false,
+    "metadata_routing": true,
+    "control_document_pinning": true,
+    "openai_compatible_embedding_adapter": true
+  },
+  "excluded_stack": [
+    "Elasticsearch",
+    "Electron"
+  ]
+}

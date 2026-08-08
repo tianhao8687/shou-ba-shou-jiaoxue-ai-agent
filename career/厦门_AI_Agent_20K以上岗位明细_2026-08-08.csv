@@ -1,0 +1,29 @@
+序号,公司,岗位,月薪下限K,月薪上限K,额外薪数,门槛类型,经验,学历,Agent相关度,方向,近期招聘活跃证据,核心要求证据,来源链接,备注
+1,普为光电,AI Agent（智能体）开发工程师,20,40,13薪,起薪≥20K,3-5年,本科,A-核心Agent,Agent应用开发,2026-08-08核验可访问；招聘方今日回复,Python；OpenClaw；LangChain；AutoGPT；Agent编排,https://www.zhaopin.com/jobdetail/CC393470020J40864086714.htm,
+2,浪潮集团,AI智能体开发工程师,15,24,,上限>20K,3-5年,本科,A-核心Agent,Agent平台与部署,2026-08-08核验可访问；招聘方今日回复,Python；Dify；HiAgent；大模型部署；Linux；GPUStack,https://www.zhaopin.com/jobdetail/CC120143600J40955934915.htm,
+3,宁德时代新能源,智能体设计工程师,17,30,16薪,上限>20K,5-10年,本科,A-核心Agent,Agent产品与交互,2026-08-08核验可访问；招聘方刚刚活跃；页面近3周抓取,Agent编排；可视化工作流；可观测；评测；工具市场；Figma/Axure,https://www.zhaopin.com/jobdetail/CC271988630J41019582404.htm,页面头部写5-10年；正文一处写1-3年，存在平台字段冲突
+4,厦门新能安科技,智能体开发工程师（锂电制造方向）,15,28,18薪,上限>20K,3-5年,本科,A-核心Agent,工业Agent,发布于约3周前；截止日期2026-08-12；2026-08-08核验可访问,LangChain；LangGraph；混合RAG；Python；FastAPI；Docker；SQL；HITL；RBAC；MES,https://bebee.com/cn/jobs/job--techmap_cn_CCL1409591300J40850076807,薪资来自同期智联招聘公开结果；职位正文由仍在有效期内的公开镜像核验
+5,垒知集团,AI应用开发工程师,20,30,,起薪≥20K,5-10年,本科,A-核心Agent,企业Agent应用,2026-08-08核验可访问；页面近1周抓取,RAG；Agent；Prompt；Function Calling；Workflow；评测；成本管理,https://www.zhaopin.com/jobdetail/CC199972210J41021946704.htm,
+6,厦门德捷信息科技,AI Agent工程师（LLM应用/Agent系统）,15,30,,上限>20K,3-5年,本科,A-核心Agent,可靠Agent系统,2026-08-08核验可访问；页面近1周抓取,Agent状态机；任务拆解；工具调用；API/数据库；RAG；向量检索；失败恢复；LangChain；Semantic Kernel,https://www.zhaopin.com/jobdetail/CC263302730J40756947606.htm,
+7,厦门德捷信息科技,AIOps工程师,15,30,,上限>20K,1-3年,本科,A-核心Agent,AgentOps与可观测,2026-08-08核验可访问；页面近1周抓取,日志/指标/Trace；RAG链路；Token成本；评测流水线；CI/CD；权限与敏感数据,https://www.zhaopin.com/jobdetail/CC263302730J40756917506.htm,同一公司第二岗位
+8,畅拓科技,高级AI工程师,20,40,14薪,起薪≥20K,5-10年,本科,B-强相关,AI工程化与架构,BOSS厦门高级AI工程师页面近5天抓取；2026-08-08核验可访问,AI工程化；技术架构；业务落地,https://www.zhipin.com/zhaopin/b2b3850041567b0503Jz2t-9EQ~~/,聚合页公开摘要有限；未把未展示技能计入频次
+9,点触科技,高级AI工程师,18,25,,上限>20K,3-5年,本科,B-强相关,AI辅助研发平台,BOSS厦门高级AI工程师页面近5天抓取；2026-08-08核验可访问,Copilot；Cursor；AI辅助开发流程；工程规范,https://www.zhipin.com/zhaopin/b2b3850041567b0503Jz2t-9EQ~~/,
+10,厦门明日丰信息科技,高级AI工程师,30,50,,起薪≥20K,3-5年,本科,B-强相关,大模型与多模态,BOSS厦门高级AI工程师页面近5天抓取；2026-08-08核验可访问,大模型；多模态；图像算法；工程化,https://www.zhipin.com/zhaopin/b2b3850041567b0503Jz2t-9EQ~~/,
+11,厦门谦鹭信息技术,AI应用高级工程师,15,25,13薪,上限>20K,3-5年,本科,A-核心Agent,知识型Agent,BOSS页面近5天抓取；智联移动岗位页2026-08-08可访问,LLM Agent；知识图谱；知识库；模型微调,https://m.zhaopin.com/jobs/CC133096640J40865509908.htm,平台主体映射有歧义：BOSS显示谦鹭；智联岗位头部显示厦门钨业且工作地/团队为厦门谦鹭
+12,中达集团,高级开发工程师（中台/AI）,17,30,13薪,上限>20K,5-10年,本科,B-强相关,AI应用平台,BOSS厦门高级AI工程师页面近5天抓取；2026-08-08核验可访问,AI应用平台；LLM；生成式AI；中台架构,https://www.zhipin.com/zhaopin/b2b3850041567b0503Jz2t-9EQ~~/,
+13,紫金智信智控,高级AI算法/大模型专家,35,65,,起薪≥20K,5-10年,本科,B-强相关,大模型后训练与对齐,BOSS相关厦门岗位页近1天至5天抓取；2026-08-08核验可访问,SFT；RLHF；对齐；数据清洗；隐私,https://www.zhipin.com/zhaopin/d800c01ed6cb52fb031z39W4FA~~/,
+14,快商通,AI高级算法工程师,30,35,,起薪≥20K,1-3年,硕士,B-强相关,大模型后训练,BOSS厦门高级AI工程师/算法页面近1天至5天抓取；2026-08-08核验可访问,Python；SFT；DPO；GRPO；DAPO,https://www.zhipin.com/zhaopin/d800c01ed6cb52fb031z39W4FA~~/,
+15,快商通,NLP/Agent算法工程师,20,30,,起薪≥20K,1-3年,硕士,A-核心Agent,Agent算法与RAG,BOSS厦门模型开发岗位页近3周抓取；2026-08-08核验可访问,RAG；思维链；强化学习；Agent,https://m.zhipin.com/zhaopin/82a8a6397e2b620e0nR-29W7GQ~~/,同一公司第二岗位
+16,睿云联,AI算法工程师,20,35,13薪,起薪≥20K,经验不限,本科,B-强相关,多模态AI工程,BOSS厦门高级AI算法页面近1天抓取；2026-08-08核验可访问,CV；语音；LLM；NLP；工程部署,https://www.zhipin.com/zhaopin/d800c01ed6cb52fb031z39W4FA~~/,
+17,厦门美亚亿安信息科技,AI算法工程师,20,40,,起薪≥20K,1-3年,本科,A-核心Agent,大模型安全应用,BOSS厦门高级AI算法页面近1天抓取；2026-08-08核验可访问,大模型安全应用系统；业务方案；实施；持续迭代,https://www.zhipin.com/zhaopin/d800c01ed6cb52fb031z39W4FA~~/,Agent归类基于其大模型安全应用系统与端到端落地职责
+18,微徒科技,高级AI算法工程师,25,50,,起薪≥20K,5-10年,本科,B-强相关,AI架构与业务赋能,BOSS厦门高级AI工程师页面近5天抓取；2026-08-08核验可访问,技术架构；业务赋能；系统落地,https://www.zhipin.com/zhaopin/b2b3850041567b0503Jz2t-9EQ~~/,
+19,网宿科技,边缘AI算法工程师,25,40,,起薪≥20K,3-5年,硕士,B-强相关,大模型推理基础设施,BOSS厦门高级AI算法页面近1天抓取；2026-08-08核验可访问,LLM推理引擎；低延迟；高吞吐；CUDA,https://www.zhipin.com/zhaopin/d800c01ed6cb52fb031z39W4FA~~/,
+20,云天畅想,AI算法开发工程师,12,24,,上限>20K,3-5年,本科,B-强相关,电商AI应用,BOSS厦门高级AI算法页面近1天抓取；2026-08-08核验可访问,AI电商应用场景；算法工程化,https://www.zhipin.com/zhaopin/d800c01ed6cb52fb031z39W4FA~~/,
+21,松霖科技,机器人AI算法工程师,20,40,,起薪≥20K,3-5年,硕士,B-强相关,具身智能与算法,BOSS厦门高级AI算法页面近1天抓取；2026-08-08核验可访问,机器学习；深度学习；强化学习；LLM微调；机器人,https://www.zhipin.com/zhaopin/d800c01ed6cb52fb031z39W4FA~~/,
+22,万物智联,AI模型开发工程师,18,30,,上限>20K,3-5年,本科,A-核心Agent,垂直大模型与Agent,BOSS厦门深度学习算法页面近3周抓取；2026-08-08核验可访问,垂直模型微调；部署；RAG；Agent,https://www.zhipin.com/zhaopin/5dc1a4fbb178537903dy2d65EQ~~/,
+23,亿联网络（Yealink）,大模型算法工程师,20,40,15薪,起薪≥20K,3-5年,硕士,B-强相关,大模型与多模态,BOSS厦门数据模型岗位页当天抓取；2026-08-08核验可访问,LLM；多模态；预训练；微调；压缩,https://m.zhipin.com/zhaopin/a90213fde377843903Z72ti-FA~~/,
+24,渊亭科技,强化学习算法工程师,30,40,,起薪≥20K,3-5年,硕士,A-核心Agent,多智能体强化学习,BOSS厦门深度学习算法页面近3周抓取；2026-08-08核验可访问,多智能体；强化学习；系统架构；性能；稳定性,https://www.zhipin.com/zhaopin/5dc1a4fbb178537903dy2d65EQ~~/,
+25,若鹏,AI工程师,16,22,,上限>20K,1-3年,本科,A-核心Agent,Agent工作流,BOSS相关厦门岗位页当天至5天抓取；2026-08-08核验可访问,Agent系统；工作流；结构化输出,https://m.zhipin.com/zhaopin/a90213fde377843903Z72ti-FA~~/,
+26,海创星智,大模型应用工程师,22,30,14薪,起薪≥20K,5-10年,本科,A-核心Agent,企业Agent解决方案,BOSS厦门数据模型岗位页当天抓取；2026-08-08核验可访问,业务需求；API集成；Agent设计；项目落地,https://m.zhipin.com/zhaopin/a90213fde377843903Z72ti-FA~~/,
+27,飞飞鱼,AI工程师,15,30,13薪,上限>20K,3-5年,本科,A-核心Agent,Agent系统设计,BOSS厦门高级AI工程师页面近5天抓取；2026-08-08核验可访问,Agent系统；LLM工作流；自主任务执行,https://www.zhipin.com/zhaopin/b2b3850041567b0503Jz2t-9EQ~~/,
+28,云从科技,AI大模型开发工程师,20,21,,起薪≥20K,5-10年,本科,A-核心Agent,大模型与Agent构建,BOSS厦门模型开发岗位页近3周抓取；2026-08-08核验可访问,模型训练；模型优化；Agent构建,https://m.zhipin.com/zhaopin/82a8a6397e2b620e0nR-29W7GQ~~/,

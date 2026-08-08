@@ -1,0 +1,59 @@
+{
+  "schema": "harbor-semantic-runtime/v3.1",
+  "generated_at": "2026-08-08T01:08:32.255984+00:00",
+  "elapsed_ms": 2652.87,
+  "api_health": {
+    "version": "3.1.0",
+    "vector_backend": "memory-bm25-openai-compatible-embedding-rrf",
+    "vector_quality": "semantic"
+  },
+  "embedding_runtime": {
+    "status": "ok",
+    "loaded": true,
+    "model": "OpenVINO/Qwen3-Embedding-0.6B-int4-cw-ov",
+    "model_path": "C:\\Users\\Admin\\Documents\\Codex\\2026-08-08\\new-chat-2\\work\\models\\Qwen3-Embedding-0.6B-int4-cw-ov",
+    "device": "CPU",
+    "dimensions": 1024,
+    "normalization": "l2",
+    "pooling": "last-token",
+    "load_seconds": 1.099,
+    "requests": 2,
+    "texts": 27,
+    "average_inference_ms": 1028.64
+  },
+  "end_to_end_run": {
+    "run_id": "RUN-35FEBAECACFE",
+    "tenant_id": "xm-ops",
+    "status": "completed",
+    "source_documents": [
+      "OPS-12",
+      "RB-101",
+      "RB-203",
+      "RB-310",
+      "RB-429",
+      "SEC-07"
+    ],
+    "retrieval_channels": [
+      "hybrid",
+      "pinned",
+      "routed"
+    ],
+    "selected_tools": [
+      "inspect_logs",
+      "query_metrics",
+      "get_service_status",
+      "refresh_cache",
+      "query_metrics"
+    ],
+    "evidence_leak_check": {
+      "forbidden_fields": [
+        "expected_cause",
+        "expected_resolution",
+        "expected_plan"
+      ],
+      "hits": [],
+      "passed": true
+    }
+  },
+  "passed": true
+}
