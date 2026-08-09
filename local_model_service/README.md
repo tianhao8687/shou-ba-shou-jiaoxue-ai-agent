@@ -13,21 +13,33 @@
 - 日志只记录方法与状态，不记录 Prompt 和输出；
 - `/health` 与 `/metrics` 可观测。
 
-当前机器默认使用：
+模型文件不进入 Git。推荐放在仓库的 `.models/Qwen3-VL-8B-Instruct-int4-ov`，Python 依赖推荐安装到仓库自己的 `.venv`。这两个目录都不会被提交。
 
-```text
-Python: D:\product-evidence-guard\.venv\Scripts\python.exe
-Model:  D:\product-evidence-guard\.models\Qwen3-VL-8B-Instruct-int4-ov
-Device: CPU
-```
-
-启动：
+PowerShell 启动：
 
 ```powershell
-.\scripts\start-local-model.ps1
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r local_model_service\requirements.txt
+.\scripts\start-local-model.ps1 `
+  -Python ".venv\Scripts\python.exe" `
+  -ModelPath ".models\Qwen3-VL-8B-Instruct-int4-ov"
 ```
 
-换机器时，安装 `requirements.txt`，再通过脚本参数或 `HARBOR_LOCAL_MODEL_PATH` 指定权重目录。健康检查：
+脚本接受绝对路径，也接受相对仓库根目录的路径；所以从其他工作目录调用时结果不变。也可以设置 `HARBOR_PYTHON`、`HARBOR_LOCAL_MODEL_PATH`、`HARBOR_LOCAL_MODEL_DEVICE` 和 `HARBOR_MODEL_GATEWAY_TOKEN`。先用 `-ValidateOnly` 可只检查运行资产而不启动服务。
+
+如果 Windows 执行策略阻止 `.ps1`，可用下面的单次进程命令；它不会修改机器的全局策略：
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\start-local-model.ps1 -ValidateOnly
+```
+
+Linux/macOS 或不使用 PowerShell时，可直接运行：
+
+```bash
+python local_model_service/server.py --model-path /path/to/Qwen3-VL-8B-Instruct-int4-ov
+```
+
+健康检查：
 
 ```powershell
 Invoke-RestMethod http://127.0.0.1:8091/health

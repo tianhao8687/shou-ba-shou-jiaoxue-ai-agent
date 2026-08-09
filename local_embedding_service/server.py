@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
+import os
 from pathlib import Path
 import threading
 import time
@@ -16,6 +17,8 @@ import openvino_tokenizers  # noqa: F401 - registers tokenizer extension operati
 
 
 MODEL_ID = "OpenVINO/Qwen3-Embedding-0.6B-int4-cw-ov"
+REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_MODEL_DIR = REPOSITORY_ROOT / ".models" / "Qwen3-Embedding-0.6B-int4-cw-ov"
 
 
 @dataclass
@@ -191,11 +194,19 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="OpenAI-compatible OpenVINO Qwen3 embedding sidecar"
     )
-    parser.add_argument("--model-dir", type=Path, required=True)
-    parser.add_argument("--host", default="127.0.0.1")
-    parser.add_argument("--port", type=int, default=8093)
-    parser.add_argument("--device", default="CPU")
-    parser.add_argument("--token", default="")
+    parser.add_argument(
+        "--model-dir",
+        type=Path,
+        default=Path(os.getenv("HARBOR_LOCAL_EMBEDDING_PATH", str(DEFAULT_MODEL_DIR))),
+    )
+    parser.add_argument("--host", default=os.getenv("HARBOR_EMBEDDING_HOST", "127.0.0.1"))
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=int(os.getenv("HARBOR_EMBEDDING_PORT", "8093")),
+    )
+    parser.add_argument("--device", default=os.getenv("HARBOR_LOCAL_EMBEDDING_DEVICE", "CPU"))
+    parser.add_argument("--token", default=os.getenv("HARBOR_EMBEDDING_GATEWAY_TOKEN", ""))
     args = parser.parse_args()
     runtime = OpenVINOEmbeddingRuntime(args.model_dir.resolve(), args.device)
     EmbeddingHandler.runtime = runtime
@@ -212,7 +223,12 @@ def main() -> None:
         ),
         flush=True,
     )
-    server.serve_forever()
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        server.server_close()
 
 
 if __name__ == "__main__":

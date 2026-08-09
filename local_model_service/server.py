@@ -12,9 +12,8 @@ from typing import Any
 
 
 MODEL_ID = "OpenVINO/Qwen3-VL-8B-Instruct-int4-ov"
-DEFAULT_DISCOVERED_MODEL = Path(
-    r"D:\product-evidence-guard\.models\Qwen3-VL-8B-Instruct-int4-ov"
-)
+REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_DISCOVERED_MODEL = REPOSITORY_ROOT / ".models" / "Qwen3-VL-8B-Instruct-int4-ov"
 MAX_REQUEST_BYTES = 2 * 1024 * 1024
 
 
@@ -230,7 +229,12 @@ def main() -> None:
             ensure_ascii=False,
         )
     )
-    server.serve_forever()
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        server.server_close()
 
 
 if __name__ == "__main__":

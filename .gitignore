@@ -12,3 +12,4 @@ dist/
 playwright-report/
 test-results/
 .runtime/
+.models/

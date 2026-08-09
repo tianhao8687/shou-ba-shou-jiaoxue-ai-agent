@@ -19,8 +19,8 @@ class Settings(BaseSettings):
     embedding_endpoint: str = ""
     embedding_model: str = ""
     embedding_api_key: str = ""
-    model_enabled: bool = True
-    model_fixture_mode: bool = False
+    model_enabled: bool = False
+    model_fixture_mode: bool = True
     model_provider: str = "local-openvino"
     model_name: str = "OpenVINO/Qwen3-VL-8B-Instruct-int4-ov"
     model_endpoint: str = "http://127.0.0.1:8091/v1"
