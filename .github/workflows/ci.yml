@@ -1,0 +1,156 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Quality gates
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+
+      - name: Check personal paths and Python syntax
+        run: |
+          python scripts/check-portability.py
+          python -m compileall -q backend/app ops_sandbox local_model_service local_embedding_service scripts
+
+      - name: Validate Compose configuration
+        run: docker compose config --quiet
+
+  backend:
+    name: Backend tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16@sha256:a36250871de0833b8757561c72f2477ef1ddd1101afa4e617fb552e0de514c6b
+        env:
+          POSTGRES_DB: harbor_test
+          POSTGRES_USER: harbor
+          POSTGRES_PASSWORD: harbor-ci-db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U harbor -d harbor_test"
+          --health-interval 3s
+          --health-timeout 3s
+          --health-retries 20
+    env:
+      HARBOR_TEST_POSTGRES_URL: postgresql://harbor:harbor-ci-db@127.0.0.1:5432/harbor_test
+      HARBOR_TEST_OPS_URL: http://127.0.0.1:8092
+      HARBOR_TEST_OPS_ORACLE_TOKEN: harbor-ci-oracle-token
+      HARBOR_TEST_CAPABILITY_SECRET: harbor-ci-capability-secret
+      OPS_DATABASE_PATH: /tmp/harbor-ci-fault-lab.db
+      OPS_HEALTH_TOKEN: harbor-ci-health-token
+      OPS_ORACLE_TOKEN: harbor-ci-oracle-token
+      CAPABILITY_SIGNING_SECRET: harbor-ci-capability-secret
+      OPS_FAULT_INJECTION: "true"
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements-dev.txt
+
+      - name: Install backend test dependencies
+        run: python -m pip install -r backend/requirements-dev.txt
+
+      - name: Start isolated fault lab
+        run: |
+          python -m uvicorn ops_sandbox.app:app --host 127.0.0.1 --port 8092 >"${RUNNER_TEMP}/ops-sandbox.log" 2>&1 &
+          for attempt in {1..30}; do
+            if curl --fail --silent --show-error \
+              --header "Authorization: Bearer ${OPS_HEALTH_TOKEN}" \
+              http://127.0.0.1:8092/health >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat "${RUNNER_TEMP}/ops-sandbox.log"
+          exit 1
+
+      - name: Run all backend tests with coverage
+        working-directory: backend
+        run: pytest --cov=app --cov-report=term-missing --cov-fail-under=80
+
+      - name: Show fault-lab log on failure
+        if: failure()
+        run: cat "${RUNNER_TEMP}/ops-sandbox.log"
+
+  frontend:
+    name: Frontend tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+        with:
+          version: 11.20.0
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "24"
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: pnpm install --frozen-lockfile
+
+      - name: Test, type-check and build frontend
+        working-directory: frontend
+        run: |
+          pnpm test
+          pnpm typecheck
+          pnpm build
+
+  compose-smoke:
+    name: Compose smoke
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+
+      - name: Build, start and verify the complete stack
+        run: python scripts/quickstart.py up --workers 2 --timeout 240
+
+      - name: Show service logs on failure
+        if: failure()
+        run: docker compose logs --no-color --tail 200
+
+      - name: Stop stack and remove CI volumes
+        if: always()
+        run: python scripts/quickstart.py down --volumes
