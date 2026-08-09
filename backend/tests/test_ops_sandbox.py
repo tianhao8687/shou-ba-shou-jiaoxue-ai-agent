@@ -16,6 +16,7 @@ def test_http_lab_persists_idempotency_enforces_capability_and_hides_oracle(
     monkeypatch.setattr(sandbox, "DATABASE_PATH", tmp_path / "fault-lab.db")
     monkeypatch.setattr(sandbox, "FAULT_INJECTION_ENABLED", True)
     capability_secret = "harbor-local-capability-secret-change-me"
+    monkeypatch.setattr(sandbox, "CAPABILITY_SECRET", capability_secret)
     health_headers = {"Authorization": f"Bearer {sandbox.HEALTH_TOKEN}"}
     oracle_headers = {"Authorization": f"Bearer {sandbox.ORACLE_TOKEN}"}
     with TestClient(sandbox.app) as client:
