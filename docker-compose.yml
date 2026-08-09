@@ -1,3 +1,5 @@
+name: harbor-agentops
+
 x-agent-environment: &agent-environment
   APP_ENV: production-demo
   DEMO_MODE: "true"

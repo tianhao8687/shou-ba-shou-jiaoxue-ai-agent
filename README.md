@@ -86,6 +86,27 @@ V3.2 已在本机真实运行 `OpenVINO/Qwen3-Embedding-0.6B-int4-cw-ov`：last-
 
 ## 快速启动
 
+### 0. 一键启动并自动验收（推荐）
+
+只需要 Python 3.12+、Docker Desktop 或 Docker Engine。仓库根目录执行：
+
+```powershell
+python scripts/quickstart.py up
+```
+
+它会构建并启动 PostgreSQL、fault lab、API、3 个 worker、Nginx 和 Prometheus，等待服务就绪，再通过真实 HTTP 完成一次“创建缓存故障 → 入队 → worker 领取 → 检索与规划 → 受控执行 → 独立验证 → 证据检查”。成功后打开 <http://127.0.0.1:8080>。
+
+```powershell
+# 查看状态或重新执行验收
+python scripts/quickstart.py status
+python scripts/quickstart.py smoke
+
+# 停止服务；默认保留演示数据
+python scripts/quickstart.py down
+```
+
+默认使用无需权重的 fixture 模式。只有明确配置 `MODEL_ENABLED=true`、`MODEL_FIXTURE_MODE=false` 时才连接真实 Qwen。Docker 没有运行、端口被占用或验收失败时，启动器会返回非零退出码并打印容器状态与有界日志。
+
 ### 1. 可复现夹具模式
 
 复制 `.env.example` 为 `.env`。它已经是无需模型权重的可移植默认值：
@@ -270,6 +291,8 @@ python scripts/benchmark-api.py --requests 2000 --concurrency 64
 # 防止个人磁盘路径再次进入公开仓库
 python scripts/check-portability.py
 ```
+
+GitHub Actions 对每个 PR 和 `main` 提交执行四个稳定检查：`Quality gates`、`Backend tests`、`Frontend tests`、`Compose smoke`。最后一项调用同一个 `quickstart.py`，因此公开徽章和本地一键启动验证的是同一条交付路径。
 
 2026-08-08 最终验证：
 
