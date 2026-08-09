@@ -5,7 +5,7 @@
   "validation_scope": "local Windows workstation; SQLite API runtime; remote HTTP sealed fault lab; OpenVINO CPU model",
   "local_model": {
     "model_id": "OpenVINO/Qwen3-VL-8B-Instruct-int4-ov",
-    "model_path_on_validation_machine": "D:\\product-evidence-guard\\.models\\Qwen3-VL-8B-Instruct-int4-ov",
+    "model_path_on_validation_machine": "<validation-host>/models/Qwen3-VL-8B-Instruct-int4-ov",
     "gateway": "http://127.0.0.1:8091/v1",
     "device": "CPU",
     "quantization": "INT4",

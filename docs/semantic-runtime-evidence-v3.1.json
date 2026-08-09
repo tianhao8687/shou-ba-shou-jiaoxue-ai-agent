@@ -11,7 +11,7 @@
     "status": "ok",
     "loaded": true,
     "model": "OpenVINO/Qwen3-Embedding-0.6B-int4-cw-ov",
-    "model_path": "C:\\Users\\Admin\\Documents\\Codex\\2026-08-08\\new-chat-2\\work\\models\\Qwen3-Embedding-0.6B-int4-cw-ov",
+    "model_path": "<validation-host>/models/Qwen3-Embedding-0.6B-int4-cw-ov",
     "device": "CPU",
     "dimensions": 1024,
     "normalization": "l2",

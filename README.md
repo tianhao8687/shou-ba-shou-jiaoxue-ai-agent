@@ -88,7 +88,7 @@ V3.2 已在本机真实运行 `OpenVINO/Qwen3-Embedding-0.6B-int4-cw-ov`：last-
 
 ### 1. 可复现夹具模式
 
-复制 `.env.example` 为 `.env`，修改：
+复制 `.env.example` 为 `.env`。它已经是无需模型权重的可移植默认值：
 
 ```dotenv
 MODEL_ENABLED=false
@@ -120,16 +120,28 @@ pnpm dev
 
 ### 2. 本机真实 Qwen
 
-本次验证发现的本机资产：
+模型权重不会进入 Git。启动脚本按下面的优先级寻找运行资产：
 
-- 权重：`D:\product-evidence-guard\.models\Qwen3-VL-8B-Instruct-int4-ov`
-- Python：`D:\product-evidence-guard\.venv\Scripts\python.exe`
-- 设备：CPU / OpenVINO
+1. `-Python` / `-ModelPath` 显式参数；
+2. `HARBOR_PYTHON` / `HARBOR_LOCAL_MODEL_PATH` 环境变量；
+3. 当前仓库的 `.models/Qwen3-VL-8B-Instruct-int4-ov` 目录，以及 `PATH` 中的 `python`。
+
+相对路径始终按仓库根目录解析，因此可以从任意工作目录调用脚本。推荐把模型放进已被 Git 忽略的 `.models/`，把 OpenVINO 依赖安装到仓库自己的 `.venv`。
 
 启动：
 
 ```powershell
-.\scripts\start-local-model.ps1
+.\scripts\start-local-model.ps1 `
+  -Python ".venv\Scripts\python.exe" `
+  -ModelPath ".models\Qwen3-VL-8B-Instruct-int4-ov"
+```
+
+首次迁移到另一台机器时可先加入 `-ValidateOnly`，只校验解释器、模型目录和参数，不加载模型。Linux/macOS 可直接执行 `python local_model_service/server.py --model-path /path/to/model`。
+
+如果 Windows 执行策略阻止 `.ps1`，不要修改全局策略；只对本次进程执行：
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\start-local-model.ps1 -ValidateOnly
 ```
 
 `.env`：
@@ -147,17 +159,17 @@ MODEL_TIMEOUT_SECONDS=240
 
 ### 2.1 本机真实 Qwen3 Embedding
 
-本次验证资产：
-
-- 模型：`OpenVINO/Qwen3-Embedding-0.6B-int4-cw-ov`
-- 设备：CPU / OpenVINO / INT4
-- 输出：1024 维、last-token pooling、L2 normalized
+模型同样不进入 Git。脚本依次读取 `-ModelDir`、`HARBOR_LOCAL_EMBEDDING_PATH`，最后检查仓库内的 `.models/Qwen3-Embedding-0.6B-int4-cw-ov`。验证环境使用 CPU / OpenVINO / INT4，输出为 1024 维、last-token pooling、L2 normalized。
 
 启动：
 
 ```powershell
-.\scripts\start-local-embedding.ps1
+.\scripts\start-local-embedding.ps1 `
+  -Python ".venv\Scripts\python.exe" `
+  -ModelDir ".models\Qwen3-Embedding-0.6B-int4-cw-ov"
 ```
+
+也可先追加 `-ValidateOnly` 做无推理校验；Linux/macOS 可直接执行 `python local_embedding_service/server.py --model-dir /path/to/model`。
 
 `.env`：
 
@@ -172,9 +184,12 @@ EMBEDDING_API_KEY=harbor-local-embedding-token
 
 ### 3. Compose 基础设施
 
-先在宿主机启动生成模型和 Embedding 网关；如需 Compose 使用语义检索，再设置：
+Compose 默认使用夹具模型和词法特征基线，克隆后不依赖本机权重。如需切换到宿主机的真实生成模型和 Embedding 网关，先启动两个网关，再设置：
 
 ```powershell
+$env:MODEL_ENABLED="true"
+$env:MODEL_FIXTURE_MODE="false"
+$env:COMPOSE_MODEL_ENDPOINT="http://host.docker.internal:8091/v1"
 $env:EMBEDDING_BACKEND="openai-compatible"
 $env:COMPOSE_EMBEDDING_ENDPOINT="http://host.docker.internal:8093/v1"
 ```
@@ -216,7 +231,7 @@ Compose 包含 PostgreSQL/pgvector、持久 fault lab、API、独立 worker、�
 
 ```powershell
 # 后端测试镜像：38 项 + 覆盖率；生产镜像不携带 pytest
-# 以下命令从 harbor-agentops 根目录执行
+# 以下命令从仓库根目录执行
 docker build --target test -t harbor-agentops-backend-test -f backend/Dockerfile .
 docker run --rm --network harbor-agentops_default `
   -e HARBOR_TEST_POSTGRES_URL=postgresql://harbor:harbor-local-db@database:5432/harbor_test `
@@ -251,6 +266,9 @@ python scripts/validate-live-model.py --case-limit 2 --case-offset 0
 
 # 有界混合读压测
 python scripts/benchmark-api.py --requests 2000 --concurrency 64
+
+# 防止个人磁盘路径再次进入公开仓库
+python scripts/check-portability.py
 ```
 
 2026-08-08 最终验证：
