@@ -99,7 +99,7 @@
 ## 5. 验收命令
 
 ```powershell
-# 后端：从 harbor-agentops 根目录构建专用测试 stage
+# 后端：从仓库根目录构建专用测试 stage
 docker build --target test -t harbor-agentops-backend-test -f backend/Dockerfile .
 # 运行参数见 README；测试结果为 38/38
 
