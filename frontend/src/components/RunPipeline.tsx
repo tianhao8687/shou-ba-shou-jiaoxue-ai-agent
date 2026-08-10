@@ -57,7 +57,11 @@ function nodeDetail(run: RunRecord, nodeId: string, status: TraceStatus | 'pendi
 
 export function RunPipeline({ run }: { run: RunRecord }) {
   return (
-    <div className="pipeline-shell pipeline-v3" aria-label="Agent 十一阶段工作流">
+    <div
+      className="pipeline-shell pipeline-v3"
+      aria-label="Agent 十一阶段工作流"
+      tabIndex={0}
+    >
       {nodes.map((node, index) => {
         const Icon = node.icon
         const status = nodeStatus(run, node.id)

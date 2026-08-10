@@ -74,6 +74,9 @@ def build_agent_runtime(settings: Settings, *, worker_id: str | None = None) -> 
         health_token=settings.tool_sandbox_token,
         timeout_seconds=settings.tool_timeout_seconds,
         capabilities=capabilities,
+        prometheus_url=settings.prometheus_url,
+        prometheus_bearer_token=settings.prometheus_bearer_token,
+        prometheus_timeout_seconds=settings.prometheus_timeout_seconds,
     )
     engine = AgentEngine(
         store,
@@ -91,6 +94,7 @@ def build_agent_runtime(settings: Settings, *, worker_id: str | None = None) -> 
             if settings.model_enabled
             else "model-degraded"
         ),
+        production_observation_enabled=bool(settings.prometheus_url),
     )
     worker = AgentWorker(
         store,
@@ -98,6 +102,7 @@ def build_agent_runtime(settings: Settings, *, worker_id: str | None = None) -> 
         worker_id=worker_id or settings.worker_id,
         lease_seconds=settings.worker_lease_seconds,
         heartbeat_seconds=settings.worker_heartbeat_seconds,
+        heartbeat_failure_limit=settings.worker_heartbeat_failure_limit,
         poll_seconds=settings.worker_poll_seconds,
     )
     return AgentRuntime(

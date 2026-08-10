@@ -4,6 +4,7 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 .coverage
+coverage.json
 harbor.db
 *.sqlite3
 node_modules/

@@ -16,27 +16,44 @@ class AgentWorker:
         engine: AgentEngine,
         *,
         worker_id: str,
-        lease_seconds: int = 30,
-        heartbeat_seconds: int = 8,
+        lease_seconds: float = 30,
+        heartbeat_seconds: float = 8,
+        heartbeat_failure_limit: int = 2,
         poll_seconds: float = 0.25,
+        reconcile_seconds: float = 30.0,
     ) -> None:
         if heartbeat_seconds >= lease_seconds:
             raise ValueError("heartbeat interval must be shorter than the lease")
+        if heartbeat_failure_limit < 1:
+            raise ValueError("heartbeat failure limit must be positive")
         self.store = store
         self.engine = engine
         self.worker_id = worker_id
         self.lease_seconds = lease_seconds
         self.heartbeat_seconds = heartbeat_seconds
+        self.heartbeat_failure_limit = heartbeat_failure_limit
         self.poll_seconds = poll_seconds
+        self.reconcile_seconds = max(1.0, reconcile_seconds)
+        self._next_reconcile_at = 0.0
         self._stop = threading.Event()
         self._thread: threading.Thread | None = None
         self.processed_jobs = 0
         self.recovered_jobs = 0
         self.failed_jobs = 0
         self.lease_losses = 0
+        self.reconciled_jobs = 0
         self.last_error: str | None = None
 
     def run_once(self) -> bool:
+        monotonic_now = time.monotonic()
+        if monotonic_now >= self._next_reconcile_at:
+            self._next_reconcile_at = monotonic_now + self.reconcile_seconds
+            try:
+                self.reconciled_jobs += len(self.store.reconcile_orphaned_runs())
+            except Exception as exc:
+                # Existing jobs must remain processable even if a repair scan has a
+                # transient database failure. The next bounded interval retries it.
+                self.last_error = f"reconcile {type(exc).__name__}: {exc}"
         job = self.store.claim_job(self.worker_id, self.lease_seconds)
         if job is None:
             return False
@@ -47,17 +64,22 @@ class AgentWorker:
         lease_lost = threading.Event()
 
         def heartbeat() -> None:
+            consecutive_failures = 0
             while not heartbeat_stop.wait(self.heartbeat_seconds):
                 try:
                     self.store.heartbeat_job(
                         job.id, self.worker_id, job.fencing_token, self.lease_seconds
                     )
+                    consecutive_failures = 0
                 except LeaseLostError:
-                    self.lease_losses += 1
                     lease_lost.set()
                     return
                 except Exception as exc:  # A transient heartbeat error must not silently extend ownership.
+                    consecutive_failures += 1
                     self.last_error = f"heartbeat {type(exc).__name__}: {exc}"
+                    if consecutive_failures >= self.heartbeat_failure_limit:
+                        lease_lost.set()
+                        return
 
         heartbeat_thread = threading.Thread(
             target=heartbeat, name=f"{self.worker_id}-heartbeat", daemon=True
@@ -71,6 +93,7 @@ class AgentWorker:
                     worker_id=self.worker_id,
                     fencing_token=job.fencing_token,
                     recovered=recovered,
+                    lost_event=lease_lost,
                 ),
             )
             if lease_lost.is_set():
@@ -142,6 +165,6 @@ class AgentWorker:
             "recovered_jobs": self.recovered_jobs,
             "failed_jobs": self.failed_jobs,
             "lease_losses": self.lease_losses,
+            "reconciled_jobs": self.reconciled_jobs,
             "last_error": self.last_error,
         }
-

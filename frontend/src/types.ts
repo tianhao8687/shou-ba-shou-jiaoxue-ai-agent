@@ -100,6 +100,7 @@ export interface Observation {
   data: Record<string, unknown>
   captured_at: string
   transport: string
+  source_uri?: string | null
 }
 
 export interface ToolResult {
@@ -297,6 +298,7 @@ export interface EvaluationCaseResult {
 
 export interface EvaluationReport {
   id: string
+  tenant_id: string
   created_at: string
   score: number
   task_success_rate: number
@@ -336,10 +338,13 @@ export interface ToolSpec {
 
 export interface HealthResponse {
   status: string
+  ready: boolean
+  purpose: 'runtime-status' | 'readiness'
   app: string
   version: string
   mode: string
   database: string
+  database_status: Record<string, unknown> & { status?: string; detail?: string }
   vector_backend: string
   vector_quality: 'semantic' | 'lexical-feature-baseline' | 'unavailable'
   knowledge_documents: number
@@ -347,6 +352,7 @@ export interface HealthResponse {
   model_runtime: Record<string, unknown> & { status?: string; provider?: string; model?: string; loaded?: boolean; device?: string | null; detail?: string }
   tool_runtime: Record<string, unknown> & { status?: string; mode?: string; detail?: string }
   worker_runtime: Record<string, unknown> & { status?: string; worker_id?: string; running?: boolean; claims?: number; recoveries?: number }
+  readiness_checks: Record<string, boolean>
 }
 
 export interface DrillTemplate {

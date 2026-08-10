@@ -49,7 +49,7 @@ export const api = {
   login: (username: string, password: string) =>
     request<AuthResponse>('/api/auth/login', { method: 'POST', body: JSON.stringify({ username, password }) }, false),
   me: () => request<UserIdentity>('/api/auth/me'),
-  health: () => request<HealthResponse>('/api/health', undefined, false),
+  health: () => request<HealthResponse>('/api/status', undefined, false),
   drills: () => request<DrillTemplate[]>('/api/drills'),
   createDrill: (faultKind: string) =>
     request<DrillDescriptor>('/api/drills', { method: 'POST', body: JSON.stringify({ fault_kind: faultKind }) }),

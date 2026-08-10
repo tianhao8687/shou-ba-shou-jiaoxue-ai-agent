@@ -3,8 +3,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime
 import json
+import threading
 import time
-from typing import Any
+from typing import Any, Callable
 from uuid import uuid4
 
 from .model_adapter import ModelAdapter
@@ -30,7 +31,7 @@ from .schemas import (
     utc_now,
 )
 from .security import AuthorizationError, require_all_roles
-from .store import ConcurrencyError, Store
+from .store import ConcurrencyError, LeaseLostError, Store
 from .tools import TOOL_REGISTRY, ToolExecutor
 
 
@@ -55,6 +56,13 @@ class LeaseContext:
     worker_id: str
     fencing_token: int
     recovered: bool = False
+    lost_event: threading.Event | None = None
+
+    def assert_active(self) -> None:
+        if self.lost_event is not None and self.lost_event.is_set():
+            raise LeaseLostError(
+                f"job {self.job_id} lease was invalidated during execution"
+            )
 
 
 NODE_LABELS = {
@@ -84,6 +92,7 @@ class AgentEngine:
         high_risk_approval_quorum: int = 2,
         enforce_requester_separation: bool = True,
         run_mode: str = "live-model",
+        production_observation_enabled: bool = False,
     ) -> None:
         self.store = store
         self.retriever = retriever
@@ -98,6 +107,7 @@ class AgentEngine:
         self.high_risk_approval_quorum = high_risk_approval_quorum
         self.enforce_requester_separation = enforce_requester_separation
         self.run_mode = run_mode
+        self.production_observation_enabled = production_observation_enabled
 
     def start(
         self,
@@ -127,11 +137,11 @@ class AgentEngine:
                 )
             ],
         )
-        self.store.save_run(run)
-        self.store.enqueue_job(run.id, "start")
+        self.store.save_run_and_enqueue(run, "start")
         return run
 
     def process(self, run_id: str, lease: LeaseContext) -> RunRecord:
+        self._assert_lease(lease)
         run = self._require_run(run_id)
         if run.status in {RunStatus.COMPLETED, RunStatus.CANCELLED, RunStatus.HANDED_OFF}:
             return run
@@ -283,8 +293,7 @@ class AgentEngine:
                     "required_approvals": run.approval.required_approvals,
                 },
             )
-            self.store.save_run(run)
-            self.store.enqueue_job(run.id, "resume")
+            self.store.save_run_and_enqueue(run, "resume")
             return run
         if decision != "deny":
             raise ValueError("decision must be approve or deny")
@@ -343,11 +352,11 @@ class AgentEngine:
         run.error_detail = None
         # Re-enter the failed node. Tool idempotency prevents repeated side effects.
         self._audit(run, user.username, "run.retry_queued", "失败节点已使用原幂等上下文重新入队。")
-        self.store.save_run(run)
-        self.store.enqueue_job(run.id, "retry")
+        self.store.save_run_and_enqueue(run, "retry")
         return run
 
     def _run_node(self, run: RunRecord, node: str, handler, lease: LeaseContext) -> None:
+        self._assert_lease(lease)
         started = time.perf_counter()
         trace = TraceStep(
             id=f"TR-{uuid4().hex[:10].upper()}",
@@ -358,6 +367,7 @@ class AgentEngine:
         )
         try:
             summary, output = handler(run, lease)
+            self._assert_lease(lease)
             trace.status = (
                 TraceStatus.WAITING
                 if run.status == RunStatus.AWAITING_APPROVAL
@@ -367,6 +377,10 @@ class AgentEngine:
             )
             trace.summary = summary
             trace.output_preview = output[:500]
+        except LeaseLostError:
+            # Ownership has moved to a newer fencing token. Do not persist this
+            # worker's in-memory trace or turn a lease loss into a business failure.
+            raise
         except Exception as exc:
             trace.status = TraceStatus.FAILED
             trace.summary = f"{type(exc).__name__}: {str(exc)[:240]}"
@@ -374,10 +388,9 @@ class AgentEngine:
             run.error_code = type(exc).__name__.upper()
             run.error_detail = str(exc)[:1000]
             self._audit(run, "system", "node.failed", trace.summary, {"node": node})
-        finally:
-            trace.duration_ms = max(1, round((time.perf_counter() - started) * 1000))
-            run.traces.append(trace)
-            self._checkpoint(run, lease)
+        trace.duration_ms = max(1, round((time.perf_counter() - started) * 1000))
+        run.traces.append(trace)
+        self._checkpoint(run, lease)
 
     def _node_intake(self, run: RunRecord, lease: LeaseContext) -> tuple[str, str]:
         del lease
@@ -402,11 +415,17 @@ class AgentEngine:
 
     def _node_investigate(self, run: RunRecord, lease: LeaseContext) -> tuple[str, str]:
         del lease
-        if not run.incident.experiment_id:
+        if (
+            not run.incident.experiment_id
+            and (
+                run.incident.environment not in {"production", "staging"}
+                or not self.production_observation_enabled
+            )
+        ):
             run.status = RunStatus.HANDED_OFF
             run.current_node = "handed_off"
-            run.resolution = "事件没有绑定受控工具目标；当前交付不伪造生产连接，已转人工接入观测源。"
-            return run.resolution, "missing experiment binding"
+            run.resolution = "事件没有绑定受控实验，也没有配置生产只读观测源；已转人工接入真实遥测。"
+            return run.resolution, "missing observation provider"
         proposal_plan = self._baseline_investigation_plan(run)
         allowed = {source.chunk_id for source in run.sources} | {"incident:input"}
         compiled, decision = self.policy_compiler.compile(
@@ -429,6 +448,39 @@ class AgentEngine:
     @staticmethod
     def _baseline_investigation_plan(run: RunRecord) -> list[PlanStep]:
         """Always collect the minimum safe telemetry before asking an LLM to diagnose."""
+
+        if not run.incident.experiment_id:
+            return [
+                PlanStep(
+                    id="step-observe-prometheus-slo",
+                    title="读取生产 SLO 指标",
+                    objective="通过只读 Prometheus HTTP API 建立请求量、错误率、延迟和存活基线。",
+                    tool_name="query_prometheus_slo",
+                    tool_input={
+                        "service": run.incident.service,
+                        "environment": run.incident.environment,
+                        "window_minutes": 15,
+                    },
+                    evidence_ids=[
+                        "incident:input",
+                        *[source.chunk_id for source in run.sources[:2]],
+                    ],
+                    success_criteria=[
+                        Check(
+                            field="__result_status__",
+                            operator="eq",
+                            value="succeeded",
+                            description="Prometheus 查询通道必须返回明确成功状态",
+                        )
+                    ],
+                    rollback=RollbackPlan(
+                        mode="manual",
+                        rationale="只读查询没有业务副作用；失败时由值班人员检查 Prometheus 标签和访问策略。",
+                    ),
+                    risk=RiskLevel.LOW,
+                    rationale="生产事件先以服务端固定 PromQL 模板读取真实指标，不接受模型生成任意查询。",
+                )
+            ]
 
         target = {
             "experiment_id": run.incident.experiment_id,
@@ -499,6 +551,9 @@ class AgentEngine:
                 actor=SYSTEM_AGENT,
                 attempt=run.attempt,
                 previous_results=run.tool_results,
+                job_id=lease.job_id,
+                fencing_token=lease.fencing_token,
+                lease_guard=self._lease_guard(lease),
             )
             run.tool_results.append(result)
             if result.status not in {"succeeded", "skipped"}:
@@ -514,25 +569,39 @@ class AgentEngine:
                 summary=result.summary,
                 data=result.output,
                 transport=result.transport,
+                source_uri=result.output.get("source_uri"),
             )
             run.observations.append(observation)
             self._checkpoint(run, lease)
+            if (
+                step.tool_name == "query_prometheus_slo"
+                and result.output.get("sample_count") == 0
+            ):
+                run.status = RunStatus.HANDED_OFF
+                run.current_node = "handed_off"
+                run.resolution = (
+                    "Prometheus 查询成功，但目标服务标签没有返回可归因指标；"
+                    "未调用模型、未执行写动作，已转人工核对指标标签与采集状态。"
+                )
+                self._checkpoint(run, lease)
+                return run.resolution, "empty Prometheus observation"
         run.current_node = "diagnose"
         return f"收集到 {len(run.observations)} 条独立工具观测。", ", ".join(item.id for item in run.observations)
 
     def _node_diagnose(self, run: RunRecord, lease: LeaseContext) -> tuple[str, str]:
-        del lease
         planning_sources = [
             source
             for source in run.sources
             if source.retrieval_channel in {"routed", "pinned"}
         ]
+        self._assert_lease(lease)
         proposal, invocation = self.model_adapter.propose(
             phase="remediation",
             incident=run.incident,
             sources=planning_sources,
             observations=run.observations,
         )
+        self._assert_lease(lease)
         run.model_calls.append(invocation)
         run.model_proposal = proposal
         run.diagnosis = proposal.diagnosis
@@ -540,6 +609,15 @@ class AgentEngine:
         run.plan = proposal.plan
         if invocation.status == "fallback":
             run.run_mode = "model-degraded"
+        if not run.incident.experiment_id:
+            run.plan = []
+            run.status = RunStatus.HANDED_OFF
+            run.current_node = "handed_off"
+            run.resolution = (
+                "已完成生产 Prometheus 只读取证和模型诊断；当前未配置生产写连接器，"
+                "因此不会把实验室动作映射到真实系统，已携带证据转人工。"
+            )
+            return run.resolution, proposal.diagnosis
         if proposal.needs_handoff:
             run.status = RunStatus.HANDED_OFF
             run.current_node = "handed_off"
@@ -667,6 +745,9 @@ class AgentEngine:
                 actor=actor,
                 attempt=run.attempt,
                 previous_results=run.tool_results,
+                job_id=lease.job_id,
+                fencing_token=lease.fencing_token,
+                lease_guard=self._lease_guard(lease),
             )
             run.tool_results.append(result)
             self._audit(
@@ -768,6 +849,9 @@ class AgentEngine:
             actor=actor,
             attempt=run.attempt,
             previous_results=run.tool_results,
+            job_id=lease.job_id,
+            fencing_token=lease.fencing_token,
+            lease_guard=self._lease_guard(lease),
         )
         run.tool_results.append(rollback_result)
         self._audit(
@@ -825,6 +909,9 @@ class AgentEngine:
             actor=SYSTEM_AGENT,
             attempt=run.attempt,
             previous_results=run.tool_results,
+            job_id=lease.job_id,
+            fencing_token=lease.fencing_token,
+            lease_guard=self._lease_guard(lease),
         )
         run.tool_results.append(verify_result)
         actual = verify_result.output.get("replicas")
@@ -905,6 +992,9 @@ class AgentEngine:
                 actor=SYSTEM_AGENT,
                 attempt=run.attempt,
                 previous_results=run.tool_results,
+                job_id=lease.job_id,
+                fencing_token=lease.fencing_token,
+                lease_guard=self._lease_guard(lease),
             )
             run.tool_results.append(verify_result)
             context = {**action_result.output, **verify_result.output}
@@ -982,9 +1072,20 @@ class AgentEngine:
         return "运行完成并归档。", run.resolution
 
     def _checkpoint(self, run: RunRecord, lease: LeaseContext) -> RunRecord:
+        self._assert_lease(lease)
         return self.store.save_run_with_lease(
             run, lease.job_id, lease.worker_id, lease.fencing_token
         )
+
+    def _assert_lease(self, lease: LeaseContext) -> None:
+        lease.assert_active()
+        self.store.assert_job_lease(
+            lease.job_id, lease.worker_id, lease.fencing_token
+        )
+        lease.assert_active()
+
+    def _lease_guard(self, lease: LeaseContext) -> Callable[[], None]:
+        return lambda: self._assert_lease(lease)
 
     def _require_run(self, run_id: str) -> RunRecord:
         run = self.store.get_run(run_id)

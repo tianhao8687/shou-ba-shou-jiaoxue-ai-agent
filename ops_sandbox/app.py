@@ -91,6 +91,8 @@ def _initialize() -> None:
                 status TEXT NOT NULL,
                 response_json TEXT NOT NULL,
                 capability_jti TEXT NOT NULL,
+                job_id TEXT,
+                fencing_token INTEGER,
                 created_at TEXT NOT NULL
             );
             CREATE TABLE IF NOT EXISTS capability_usage (
@@ -99,8 +101,25 @@ def _initialize() -> None:
                 max_uses INTEGER NOT NULL,
                 last_used_at TEXT NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS tool_fencing (
+                job_id TEXT PRIMARY KEY,
+                max_token INTEGER NOT NULL,
+                updated_at TEXT NOT NULL
+            );
             """
         )
+        # SQLite does not retrofit columns in CREATE TABLE IF NOT EXISTS. Keep
+        # existing demo volumes portable across the v3.3 schema upgrade.
+        idempotency_columns = {
+            row["name"]
+            for row in connection.execute("PRAGMA table_info(tool_idempotency)").fetchall()
+        }
+        if "job_id" not in idempotency_columns:
+            connection.execute("ALTER TABLE tool_idempotency ADD COLUMN job_id TEXT")
+        if "fencing_token" not in idempotency_columns:
+            connection.execute(
+                "ALTER TABLE tool_idempotency ADD COLUMN fencing_token INTEGER"
+            )
 
 
 def _bearer(value: str | None) -> str:
@@ -225,7 +244,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Harbor Sealed Fault Lab",
-    version="3.2.0",
+    version="3.3.0",
     description="独立故障状态、隐藏真值、签名能力与持久幂等工具边界。",
     lifespan=lifespan,
 )
@@ -321,6 +340,8 @@ def invoke_tool(
     authorization: str | None = Header(default=None),
     x_idempotency_key: str | None = Header(default=None),
     x_harbor_control_tenant: str = Header(...),
+    x_harbor_job_id: str = Header(...),
+    x_harbor_fencing_token: int = Header(...),
     x_test_drop_response: str | None = Header(default=None),
 ) -> dict[str, Any]:
     spec = TOOL_REGISTRY.get(tool_name)
@@ -328,6 +349,10 @@ def invoke_tool(
         raise HTTPException(status_code=404, detail="tool not found")
     if not x_idempotency_key or len(x_idempotency_key) != 64:
         raise HTTPException(status_code=422, detail="a 64-character X-Idempotency-Key is required")
+    if not x_harbor_job_id.strip() or len(x_harbor_job_id) > 100:
+        raise HTTPException(status_code=422, detail="a valid X-Harbor-Job-Id is required")
+    if x_harbor_fencing_token < 1:
+        raise HTTPException(status_code=422, detail="X-Harbor-Fencing-Token must be positive")
     try:
         validated = spec.input_model.model_validate(payload).model_dump()
     except ValidationError as exc:
@@ -339,6 +364,8 @@ def invoke_tool(
             tool_name=tool_name,
             payload=validated,
             tenant_id=x_harbor_control_tenant,
+            job_id=x_harbor_job_id,
+            fencing_token=x_harbor_fencing_token,
         )
     except AuthenticationError as exc:
         CAPABILITY_DENIALS.labels(reason="authentication").inc()
@@ -351,6 +378,27 @@ def invoke_tool(
     now = datetime.now(timezone.utc).isoformat()
     with _connect() as connection:
         connection.execute("BEGIN IMMEDIATE")
+        fence = connection.execute(
+            "SELECT max_token FROM tool_fencing WHERE job_id=?", (x_harbor_job_id,)
+        ).fetchone()
+        if fence is not None and x_harbor_fencing_token < int(fence["max_token"]):
+            CAPABILITY_DENIALS.labels(reason="stale_fencing_token").inc()
+            raise HTTPException(
+                status_code=409,
+                detail=(
+                    f"stale fencing token {x_harbor_fencing_token}; "
+                    f"latest is {int(fence['max_token'])}"
+                ),
+            )
+        connection.execute(
+            """
+            INSERT INTO tool_fencing(job_id,max_token,updated_at) VALUES (?,?,?)
+            ON CONFLICT(job_id) DO UPDATE SET
+                max_token=MAX(tool_fencing.max_token,excluded.max_token),
+                updated_at=excluded.updated_at
+            """,
+            (x_harbor_job_id, x_harbor_fencing_token, now),
+        )
         prior = connection.execute(
             "SELECT payload_hash,tool_name,response_json FROM tool_idempotency WHERE idempotency_key=?",
             (x_idempotency_key,),
@@ -395,8 +443,9 @@ def invoke_tool(
         connection.execute(
             """
             INSERT INTO tool_idempotency(
-                idempotency_key,payload_hash,tool_name,status,response_json,capability_jti,created_at
-            ) VALUES (?,?,?,?,?,?,?)
+                idempotency_key,payload_hash,tool_name,status,response_json,capability_jti,
+                job_id,fencing_token,created_at
+            ) VALUES (?,?,?,?,?,?,?,?,?)
             """,
             (
                 x_idempotency_key,
@@ -405,6 +454,8 @@ def invoke_tool(
                 status,
                 json.dumps(response, ensure_ascii=False),
                 claims["jti"],
+                x_harbor_job_id,
+                x_harbor_fencing_token,
                 now,
             ),
         )
