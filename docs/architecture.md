@@ -1,4 +1,4 @@
-# Harbor AgentOps 3.4：架构、信任边界与底层原理
+# Harbor AgentOps 3.5：架构、信任边界与底层原理
 
 ## 1. 设计目标
 
@@ -348,7 +348,21 @@ fault lab 在 `BEGIN IMMEDIATE` 事务里：
 
 报告包含 case 数、通过数、攻击面分类、unsafe-action rate 和 95% Wilson 区间。105/105 fixture 的区间为 96.47%–100%，因此即使样本全过也不声称总体 100%。
 
-## 14. 可观测与部署
+## 14. 外部数据验证
+
+内部密封评测解决“可重复验证状态机和安全不变量”，外部数据解决“系统遇到作者没有生成的数据会怎样”。两者是互补证据，不能相互替代。
+
+外部数据入口由 `manifest-v1.json` 控制。清单为每个第三方文件记录发布者、40 位提交、HTTPS URL、精确大小、SHA-256、许可证和数据角色；下载器只访问允许域名，限制响应大小，校验最终重定向目标，原子落盘。任何字节漂移都会 fail closed。原始数据保存在 Git 忽略的 cache，API 和前端只发布聚合结果与 provenance receipt。
+
+三个评测路径采用不同隔离单位：
+
+- Loghub BGL 以固定哈希将日志行分成 fit、tune、holdout；推理器拿不到 Label、EventId 或 EventTemplate；
+- NAB 以完整时间序列为隔离单位，两条序列校准 causal rolling median/MAD 检测器，另外两条先产出 alert 再读取官方 anomaly windows；
+- AIOps 2025 的轻量输入只有时间窗。全部决策冻结后才打开 ground truth，检查 handoff、零写操作和 oracle 泄漏，明确不计算 RCA accuracy。
+
+机器证据经 `/api/evaluations/external/latest` 只读公开。前端把它与 105 项内部 fixture 分栏显示，同时展示 21.85% 的 NAB alert precision 和 0% 外部自动故障覆盖，防止“总门槛通过”掩盖业务缺口。
+
+## 15. 可观测与部署
 
 Run 内 Trace 记录每节点输入/输出摘要、耗时和状态；Audit 记录租户、登录主体、审批票、工具、capability JTI、幂等键、lease 和 rollback。Prometheus 暴露运行、节点、模型、工具、审批、并发冲突与 fault lab 指标。
 
@@ -367,7 +381,7 @@ kind staging 作为第二个部署拓扑：单控制面集群、`harbor-sandbox`
 
 数据库使用三版 `schema_migrations`。SQLite 以 `BEGIN IMMEDIATE` 锁定升级；PostgreSQL 以 transaction advisory lock 协调多个启动副本。已应用 migration 的 SHA-256 不一致或数据库版本高于程序支持版本都会拒绝启动。Schema migration 与 pgvector 派生索引使用不同的数据库级锁键，避免把两种职责混成一个全局互斥区。外置 Worker 每 5 秒写独立进程心跳，API 用 TTL 展示实际 fleet；Job lease 仍单独决定执行所有权。
 
-V3.4 的健康语义分成三层：`/api/health` 只回答进程是否活着，`/api/ready` 决定是否可接流量，`/api/status` 返回完整诊断。实测停止 Prometheus 时 health 保持 200、ready 变为 503，恢复后 ready 回到 200；fixture 模式明确标记 `production_capable=false`，真实模型只有完成加载才算 ready。数据库状态同时报告 migration 版本，Worker 状态报告有新鲜心跳的真实副本。
+V3.5 的健康语义分成三层：`/api/health` 只回答进程是否活着，`/api/ready` 决定是否可接流量，`/api/status` 返回完整诊断。实测停止 Prometheus 时 health 保持 200、ready 变为 503，恢复后 ready 回到 200；fixture 模式明确标记 `production_capable=false`，真实模型只有完成加载才算 ready。数据库状态同时报告 migration 版本，Worker 状态报告有新鲜心跳的真实副本。
 
 前端发布门不是截图验收。Playwright 在桌面 Chromium 与 Pixel 7 上执行登录、键盘焦点、响应式、生产只读取证、低风险自动闭环和高风险双主体 quorum，并在关键状态运行 Axe WCAG 2 A/AA 检查。
 
@@ -375,13 +389,13 @@ V3.2 的 3 Worker、真实 Qwen 与真实 Embedding 验证仍作为历史证据�
 
 四类自研运行容器采用非 root 用户、只读根文件系统、`cap_drop: ALL`、`no-new-privileges` 和显式可写 `/tmp`；fault lab 只有 `/data` 持久卷可写。生产 Python 镜像不安装 pytest，测试依赖位于单独 stage；基础镜像固定 digest。Nginx 增加 CSP/COOP/CORP，React Job 数据按 `run_id` 隔离，防止异步旧响应把另一运行的 lease/fencing 信息渲染到当前页面。
 
-## 15. 为什么不用 Elasticsearch 或 Electron
+## 16. 为什么不用 Elasticsearch 或 Electron
 
 当前知识库和测试语料规模不需要独立搜索集群。BM25 可在应用内复现，结构化状态与审计进入 PostgreSQL，向量进入 pgvector，少一套双写和运维故障域。若未来进入亿级日志全文检索，再根据容量和查询需求评估专用搜索系统。
 
 控制台是浏览器 Web 应用。Electron 会增加桌面运行时、升级链和攻击面，却没有离线桌面 API 需求，所以不引入。
 
-## 16. 到真实生产仍差什么
+## 17. 到真实生产仍差什么
 
 - 企业 OIDC/SSO、SCIM/JIT、离职回收、值班排班与组织目录；当前租户隔离和双人审批使用演示身份，不等于企业身份集成；
 - mTLS、网络策略、Vault/KMS、secret rotation、DLP 和 WORM audit；

@@ -54,13 +54,13 @@ def test_health_exposes_truthful_vector_and_worker_contract(client: TestClient) 
     assert liveness.json() == {
         "status": "alive",
         "app": "Harbor AgentOps",
-        "version": "3.4.0",
+        "version": "3.5.0",
     }
 
     response = client.get("/api/status")
     assert response.status_code == 200
     payload = response.json()
-    assert payload["version"] == "3.4.0"
+    assert payload["version"] == "3.5.0"
     assert payload["ready"] is True
     assert payload["vector_quality"] == "lexical-feature-baseline"
     assert "feature-hashing" in payload["vector_backend"]
@@ -395,6 +395,22 @@ def test_sealed_evaluation_reports_real_cases_not_canned_scenario_scores(
     assert report["unsafe_action_rate"] == 0.0
     assert report["capability_enforcement"] == 100.0
     assert all("fault_kind" in case for case in report["cases"])
+
+
+def test_external_validation_endpoint_exposes_pinned_evidence_without_production_claim(
+    client: TestClient, viewer_headers: dict[str, str]
+) -> None:
+    response = client.get(
+        "/api/evaluations/external/latest", headers=viewer_headers
+    )
+    assert response.status_code == 200, response.text
+    report = response.json()
+    assert report["schema"] == "harbor-external-validation-evidence/v1"
+    assert report["sources_verified"] == 3
+    assert report["source_files_verified"] == 8
+    assert report["aggregate"]["all_source_hashes_verified"] is True
+    assert report["aggregate"]["autonomous_taxonomy_coverage"] == 0
+    assert report["production_claim"] is False
 
 
 def test_evaluation_reports_are_isolated_by_tenant(

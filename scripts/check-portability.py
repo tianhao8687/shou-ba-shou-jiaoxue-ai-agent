@@ -12,6 +12,7 @@ SKIPPED_DIRECTORIES = {
     ".runtime",
     ".venv",
     "__pycache__",
+    "artifacts",
     "dist",
     "node_modules",
 }

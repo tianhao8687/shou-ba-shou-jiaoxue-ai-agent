@@ -4,6 +4,7 @@ import type {
   DrillDescriptor,
   DrillTemplate,
   EvaluationReport,
+  ExternalValidationReport,
   EvidenceBundle,
   HealthResponse,
   Incident,
@@ -61,6 +62,7 @@ export const api = {
   knowledge: () => request<KnowledgeDoc[]>('/api/knowledge'),
   tools: () => request<ToolSpec[]>('/api/tools'),
   latestEvaluation: () => request<EvaluationReport | null>('/api/evaluations/latest'),
+  latestExternalValidation: () => request<ExternalValidationReport | null>('/api/evaluations/external/latest'),
   startRun: (incident: Incident) =>
     request<RunRecord>('/api/runs', { method: 'POST', body: JSON.stringify({ incident }) }),
   decide: (runId: string, decision: 'approve' | 'deny', note: string, expectedVersion: number) =>

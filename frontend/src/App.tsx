@@ -7,6 +7,7 @@ import type {
   DashboardMetrics,
   DrillTemplate,
   EvaluationReport,
+  ExternalValidationReport,
   HealthResponse,
   Incident,
   JobRecord,
@@ -26,7 +27,7 @@ import { RunView } from './views/RunView'
 const pageTitles: Record<ViewName, string> = {
   overview: '运行总览',
   run: '运行控制台',
-  evaluations: '密封评测',
+  evaluations: '验证实验室',
   knowledge: '知识与检索',
   policy: '策略与权限',
 }
@@ -48,6 +49,7 @@ export default function App() {
   const [drills, setDrills] = useState<DrillTemplate[]>([])
   const [metrics, setMetrics] = useState<DashboardMetrics>()
   const [evaluation, setEvaluation] = useState<EvaluationReport | null>(null)
+  const [externalValidation, setExternalValidation] = useState<ExternalValidationReport | null>(null)
   const [health, setHealth] = useState<HealthResponse>()
   const [documents, setDocuments] = useState<KnowledgeDoc[]>([])
   const [tools, setTools] = useState<ToolSpec[]>([])
@@ -64,6 +66,7 @@ export default function App() {
     setDrills([])
     setMetrics(undefined)
     setEvaluation(null)
+    setExternalValidation(null)
     setDocuments([])
     setTools([])
     setSelectedRunId(undefined)
@@ -86,12 +89,13 @@ export default function App() {
   }, [logout])
 
   const loadProtected = useCallback(async () => {
-    const [nextRuns, nextMetrics, nextEvaluation, nextDocuments, nextTools, nextDrills] = await Promise.all([
-      api.runs(), api.metrics(), api.latestEvaluation(), api.knowledge(), api.tools(), api.drills(),
+    const [nextRuns, nextMetrics, nextEvaluation, nextExternalValidation, nextDocuments, nextTools, nextDrills] = await Promise.all([
+      api.runs(), api.metrics(), api.latestEvaluation(), api.latestExternalValidation(), api.knowledge(), api.tools(), api.drills(),
     ])
     setRuns(nextRuns)
     setMetrics(nextMetrics)
     setEvaluation(nextEvaluation)
+    setExternalValidation(nextExternalValidation)
     setDocuments(nextDocuments)
     setTools(nextTools)
     setDrills(nextDrills)
@@ -301,7 +305,7 @@ export default function App() {
           {error && <div className="inline-alert" role="alert"><strong>操作未完成</strong><span>{error}</span><button type="button" onClick={() => setError(undefined)}>关闭</button></div>}
           {view === 'overview' && <OverviewView metrics={metrics} runs={runs} health={health} onOpenRun={openRun} onNavigate={setView} />}
           {view === 'run' && <RunView run={selectedRun} jobs={selectedJobs} metrics={metrics} health={health} user={user} busy={busy} onDecision={decide} onRetry={retry} onCancel={cancel} onDownloadEvidence={downloadEvidence} onRefresh={refreshOperations} onCreate={() => setComposerOpen(true)} />}
-          {view === 'evaluations' && <EvaluationsView report={evaluation ?? undefined} user={user} busy={busy} onRun={runEvaluation} />}
+          {view === 'evaluations' && <EvaluationsView report={evaluation ?? undefined} externalReport={externalValidation ?? undefined} user={user} busy={busy} onRun={runEvaluation} />}
           {view === 'knowledge' && <KnowledgeView documents={documents} health={health} />}
           {view === 'policy' && <PolicyView tools={tools} user={user} />}
         </main>

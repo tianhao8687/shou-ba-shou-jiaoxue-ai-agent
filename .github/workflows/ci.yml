@@ -37,6 +37,35 @@ jobs:
           docker compose config --quiet
           docker compose -f docker-compose.yml -f kubernetes/kind/docker-compose.kind.yml config --quiet
 
+  external-validation:
+    name: Pinned external data validation
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install runtime dependencies
+        run: python -m pip install -r backend/requirements.txt
+
+      - name: Fetch pinned third-party bytes and enforce declared gates
+        run: >-
+          python scripts/run-external-validation.py
+          --output "${RUNNER_TEMP}/external-validation-online.json"
+
+      - name: Prove the verified cache is reproducible without network
+        run: >-
+          python scripts/run-external-validation.py
+          --offline
+          --output "${RUNNER_TEMP}/external-validation-offline.json"
+
   backend:
     name: Backend tests
     runs-on: ubuntu-24.04
