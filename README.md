@@ -91,6 +91,7 @@ V3.3 已在本机真实运行 `OpenVINO/Qwen3-Embedding-0.6B-int4-cw-ov`：last-
 - Playwright 在桌面 Chromium 与 Pixel 7 两种视口验证登录、键盘焦点、响应式、Prometheus 只读取证、低风险闭环和高风险 2/2 审批；Axe WCAG 2 A/AA 门禁同步执行。
 - 当前容器回归使用 2 个独立 Worker；两者都处理过真实 Job。CI 同样启动 2 Worker，并执行 HTTP smoke 与浏览器 E2E。
 - kind staging connector 使用命名空间 ServiceAccount；集群只允许读取命名工作负载并更新 `deployments/scale`，拒绝 Secret、Pod 创建/exec、模板更新和 RBAC 修改。
+- API / Worker 通过 kind 的私有 Docker network 访问 control-plane NodePort；宿主机验证端口只监听 `127.0.0.1`，不为 Linux 兼容性把 connector 暴露到局域网。
 - staging 真实链路已完成“1 副本调查 → medium 风险审批 → 4/4 ready → 独立验证 → 实验复位”；connector 以 Kubernetes Lease 保存最大 fencing token 和幂等结果。
 - 数据库使用带 SHA-256 漂移检查的 3 版 migration；PostgreSQL advisory lock 防多个 API / Worker 同时升级。
 - pgvector 冷启动把扩展、派生表、知识种子与 HNSW 初始化放在另一把事务级 advisory lock 内；并发回归会让两个初始化线程同时起跑，防止新库上的 `CREATE EXTENSION` 竞态。
