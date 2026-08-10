@@ -8,6 +8,7 @@ import type {
   DrillTemplate,
   EvaluationReport,
   ExternalValidationReport,
+  TelemetryValidationReport,
   HealthResponse,
   Incident,
   JobRecord,
@@ -50,6 +51,7 @@ export default function App() {
   const [metrics, setMetrics] = useState<DashboardMetrics>()
   const [evaluation, setEvaluation] = useState<EvaluationReport | null>(null)
   const [externalValidation, setExternalValidation] = useState<ExternalValidationReport | null>(null)
+  const [telemetryValidation, setTelemetryValidation] = useState<TelemetryValidationReport | null>(null)
   const [health, setHealth] = useState<HealthResponse>()
   const [documents, setDocuments] = useState<KnowledgeDoc[]>([])
   const [tools, setTools] = useState<ToolSpec[]>([])
@@ -67,6 +69,7 @@ export default function App() {
     setMetrics(undefined)
     setEvaluation(null)
     setExternalValidation(null)
+    setTelemetryValidation(null)
     setDocuments([])
     setTools([])
     setSelectedRunId(undefined)
@@ -89,13 +92,14 @@ export default function App() {
   }, [logout])
 
   const loadProtected = useCallback(async () => {
-    const [nextRuns, nextMetrics, nextEvaluation, nextExternalValidation, nextDocuments, nextTools, nextDrills] = await Promise.all([
-      api.runs(), api.metrics(), api.latestEvaluation(), api.latestExternalValidation(), api.knowledge(), api.tools(), api.drills(),
+    const [nextRuns, nextMetrics, nextEvaluation, nextExternalValidation, nextTelemetryValidation, nextDocuments, nextTools, nextDrills] = await Promise.all([
+      api.runs(), api.metrics(), api.latestEvaluation(), api.latestExternalValidation(), api.latestTelemetryValidation(), api.knowledge(), api.tools(), api.drills(),
     ])
     setRuns(nextRuns)
     setMetrics(nextMetrics)
     setEvaluation(nextEvaluation)
     setExternalValidation(nextExternalValidation)
+    setTelemetryValidation(nextTelemetryValidation)
     setDocuments(nextDocuments)
     setTools(nextTools)
     setDrills(nextDrills)
@@ -305,7 +309,7 @@ export default function App() {
           {error && <div className="inline-alert" role="alert"><strong>操作未完成</strong><span>{error}</span><button type="button" onClick={() => setError(undefined)}>关闭</button></div>}
           {view === 'overview' && <OverviewView metrics={metrics} runs={runs} health={health} onOpenRun={openRun} onNavigate={setView} />}
           {view === 'run' && <RunView run={selectedRun} jobs={selectedJobs} metrics={metrics} health={health} user={user} busy={busy} onDecision={decide} onRetry={retry} onCancel={cancel} onDownloadEvidence={downloadEvidence} onRefresh={refreshOperations} onCreate={() => setComposerOpen(true)} />}
-          {view === 'evaluations' && <EvaluationsView report={evaluation ?? undefined} externalReport={externalValidation ?? undefined} user={user} busy={busy} onRun={runEvaluation} />}
+          {view === 'evaluations' && <EvaluationsView report={evaluation ?? undefined} externalReport={externalValidation ?? undefined} telemetryReport={telemetryValidation ?? undefined} user={user} busy={busy} onRun={runEvaluation} />}
           {view === 'knowledge' && <KnowledgeView documents={documents} health={health} />}
           {view === 'policy' && <PolicyView tools={tools} user={user} />}
         </main>

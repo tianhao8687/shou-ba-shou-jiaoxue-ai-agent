@@ -1,0 +1,6 @@
+[run]
+source = app.telemetry_validation
+
+[report]
+show_missing = true
+fail_under = 50

@@ -1,0 +1,1890 @@
+{
+  "schema": "harbor-telemetry-validation-evidence/v2",
+  "suite_version": "telemetry-v4",
+  "ruleset_version": "deterministic-rca-v3",
+  "manifest_fingerprint": "3a3495b8880689c708fa13c0f48d4bb506e923fb8656d6028b441ce08bbe5842",
+  "prediction_fingerprint": "e1dcd9bd3764105ebd666aa6670e23ea45bc638e752cac155c66825bdaa02b53",
+  "prediction_semantic_fingerprint": "3cbde44211333a675ddc4acf635e71546b6700d6507174cef7e0220ffc693d86",
+  "generated_at": "2026-08-10T16:51:06.724601Z",
+  "verdict": "pass",
+  "production_claim": false,
+  "raw_data_committed": false,
+  "replay_audit": {
+    "schema": "harbor-telemetry-replay-audit/v1",
+    "audited_at": "2026-08-10T17:31:59Z",
+    "oracle_status": "already-opened-no-retuning",
+    "tie_break_contract": "single-thread DuckDB aggregates plus explicit lexical secondary keys",
+    "replay_count": 2,
+    "semantic_fingerprint": "0618234af68c7030612c9daa05147fd15db3cf6e824a03348e1f140451eb8a5c",
+    "semantic_match": true,
+    "full_artifact_hashes": [
+      "ef08e05493c15634079cdae503df45158b95c9eca171d401f9ad048194829121",
+      "d08e2ba986bb9f26c2736e16f94bfcc99912caa22b3aad4c767fb18e83eb911d"
+    ],
+    "volatile_fields_excluded": [
+      "generated_at",
+      "latency_ms"
+    ],
+    "holdout": {
+      "case_count": 24,
+      "fault_type_top1_accuracy": 0.3333,
+      "fault_type_top3_accuracy": 0.6667,
+      "entity_top1_accuracy": 0.4167,
+      "entity_top3_accuracy": 0.5833,
+      "exact_rca_top1_accuracy": 0.25,
+      "evidence_modality_recall": 0.6806,
+      "multimodal_case_coverage": 0.5,
+      "abstention_rate": 0.0
+    },
+    "p95_case_latency_ms_range": [
+      93,
+      97
+    ],
+    "passed_gates": 10,
+    "gate_count": 10,
+    "verdict": "pass",
+    "production_claim": false,
+    "notes": [
+      "The original blind prediction artifact and score remain unchanged.",
+      "The repair fixes unordered equal-score selection and was not tuned against holdout labels.",
+      "Because the oracle had already been opened, this is a reproducibility audit rather than a second blind result."
+    ]
+  },
+  "source": {
+    "id": "aiops-challenge-2025",
+    "title": "AIOps Challenge 2025 multimodal telemetry",
+    "repository_url": "https://www.aiops.cn/gitlab/aiops-live-benchmark/agenticopseval/-/tree/main/AIOps2025",
+    "revision": "575c95a02987447b3668874f543802018040afea",
+    "license": {
+      "name": "CC BY-NC 4.0",
+      "url": "https://creativecommons.org/licenses/by-nc/4.0/",
+      "raw_redistribution": "not-committed"
+    },
+    "independence": "The project authors did not create the 400 incidents, telemetry, or labels."
+  },
+  "coverage": {
+    "by_archive": {
+      "aiops-2025-06-09": {
+        "rows": {
+          "logs": 6596358,
+          "metrics": 1044136,
+          "traces": 4988217
+        },
+        "files": {
+          "logs": 20,
+          "metrics": 111,
+          "traces": 13
+        }
+      },
+      "aiops-2025-06-17": {
+        "rows": {
+          "logs": 6092008,
+          "metrics": 1040094,
+          "traces": 5736132
+        },
+        "files": {
+          "logs": 18,
+          "metrics": 116,
+          "traces": 17
+        }
+      },
+      "aiops-2025-06-18": {
+        "rows": {
+          "logs": 7324093,
+          "metrics": 1026444,
+          "traces": 5497148
+        },
+        "files": {
+          "logs": 24,
+          "metrics": 116,
+          "traces": 20
+        }
+      },
+      "aiops-2025-06-19": {
+        "rows": {
+          "logs": 7057402,
+          "metrics": 1051360,
+          "traces": 6972810
+        },
+        "files": {
+          "logs": 24,
+          "metrics": 114,
+          "traces": 23
+        }
+      }
+    },
+    "total_rows": {
+      "logs": 27069861,
+      "metrics": 4162034,
+      "traces": 23194307
+    },
+    "all_rows": 54426202,
+    "archive_bytes": 1897744494,
+    "calibration_cases": 16,
+    "validation_cases": 48,
+    "holdout_cases": 24
+  },
+  "protocol": {
+    "prediction_frozen_at": "2026-08-10T16:51:06.714888Z",
+    "oracle_opened_at": "2026-08-10T16:51:06.718136Z",
+    "oracle_opened_after_freeze": true,
+    "predictor_oracle_access": "none",
+    "prediction_hash_algorithm": "sha256",
+    "unsafe_write_actions": 0,
+    "timezone_contract": "archive names are CST; row timestamps and case windows are UTC"
+  },
+  "calibration": {
+    "case_count": 16,
+    "fault_type_top1_accuracy": 0.6875,
+    "fault_type_top3_accuracy": 0.875,
+    "entity_top1_accuracy": 0.6875,
+    "entity_top3_accuracy": 0.875,
+    "exact_rca_top1_accuracy": 0.625,
+    "evidence_modality_recall": 0.9271,
+    "multimodal_case_coverage": 0.5,
+    "abstention_rate": 0.0,
+    "median_case_latency_ms": 43,
+    "p95_case_latency_ms": 49
+  },
+  "validation": {
+    "case_count": 48,
+    "fault_type_top1_accuracy": 0.4583,
+    "fault_type_top3_accuracy": 0.6875,
+    "entity_top1_accuracy": 0.5,
+    "entity_top3_accuracy": 0.7292,
+    "exact_rca_top1_accuracy": 0.3542,
+    "evidence_modality_recall": 0.8056,
+    "multimodal_case_coverage": 0.5417,
+    "abstention_rate": 0.0,
+    "median_case_latency_ms": 43,
+    "p95_case_latency_ms": 52
+  },
+  "holdout": {
+    "case_count": 24,
+    "fault_type_top1_accuracy": 0.4167,
+    "fault_type_top3_accuracy": 0.7917,
+    "entity_top1_accuracy": 0.4167,
+    "entity_top3_accuracy": 0.5833,
+    "exact_rca_top1_accuracy": 0.2917,
+    "evidence_modality_recall": 0.8611,
+    "multimodal_case_coverage": 0.75,
+    "abstention_rate": 0.0,
+    "median_case_latency_ms": 43,
+    "p95_case_latency_ms": 61
+  },
+  "gates": [
+    {
+      "id": "archive_hashes_verified",
+      "passed": true,
+      "observed": true,
+      "operator": "==",
+      "threshold": true
+    },
+    {
+      "id": "holdout_case_count",
+      "passed": true,
+      "observed": 24,
+      "operator": ">=",
+      "threshold": 20
+    },
+    {
+      "id": "prediction_freeze_verified",
+      "passed": true,
+      "observed": true,
+      "operator": "==",
+      "threshold": true
+    },
+    {
+      "id": "oracle_leaks",
+      "passed": true,
+      "observed": 0,
+      "operator": "<=",
+      "threshold": 0
+    },
+    {
+      "id": "unsafe_write_actions",
+      "passed": true,
+      "observed": 0,
+      "operator": "<=",
+      "threshold": 0
+    },
+    {
+      "id": "multimodal_case_coverage",
+      "passed": true,
+      "observed": 0.75,
+      "operator": ">=",
+      "threshold": 0.35
+    },
+    {
+      "id": "entity_top3_accuracy",
+      "passed": true,
+      "observed": 0.5833,
+      "operator": ">=",
+      "threshold": 0.4
+    },
+    {
+      "id": "fault_type_top3_accuracy",
+      "passed": true,
+      "observed": 0.7917,
+      "operator": ">=",
+      "threshold": 0.3
+    },
+    {
+      "id": "exact_rca_top1_accuracy",
+      "passed": true,
+      "observed": 0.2917,
+      "operator": ">=",
+      "threshold": 0.1
+    },
+    {
+      "id": "evidence_modality_recall",
+      "passed": true,
+      "observed": 0.8611,
+      "operator": ">=",
+      "threshold": 0.5
+    }
+  ],
+  "cases": [
+    {
+      "uuid": "3600f326-158",
+      "role": "calibration",
+      "predicted_fault_type": "jvm gc",
+      "predicted_entity": "adservice-0",
+      "fault_type_top1": true,
+      "fault_type_top3": true,
+      "entity_top1": true,
+      "entity_top3": true,
+      "network_pair_match": null,
+      "exact_rca_top1": true,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "log",
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "a9c6d6c9-159",
+      "role": "calibration",
+      "predicted_fault_type": "network delay",
+      "predicted_entity": "frontend",
+      "fault_type_top1": true,
+      "fault_type_top3": true,
+      "entity_top1": true,
+      "entity_top3": true,
+      "network_pair_match": true,
+      "exact_rca_top1": true,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "metric",
+        "trace"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "0efb9550-160",
+      "role": "calibration",
+      "predicted_fault_type": "io fault",
+      "predicted_entity": "tidb-tikv",
+      "fault_type_top1": false,
+      "fault_type_top3": true,
+      "entity_top1": false,
+      "entity_top3": true,
+      "network_pair_match": null,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "cb5815ce-161",
+      "role": "calibration",
+      "predicted_fault_type": "jvm cpu stress",
+      "predicted_entity": "adservice-0",
+      "fault_type_top1": true,
+      "fault_type_top3": true,
+      "entity_top1": true,
+      "entity_top3": true,
+      "network_pair_match": null,
+      "exact_rca_top1": true,
+      "evidence_modality_recall": 0.6667,
+      "evidence_modalities": [
+        "log",
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "89c85406-162",
+      "role": "calibration",
+      "predicted_fault_type": "node cpu stress",
+      "predicted_entity": "aiops-k8s-05",
+      "fault_type_top1": true,
+      "fault_type_top3": true,
+      "entity_top1": true,
+      "entity_top3": true,
+      "network_pair_match": null,
+      "exact_rca_top1": true,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "43e1b3bf-163",
+      "role": "calibration",
+      "predicted_fault_type": "network loss",
+      "predicted_entity": "frontend",
+      "fault_type_top1": true,
+      "fault_type_top3": true,
+      "entity_top1": false,
+      "entity_top3": true,
+      "network_pair_match": false,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "log",
+        "metric",
+        "trace"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "7bdc4b83-164",
+      "role": "calibration",
+      "predicted_fault_type": "jvm latency",
+      "predicted_entity": "adservice-0",
+      "fault_type_top1": true,
+      "fault_type_top3": true,
+      "entity_top1": true,
+      "entity_top3": true,
+      "network_pair_match": null,
+      "exact_rca_top1": true,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "log",
+        "metric",
+        "trace"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "cebb47f5-165",
+      "role": "calibration",
+      "predicted_fault_type": "pod kill",
+      "predicted_entity": "paymentservice-1",
+      "fault_type_top1": true,
+      "fault_type_top3": true,
+      "entity_top1": true,
+      "entity_top3": true,
+      "network_pair_match": null,
+      "exact_rca_top1": true,
+      "evidence_modality_recall": 0.5,
+      "evidence_modalities": [
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "578fce7c-166",
+      "role": "calibration",
+      "predicted_fault_type": "jvm gc",
+      "predicted_entity": "adservice-2",
+      "fault_type_top1": true,
+      "fault_type_top3": true,
+      "entity_top1": true,
+      "entity_top3": true,
+      "network_pair_match": null,
+      "exact_rca_top1": true,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "log",
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "47fe21f6-167",
+      "role": "calibration",
+      "predicted_fault_type": "jvm exception",
+      "predicted_entity": "adservice-0",
+      "fault_type_top1": true,
+      "fault_type_top3": true,
+      "entity_top1": true,
+      "entity_top3": true,
+      "network_pair_match": null,
+      "exact_rca_top1": true,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "log",
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "df892932-168",
+      "role": "calibration",
+      "predicted_fault_type": "jvm cpu stress",
+      "predicted_entity": "adservice-0",
+      "fault_type_top1": true,
+      "fault_type_top3": true,
+      "entity_top1": true,
+      "entity_top3": true,
+      "network_pair_match": null,
+      "exact_rca_top1": true,
+      "evidence_modality_recall": 0.6667,
+      "evidence_modalities": [
+        "log",
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "51fc47bf-169",
+      "role": "calibration",
+      "predicted_fault_type": "io fault",
+      "predicted_entity": "tidb-tikv",
+      "fault_type_top1": false,
+      "fault_type_top3": false,
+      "entity_top1": false,
+      "entity_top3": false,
+      "network_pair_match": null,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "046aefa7-170",
+      "role": "calibration",
+      "predicted_fault_type": "code error",
+      "predicted_entity": "shippingservice-0",
+      "fault_type_top1": false,
+      "fault_type_top3": true,
+      "entity_top1": true,
+      "entity_top3": true,
+      "network_pair_match": null,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "e0a261ce-171",
+      "role": "calibration",
+      "predicted_fault_type": "cpu stress",
+      "predicted_entity": "recommendationservice-1",
+      "fault_type_top1": true,
+      "fault_type_top3": true,
+      "entity_top1": true,
+      "entity_top3": true,
+      "network_pair_match": null,
+      "exact_rca_top1": true,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "a0761b38-172",
+      "role": "calibration",
+      "predicted_fault_type": "io fault",
+      "predicted_entity": "tidb-tikv",
+      "fault_type_top1": false,
+      "fault_type_top3": false,
+      "entity_top1": false,
+      "entity_top3": false,
+      "network_pair_match": null,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "e6c9989b-173",
+      "role": "calibration",
+      "predicted_fault_type": "io fault",
+      "predicted_entity": "tidb-tikv",
+      "fault_type_top1": false,
+      "fault_type_top3": true,
+      "entity_top1": false,
+      "entity_top3": true,
+      "network_pair_match": false,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "50bce1c4-311",
+      "role": "validation",
+      "predicted_fault_type": "code error",
+      "predicted_entity": "cartservice-2",
+      "fault_type_top1": true,
+      "fault_type_top3": true,
+      "entity_top1": true,
+      "entity_top3": true,
+      "network_pair_match": null,
+      "exact_rca_top1": true,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "log",
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "b78dafc3-312",
+      "role": "validation",
+      "predicted_fault_type": "network loss",
+      "predicted_entity": "frontend",
+      "fault_type_top1": false,
+      "fault_type_top3": true,
+      "entity_top1": false,
+      "entity_top3": true,
+      "network_pair_match": false,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "log",
+        "metric",
+        "trace"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "009be6db-313",
+      "role": "validation",
+      "predicted_fault_type": "code error",
+      "predicted_entity": "cartservice-2",
+      "fault_type_top1": true,
+      "fault_type_top3": true,
+      "entity_top1": true,
+      "entity_top3": true,
+      "network_pair_match": null,
+      "exact_rca_top1": true,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "log",
+        "metric",
+        "trace"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "c0cdda5e-314",
+      "role": "validation",
+      "predicted_fault_type": "node disk fill",
+      "predicted_entity": "aiops-k8s-05",
+      "fault_type_top1": true,
+      "fault_type_top3": true,
+      "entity_top1": true,
+      "entity_top3": true,
+      "network_pair_match": null,
+      "exact_rca_top1": true,
+      "evidence_modality_recall": 0.5,
+      "evidence_modalities": [
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "a482d876-315",
+      "role": "validation",
+      "predicted_fault_type": "code error",
+      "predicted_entity": "shippingservice-1",
+      "fault_type_top1": false,
+      "fault_type_top3": true,
+      "entity_top1": true,
+      "entity_top3": true,
+      "network_pair_match": null,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "3260fa48-316",
+      "role": "validation",
+      "predicted_fault_type": "network delay",
+      "predicted_entity": "hipstershop",
+      "fault_type_top1": false,
+      "fault_type_top3": false,
+      "entity_top1": false,
+      "entity_top3": false,
+      "network_pair_match": null,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "332adc3a-317",
+      "role": "validation",
+      "predicted_fault_type": "io fault",
+      "predicted_entity": "tidb-tikv",
+      "fault_type_top1": true,
+      "fault_type_top3": true,
+      "entity_top1": true,
+      "entity_top3": true,
+      "network_pair_match": null,
+      "exact_rca_top1": true,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "18b8cf77-318",
+      "role": "validation",
+      "predicted_fault_type": "io fault",
+      "predicted_entity": "tidb-tikv",
+      "fault_type_top1": false,
+      "fault_type_top3": false,
+      "entity_top1": false,
+      "entity_top3": true,
+      "network_pair_match": null,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "a42d2eb4-319",
+      "role": "validation",
+      "predicted_fault_type": "io fault",
+      "predicted_entity": "tidb-tikv",
+      "fault_type_top1": false,
+      "fault_type_top3": false,
+      "entity_top1": false,
+      "entity_top3": false,
+      "network_pair_match": null,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "fc3737af-320",
+      "role": "validation",
+      "predicted_fault_type": "io fault",
+      "predicted_entity": "tidb-tikv",
+      "fault_type_top1": false,
+      "fault_type_top3": true,
+      "entity_top1": false,
+      "entity_top3": true,
+      "network_pair_match": null,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "bbfefe10-321",
+      "role": "validation",
+      "predicted_fault_type": "io fault",
+      "predicted_entity": "tidb-tikv",
+      "fault_type_top1": false,
+      "fault_type_top3": true,
+      "entity_top1": false,
+      "entity_top3": true,
+      "network_pair_match": null,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "e539dea4-322",
+      "role": "validation",
+      "predicted_fault_type": "network loss",
+      "predicted_entity": "frontend",
+      "fault_type_top1": false,
+      "fault_type_top3": false,
+      "entity_top1": false,
+      "entity_top3": true,
+      "network_pair_match": null,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 0.6667,
+      "evidence_modalities": [
+        "metric",
+        "trace"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "83524cef-323",
+      "role": "validation",
+      "predicted_fault_type": "io fault",
+      "predicted_entity": "tidb-tikv",
+      "fault_type_top1": true,
+      "fault_type_top3": true,
+      "entity_top1": true,
+      "entity_top3": true,
+      "network_pair_match": null,
+      "exact_rca_top1": true,
+      "evidence_modality_recall": 0.5,
+      "evidence_modalities": [
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "ed40c5a3-324",
+      "role": "validation",
+      "predicted_fault_type": "network delay",
+      "predicted_entity": "frontend",
+      "fault_type_top1": true,
+      "fault_type_top3": true,
+      "entity_top1": true,
+      "entity_top3": true,
+      "network_pair_match": true,
+      "exact_rca_top1": true,
+      "evidence_modality_recall": 0.6667,
+      "evidence_modalities": [
+        "metric",
+        "trace"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "55b23e04-325",
+      "role": "validation",
+      "predicted_fault_type": "network delay",
+      "predicted_entity": "checkoutservice",
+      "fault_type_top1": false,
+      "fault_type_top3": false,
+      "entity_top1": true,
+      "entity_top3": true,
+      "network_pair_match": null,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 0.6667,
+      "evidence_modalities": [
+        "metric",
+        "trace"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "53ab3ccb-326",
+      "role": "validation",
+      "predicted_fault_type": "network loss",
+      "predicted_entity": "frontend-1",
+      "fault_type_top1": false,
+      "fault_type_top3": true,
+      "entity_top1": true,
+      "entity_top3": true,
+      "network_pair_match": null,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 0.6667,
+      "evidence_modalities": [
+        "log",
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "4fd42adb-327",
+      "role": "validation",
+      "predicted_fault_type": "io fault",
+      "predicted_entity": "tidb-tikv",
+      "fault_type_top1": false,
+      "fault_type_top3": false,
+      "entity_top1": false,
+      "entity_top3": false,
+      "network_pair_match": null,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "log",
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "d44478e6-328",
+      "role": "validation",
+      "predicted_fault_type": "io fault",
+      "predicted_entity": "tidb-tikv",
+      "fault_type_top1": false,
+      "fault_type_top3": false,
+      "entity_top1": false,
+      "entity_top3": false,
+      "network_pair_match": null,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 0.5,
+      "evidence_modalities": [
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "70d3b8b0-329",
+      "role": "validation",
+      "predicted_fault_type": "io fault",
+      "predicted_entity": "tidb-tikv",
+      "fault_type_top1": false,
+      "fault_type_top3": false,
+      "entity_top1": false,
+      "entity_top3": false,
+      "network_pair_match": null,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 0.5,
+      "evidence_modalities": [
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "c3f4fde9-330",
+      "role": "validation",
+      "predicted_fault_type": "network delay",
+      "predicted_entity": "checkoutservice",
+      "fault_type_top1": true,
+      "fault_type_top3": true,
+      "entity_top1": true,
+      "entity_top3": true,
+      "network_pair_match": true,
+      "exact_rca_top1": true,
+      "evidence_modality_recall": 0.6667,
+      "evidence_modalities": [
+        "metric",
+        "trace"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "76222cb2-331",
+      "role": "validation",
+      "predicted_fault_type": "network loss",
+      "predicted_entity": "checkoutservice",
+      "fault_type_top1": false,
+      "fault_type_top3": false,
+      "entity_top1": false,
+      "entity_top3": true,
+      "network_pair_match": null,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "log",
+        "metric",
+        "trace"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "68bbf4fd-332",
+      "role": "validation",
+      "predicted_fault_type": "io fault",
+      "predicted_entity": "tidb-tikv",
+      "fault_type_top1": false,
+      "fault_type_top3": false,
+      "entity_top1": false,
+      "entity_top3": false,
+      "network_pair_match": null,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 0.5,
+      "evidence_modalities": [
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "3d284cf0-333",
+      "role": "validation",
+      "predicted_fault_type": "io fault",
+      "predicted_entity": "tidb-tikv",
+      "fault_type_top1": false,
+      "fault_type_top3": true,
+      "entity_top1": false,
+      "entity_top3": true,
+      "network_pair_match": null,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "985de575-334",
+      "role": "validation",
+      "predicted_fault_type": "node disk fill",
+      "predicted_entity": "aiops-k8s-07",
+      "fault_type_top1": true,
+      "fault_type_top3": true,
+      "entity_top1": true,
+      "entity_top3": true,
+      "network_pair_match": null,
+      "exact_rca_top1": true,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "e1562aa2-335",
+      "role": "validation",
+      "predicted_fault_type": "io fault",
+      "predicted_entity": "tidb-tikv",
+      "fault_type_top1": false,
+      "fault_type_top3": false,
+      "entity_top1": false,
+      "entity_top3": false,
+      "network_pair_match": null,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 0.0,
+      "evidence_modalities": [
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "8e7a3965-336",
+      "role": "validation",
+      "predicted_fault_type": "io fault",
+      "predicted_entity": "tidb-tikv",
+      "fault_type_top1": true,
+      "fault_type_top3": true,
+      "entity_top1": true,
+      "entity_top3": true,
+      "network_pair_match": null,
+      "exact_rca_top1": true,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "metric",
+        "trace"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "c3377c5c-337",
+      "role": "validation",
+      "predicted_fault_type": "network delay",
+      "predicted_entity": "frontend",
+      "fault_type_top1": false,
+      "fault_type_top3": true,
+      "entity_top1": true,
+      "entity_top3": true,
+      "network_pair_match": true,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 0.6667,
+      "evidence_modalities": [
+        "metric",
+        "trace"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "8c61bc09-338",
+      "role": "validation",
+      "predicted_fault_type": "network loss",
+      "predicted_entity": "frontend-0",
+      "fault_type_top1": false,
+      "fault_type_top3": true,
+      "entity_top1": true,
+      "entity_top3": true,
+      "network_pair_match": null,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 0.3333,
+      "evidence_modalities": [
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "0b81a605-339",
+      "role": "validation",
+      "predicted_fault_type": "cpu stress",
+      "predicted_entity": "paymentservice-2",
+      "fault_type_top1": true,
+      "fault_type_top3": true,
+      "entity_top1": true,
+      "entity_top3": true,
+      "network_pair_match": null,
+      "exact_rca_top1": true,
+      "evidence_modality_recall": 0.5,
+      "evidence_modalities": [
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "0a9fce75-340",
+      "role": "validation",
+      "predicted_fault_type": "pod failure",
+      "predicted_entity": "tidb-tikv",
+      "fault_type_top1": true,
+      "fault_type_top3": true,
+      "entity_top1": false,
+      "entity_top3": true,
+      "network_pair_match": null,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "log",
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "b9319370-341",
+      "role": "validation",
+      "predicted_fault_type": "network loss",
+      "predicted_entity": "frontend",
+      "fault_type_top1": false,
+      "fault_type_top3": false,
+      "entity_top1": false,
+      "entity_top3": true,
+      "network_pair_match": null,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "log",
+        "metric",
+        "trace"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "b96848a5-342",
+      "role": "validation",
+      "predicted_fault_type": "code error",
+      "predicted_entity": "frontend-1",
+      "fault_type_top1": true,
+      "fault_type_top3": true,
+      "entity_top1": false,
+      "entity_top3": false,
+      "network_pair_match": null,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "log",
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "88b7daff-343",
+      "role": "validation",
+      "predicted_fault_type": "network delay",
+      "predicted_entity": "frontend",
+      "fault_type_top1": true,
+      "fault_type_top3": true,
+      "entity_top1": false,
+      "entity_top3": true,
+      "network_pair_match": false,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "log",
+        "metric",
+        "trace"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "09b7c00b-344",
+      "role": "validation",
+      "predicted_fault_type": "code error",
+      "predicted_entity": "cartservice-2",
+      "fault_type_top1": true,
+      "fault_type_top3": true,
+      "entity_top1": true,
+      "entity_top3": true,
+      "network_pair_match": null,
+      "exact_rca_top1": true,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "log",
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "b9539d8e-345",
+      "role": "validation",
+      "predicted_fault_type": "target port misconfig",
+      "predicted_entity": "frontend-1",
+      "fault_type_top1": true,
+      "fault_type_top3": true,
+      "entity_top1": false,
+      "entity_top3": false,
+      "network_pair_match": null,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 0.6667,
+      "evidence_modalities": [
+        "log",
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "76937ba4-346",
+      "role": "validation",
+      "predicted_fault_type": "network loss",
+      "predicted_entity": "frontend",
+      "fault_type_top1": false,
+      "fault_type_top3": true,
+      "entity_top1": true,
+      "entity_top3": true,
+      "network_pair_match": true,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "log",
+        "metric",
+        "trace"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "1d868f8e-347",
+      "role": "validation",
+      "predicted_fault_type": "network delay",
+      "predicted_entity": "frontend",
+      "fault_type_top1": true,
+      "fault_type_top3": true,
+      "entity_top1": true,
+      "entity_top3": true,
+      "network_pair_match": true,
+      "exact_rca_top1": true,
+      "evidence_modality_recall": 0.6667,
+      "evidence_modalities": [
+        "metric",
+        "trace"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "4b225f4a-348",
+      "role": "validation",
+      "predicted_fault_type": "io fault",
+      "predicted_entity": "tidb-tikv",
+      "fault_type_top1": true,
+      "fault_type_top3": true,
+      "entity_top1": true,
+      "entity_top3": true,
+      "network_pair_match": null,
+      "exact_rca_top1": true,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "metric",
+        "trace"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "0a4c5c18-349",
+      "role": "validation",
+      "predicted_fault_type": "io fault",
+      "predicted_entity": "tidb-tikv",
+      "fault_type_top1": true,
+      "fault_type_top3": true,
+      "entity_top1": true,
+      "entity_top3": true,
+      "network_pair_match": null,
+      "exact_rca_top1": true,
+      "evidence_modality_recall": 0.5,
+      "evidence_modalities": [
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "fb20d6d2-350",
+      "role": "validation",
+      "predicted_fault_type": "pod failure",
+      "predicted_entity": "tidb-tikv",
+      "fault_type_top1": false,
+      "fault_type_top3": false,
+      "entity_top1": false,
+      "entity_top3": false,
+      "network_pair_match": null,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 0.0,
+      "evidence_modalities": [
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "a87be781-351",
+      "role": "validation",
+      "predicted_fault_type": "io fault",
+      "predicted_entity": "tidb-tikv",
+      "fault_type_top1": true,
+      "fault_type_top3": true,
+      "entity_top1": true,
+      "entity_top3": true,
+      "network_pair_match": null,
+      "exact_rca_top1": true,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "metric",
+        "trace"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "1ef94bd7-352",
+      "role": "validation",
+      "predicted_fault_type": "io fault",
+      "predicted_entity": "tidb-tikv",
+      "fault_type_top1": false,
+      "fault_type_top3": false,
+      "entity_top1": false,
+      "entity_top3": false,
+      "network_pair_match": null,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 0.5,
+      "evidence_modalities": [
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "178aa45f-353",
+      "role": "validation",
+      "predicted_fault_type": "network delay",
+      "predicted_entity": "checkoutservice",
+      "fault_type_top1": false,
+      "fault_type_top3": false,
+      "entity_top1": true,
+      "entity_top3": true,
+      "network_pair_match": null,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "log",
+        "metric",
+        "trace"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "ad030412-354",
+      "role": "validation",
+      "predicted_fault_type": "node memory stress",
+      "predicted_entity": "aiops-k8s-06",
+      "fault_type_top1": true,
+      "fault_type_top3": true,
+      "entity_top1": true,
+      "entity_top3": true,
+      "network_pair_match": null,
+      "exact_rca_top1": true,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "b168261d-355",
+      "role": "validation",
+      "predicted_fault_type": "io fault",
+      "predicted_entity": "frontend-1",
+      "fault_type_top1": false,
+      "fault_type_top3": true,
+      "entity_top1": false,
+      "entity_top3": false,
+      "network_pair_match": null,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "log",
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "ac95d601-356",
+      "role": "validation",
+      "predicted_fault_type": "io fault",
+      "predicted_entity": "tidb-tikv",
+      "fault_type_top1": true,
+      "fault_type_top3": true,
+      "entity_top1": true,
+      "entity_top3": true,
+      "network_pair_match": null,
+      "exact_rca_top1": true,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "b9e3efbd-357",
+      "role": "validation",
+      "predicted_fault_type": "pod failure",
+      "predicted_entity": "tidb-pd",
+      "fault_type_top1": true,
+      "fault_type_top3": true,
+      "entity_top1": false,
+      "entity_top3": false,
+      "network_pair_match": null,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "log",
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "7bd681bb-358",
+      "role": "validation",
+      "predicted_fault_type": "io fault",
+      "predicted_entity": "tidb-tikv",
+      "fault_type_top1": false,
+      "fault_type_top3": true,
+      "entity_top1": false,
+      "entity_top3": true,
+      "network_pair_match": null,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "log",
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "7c0d7152-359",
+      "role": "holdout",
+      "predicted_fault_type": "target port misconfig",
+      "predicted_entity": "checkoutservice-2",
+      "fault_type_top1": true,
+      "fault_type_top3": true,
+      "entity_top1": false,
+      "entity_top3": false,
+      "network_pair_match": null,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "log",
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "46fc7b93-360",
+      "role": "holdout",
+      "predicted_fault_type": "io fault",
+      "predicted_entity": "tidb-tikv",
+      "fault_type_top1": false,
+      "fault_type_top3": true,
+      "entity_top1": false,
+      "entity_top3": true,
+      "network_pair_match": null,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "log",
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "f5e2df8d-361",
+      "role": "holdout",
+      "predicted_fault_type": "io fault",
+      "predicted_entity": "tidb-tikv",
+      "fault_type_top1": false,
+      "fault_type_top3": true,
+      "entity_top1": false,
+      "entity_top3": true,
+      "network_pair_match": null,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "log",
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "f0015bac-362",
+      "role": "holdout",
+      "predicted_fault_type": "network loss",
+      "predicted_entity": "frontend",
+      "fault_type_top1": false,
+      "fault_type_top3": true,
+      "entity_top1": false,
+      "entity_top3": false,
+      "network_pair_match": null,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "log",
+        "metric",
+        "trace"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "b06baad3-363",
+      "role": "holdout",
+      "predicted_fault_type": "io fault",
+      "predicted_entity": "tidb-tikv",
+      "fault_type_top1": false,
+      "fault_type_top3": true,
+      "entity_top1": false,
+      "entity_top3": false,
+      "network_pair_match": null,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "log",
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "fe4efdc8-364",
+      "role": "holdout",
+      "predicted_fault_type": "network delay",
+      "predicted_entity": "checkoutservice",
+      "fault_type_top1": false,
+      "fault_type_top3": false,
+      "entity_top1": true,
+      "entity_top3": true,
+      "network_pair_match": null,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "log",
+        "metric",
+        "trace"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "7dbfd4c3-365",
+      "role": "holdout",
+      "predicted_fault_type": "io fault",
+      "predicted_entity": "tidb-tikv",
+      "fault_type_top1": true,
+      "fault_type_top3": true,
+      "entity_top1": true,
+      "entity_top3": true,
+      "network_pair_match": null,
+      "exact_rca_top1": true,
+      "evidence_modality_recall": 0.5,
+      "evidence_modalities": [
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "14c1047f-366",
+      "role": "holdout",
+      "predicted_fault_type": "network loss",
+      "predicted_entity": "frontend",
+      "fault_type_top1": false,
+      "fault_type_top3": false,
+      "entity_top1": false,
+      "entity_top3": true,
+      "network_pair_match": null,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "log",
+        "metric",
+        "trace"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "68727566-367",
+      "role": "holdout",
+      "predicted_fault_type": "target port misconfig",
+      "predicted_entity": "frontend-0",
+      "fault_type_top1": true,
+      "fault_type_top3": true,
+      "entity_top1": false,
+      "entity_top3": false,
+      "network_pair_match": null,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "log",
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "aba2da7f-368",
+      "role": "holdout",
+      "predicted_fault_type": "network delay",
+      "predicted_entity": "frontend",
+      "fault_type_top1": true,
+      "fault_type_top3": true,
+      "entity_top1": true,
+      "entity_top3": true,
+      "network_pair_match": true,
+      "exact_rca_top1": true,
+      "evidence_modality_recall": 0.6667,
+      "evidence_modalities": [
+        "metric",
+        "trace"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "e3884815-369",
+      "role": "holdout",
+      "predicted_fault_type": "network loss",
+      "predicted_entity": "frontend",
+      "fault_type_top1": false,
+      "fault_type_top3": true,
+      "entity_top1": false,
+      "entity_top3": false,
+      "network_pair_match": null,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "log",
+        "metric",
+        "trace"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "2e8873a5-370",
+      "role": "holdout",
+      "predicted_fault_type": "network delay",
+      "predicted_entity": "checkoutservice",
+      "fault_type_top1": false,
+      "fault_type_top3": false,
+      "entity_top1": true,
+      "entity_top3": true,
+      "network_pair_match": null,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "log",
+        "metric",
+        "trace"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "593e3d6b-371",
+      "role": "holdout",
+      "predicted_fault_type": "io fault",
+      "predicted_entity": "tidb-tikv",
+      "fault_type_top1": false,
+      "fault_type_top3": false,
+      "entity_top1": false,
+      "entity_top3": false,
+      "network_pair_match": null,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 0.5,
+      "evidence_modalities": [
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "9450018e-372",
+      "role": "holdout",
+      "predicted_fault_type": "network loss",
+      "predicted_entity": "frontend",
+      "fault_type_top1": false,
+      "fault_type_top3": false,
+      "entity_top1": false,
+      "entity_top3": true,
+      "network_pair_match": null,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "log",
+        "metric",
+        "trace"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "0419ba04-373",
+      "role": "holdout",
+      "predicted_fault_type": "target port misconfig",
+      "predicted_entity": "frontend-1",
+      "fault_type_top1": true,
+      "fault_type_top3": true,
+      "entity_top1": false,
+      "entity_top3": false,
+      "network_pair_match": null,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 0.6667,
+      "evidence_modalities": [
+        "log",
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "80cdc066-374",
+      "role": "holdout",
+      "predicted_fault_type": "network loss",
+      "predicted_entity": "checkoutservice",
+      "fault_type_top1": false,
+      "fault_type_top3": true,
+      "entity_top1": true,
+      "entity_top3": true,
+      "network_pair_match": true,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "log",
+        "metric",
+        "trace"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "371ba498-375",
+      "role": "holdout",
+      "predicted_fault_type": "io fault",
+      "predicted_entity": "frontend-0",
+      "fault_type_top1": false,
+      "fault_type_top3": true,
+      "entity_top1": false,
+      "entity_top3": false,
+      "network_pair_match": null,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "log",
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "2878f9f0-376",
+      "role": "holdout",
+      "predicted_fault_type": "io fault",
+      "predicted_entity": "tidb-tikv",
+      "fault_type_top1": true,
+      "fault_type_top3": true,
+      "entity_top1": true,
+      "entity_top3": true,
+      "network_pair_match": null,
+      "exact_rca_top1": true,
+      "evidence_modality_recall": 0.5,
+      "evidence_modalities": [
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "9ee6b9ce-377",
+      "role": "holdout",
+      "predicted_fault_type": "io fault",
+      "predicted_entity": "tidb-tikv",
+      "fault_type_top1": true,
+      "fault_type_top3": true,
+      "entity_top1": true,
+      "entity_top3": true,
+      "network_pair_match": null,
+      "exact_rca_top1": true,
+      "evidence_modality_recall": 0.5,
+      "evidence_modalities": [
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "bf022434-378",
+      "role": "holdout",
+      "predicted_fault_type": "network loss",
+      "predicted_entity": "frontend",
+      "fault_type_top1": true,
+      "fault_type_top3": true,
+      "entity_top1": true,
+      "entity_top3": true,
+      "network_pair_match": true,
+      "exact_rca_top1": true,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "log",
+        "metric",
+        "trace"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "d124f9b7-379",
+      "role": "holdout",
+      "predicted_fault_type": "cpu stress",
+      "predicted_entity": "productcatalogservice-0",
+      "fault_type_top1": true,
+      "fault_type_top3": true,
+      "entity_top1": true,
+      "entity_top3": true,
+      "network_pair_match": null,
+      "exact_rca_top1": true,
+      "evidence_modality_recall": 0.3333,
+      "evidence_modalities": [
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "38d69375-380",
+      "role": "holdout",
+      "predicted_fault_type": "network loss",
+      "predicted_entity": "frontend",
+      "fault_type_top1": false,
+      "fault_type_top3": true,
+      "entity_top1": false,
+      "entity_top3": false,
+      "network_pair_match": null,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "log",
+        "metric",
+        "trace"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "d0ecec7e-381",
+      "role": "holdout",
+      "predicted_fault_type": "io fault",
+      "predicted_entity": "frontend-0",
+      "fault_type_top1": false,
+      "fault_type_top3": true,
+      "entity_top1": false,
+      "entity_top3": false,
+      "network_pair_match": null,
+      "exact_rca_top1": false,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "log",
+        "metric"
+      ],
+      "abstained": false
+    },
+    {
+      "uuid": "a2047792-382",
+      "role": "holdout",
+      "predicted_fault_type": "node memory stress",
+      "predicted_entity": "aiops-k8s-06",
+      "fault_type_top1": true,
+      "fault_type_top3": true,
+      "entity_top1": true,
+      "entity_top3": true,
+      "network_pair_match": null,
+      "exact_rca_top1": true,
+      "evidence_modality_recall": 1.0,
+      "evidence_modalities": [
+        "metric"
+      ],
+      "abstained": false
+    }
+  ],
+  "provenance": [
+    {
+      "id": "input",
+      "role": "predictor-input",
+      "url": "https://www.aiops.cn/gitlab/aiops-live-benchmark/agenticopseval/-/raw/575c95a02987447b3668874f543802018040afea/AIOps2025/input.json",
+      "sha256": "db10c6d517ca5a8ab8fb73f203b345f729bdc396581e9d9d55afd92d6591f0e9",
+      "md5": null,
+      "bytes": 74146,
+      "cache_hit": true,
+      "extracted": false,
+      "verified_at": "2026-08-10T16:50:35.606718Z"
+    },
+    {
+      "id": "oracle",
+      "role": "post-freeze-scoring-only",
+      "url": "https://www.aiops.cn/gitlab/aiops-live-benchmark/agenticopseval/-/raw/575c95a02987447b3668874f543802018040afea/AIOps2025/groundtruth.jsonl",
+      "sha256": "e79a77f610b4a0d08f23c3a6d6aa96576035e4b7f5ec481abae90801d5e70eb0",
+      "md5": null,
+      "bytes": 335053,
+      "cache_hit": true,
+      "extracted": false,
+      "verified_at": "2026-08-10T16:50:35.607998Z"
+    },
+    {
+      "id": "aiops-2025-06-09",
+      "role": "calibration",
+      "url": "https://www.aiops.cn/gitlab/aiops-live-benchmark/agenticopseval/-/raw/575c95a02987447b3668874f543802018040afea/AIOps2025/2025-06-09.tar.gz?lfs=true",
+      "sha256": "c5cd27de256f9ef9a215d38394980d6556f272e4ce5c7f9b0cfd632f8d0f0d18",
+      "md5": "13b568b8f3da2b77ffa765cf20502253",
+      "bytes": 419611075,
+      "cache_hit": true,
+      "extracted": true,
+      "verified_at": "2026-08-10T16:50:36.330149Z"
+    },
+    {
+      "id": "aiops-2025-06-17",
+      "role": "validation",
+      "url": "https://www.aiops.cn/gitlab/aiops-live-benchmark/agenticopseval/-/raw/575c95a02987447b3668874f543802018040afea/AIOps2025/2025-06-17.tar.gz?lfs=true",
+      "sha256": "1b57de94079b46fe87fbf87d5ba3b8e453d8250784ade7f6b356880652bad5a7",
+      "md5": "9e19c346a5f1095c523c1901df89330e",
+      "bytes": 450546122,
+      "cache_hit": true,
+      "extracted": true,
+      "verified_at": "2026-08-10T16:50:37.100515Z"
+    },
+    {
+      "id": "aiops-2025-06-18",
+      "role": "validation",
+      "url": "https://www.aiops.cn/gitlab/aiops-live-benchmark/agenticopseval/-/raw/575c95a02987447b3668874f543802018040afea/AIOps2025/2025-06-18.tar.gz?lfs=true",
+      "sha256": "03c323ec9469c3875bfe2723600636b969344881fb6213cc172575b3aae682f5",
+      "md5": "aa43548b39da19ce7b87997183634a54",
+      "bytes": 472359711,
+      "cache_hit": true,
+      "extracted": true,
+      "verified_at": "2026-08-10T16:50:37.908522Z"
+    },
+    {
+      "id": "aiops-2025-06-19",
+      "role": "holdout",
+      "url": "https://www.aiops.cn/gitlab/aiops-live-benchmark/agenticopseval/-/raw/575c95a02987447b3668874f543802018040afea/AIOps2025/2025-06-19.tar.gz?lfs=true",
+      "sha256": "7cf8b88fc69d6aad20daaac6adadc3e7a7c25d2df02c205067002101fd9b7d63",
+      "md5": "19fcd4e7067f7c2f93a96b9ed76f1884",
+      "bytes": 555227586,
+      "cache_hit": true,
+      "extracted": true,
+      "verified_at": "2026-08-10T16:50:38.860540Z"
+    }
+  ],
+  "boundaries": [
+    "AIOps2025 is a third-party chaos-injected benchmark, not private enterprise production traffic.",
+    "The deterministic baseline diagnoses only; it performs no remediation or write operation.",
+    "The manifest separates calibration, one or more consumed validation days, and one untouched final holdout day.",
+    "A failed quality gate is retained as evidence instead of being hidden or retuned on the holdout.",
+    "CC BY-NC 4.0 raw archives remain in the ignored local cache and are not committed."
+  ]
+}

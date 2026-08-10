@@ -14,6 +14,7 @@ from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 from .config import Settings, get_settings
 from .evaluation import EvaluationService
 from .external_validation import ExternalValidationReport, load_external_report
+from .telemetry_validation import TelemetryValidationReport, load_telemetry_report
 from .metrics import build_metrics
 from .observability import CONCURRENCY_CONFLICTS
 from .runtime import build_agent_runtime
@@ -41,7 +42,7 @@ from .store import ConcurrencyError, Store
 from .tools import FAULT_DEFINITIONS, TOOL_REGISTRY
 
 
-APP_VERSION = "3.5.0"
+APP_VERSION = "3.6.0"
 
 
 def _token(authorization: str | None) -> str:
@@ -104,6 +105,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         external_validation = load_external_report(
             resolved.data_dir / "external" / "evidence-v1.json"
         )
+        telemetry_validation = load_telemetry_report(
+            resolved.data_dir / "external" / "telemetry-evidence-v4.json"
+        )
         app.state.settings = resolved
         app.state.store = store
         app.state.retriever = retriever
@@ -113,6 +117,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         app.state.worker = worker
         app.state.evaluator = evaluator
         app.state.external_validation = external_validation
+        app.state.telemetry_validation = telemetry_validation
         app.state.model_adapter = model_adapter
         app.state.tool_executor = tool_executor
         app.state.inprocess_lab = inprocess_lab
@@ -507,6 +512,18 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     ) -> ExternalValidationReport | None:
         _authorize(user, ["observer"])
         return request.app.state.external_validation
+
+    @app.get(
+        "/api/evaluations/telemetry/latest",
+        response_model=TelemetryValidationReport | None,
+        tags=["evaluations"],
+    )
+    def latest_telemetry_validation(
+        request: Request,
+        user: Annotated[UserIdentity, Depends(current_user)],
+    ) -> TelemetryValidationReport | None:
+        _authorize(user, ["observer"])
+        return request.app.state.telemetry_validation
 
     @app.post("/api/evaluations/run", response_model=EvaluationReport, tags=["evaluations"])
     def run_evaluation(

@@ -15,10 +15,23 @@ THRESHOLDS = {
 def main() -> int:
     report_path = Path(sys.argv[1] if len(sys.argv) > 1 else "backend/coverage.json")
     report = json.loads(report_path.read_text(encoding="utf-8"))
+    files = {
+        str(module).replace("\\", "/"): details
+        for module, details in report["files"].items()
+    }
+    missing_modules = [
+        module for module in THRESHOLDS if module != "TOTAL" and module not in files
+    ]
+    if missing_modules:
+        print(
+            "Coverage report is missing required modules: " + ", ".join(missing_modules),
+            file=sys.stderr,
+        )
+        return 1
     observed = {
         "TOTAL": float(report["totals"]["percent_covered"]),
         **{
-            module: float(report["files"][module]["summary"]["percent_covered"])
+            module: float(files[module]["summary"]["percent_covered"])
             for module in THRESHOLDS
             if module != "TOTAL"
         },

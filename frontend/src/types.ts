@@ -391,6 +391,117 @@ export interface ExternalValidationReport {
   boundaries: string[]
 }
 
+export interface TelemetryValidationMetrics {
+  case_count: number
+  fault_type_top1_accuracy: number
+  fault_type_top3_accuracy: number
+  entity_top1_accuracy: number
+  entity_top3_accuracy: number
+  exact_rca_top1_accuracy: number
+  evidence_modality_recall: number
+  multimodal_case_coverage: number
+  abstention_rate: number
+  median_case_latency_ms: number
+  p95_case_latency_ms: number
+}
+
+export interface TelemetryValidationGate {
+  id: string
+  passed: boolean
+  observed: number | boolean
+  operator: '>=' | '<=' | '=='
+  threshold: number | boolean
+}
+
+export interface TelemetryCaseScore {
+  uuid: string
+  role: 'calibration' | 'validation' | 'holdout'
+  predicted_fault_type: string
+  predicted_entity: string
+  fault_type_top1: boolean
+  fault_type_top3: boolean
+  entity_top1: boolean
+  entity_top3: boolean
+  network_pair_match?: boolean | null
+  exact_rca_top1: boolean
+  evidence_modality_recall: number
+  evidence_modalities: string[]
+  abstained: boolean
+}
+
+export type TelemetrySemanticMetrics = Omit<
+  TelemetryValidationMetrics,
+  'median_case_latency_ms' | 'p95_case_latency_ms'
+>
+
+export interface TelemetryReplayAudit {
+  schema: 'harbor-telemetry-replay-audit/v1'
+  audited_at: string
+  oracle_status: 'already-opened-no-retuning'
+  tie_break_contract: string
+  replay_count: number
+  semantic_fingerprint: string
+  semantic_match: true
+  full_artifact_hashes: [string, string]
+  volatile_fields_excluded: ['generated_at', 'latency_ms']
+  holdout: TelemetrySemanticMetrics
+  p95_case_latency_ms_range: [number, number]
+  passed_gates: number
+  gate_count: number
+  verdict: 'pass' | 'fail'
+  production_claim: false
+  notes: string[]
+}
+
+export interface TelemetryValidationReport {
+  schema: 'harbor-telemetry-validation-evidence/v2'
+  suite_version: string
+  ruleset_version: string
+  manifest_fingerprint: string
+  prediction_fingerprint: string
+  prediction_semantic_fingerprint?: string | null
+  generated_at: string
+  verdict: 'pass' | 'fail'
+  production_claim: false
+  raw_data_committed: false
+  replay_audit?: TelemetryReplayAudit | null
+  source: {
+    id: string
+    title: string
+    repository_url: string
+    revision: string
+    license: { name: string; url: string; raw_redistribution: 'not-committed' }
+    independence: string
+  }
+  coverage: {
+    by_archive: Record<string, {
+      rows: { logs: number; metrics: number; traces: number }
+      files: { logs: number; metrics: number; traces: number }
+    }>
+    total_rows: { logs: number; metrics: number; traces: number }
+    all_rows: number
+    archive_bytes: number
+    calibration_cases: number
+    validation_cases: number
+    holdout_cases: number
+  }
+  protocol: {
+    prediction_frozen_at: string
+    oracle_opened_at: string
+    oracle_opened_after_freeze: boolean
+    predictor_oracle_access: 'none'
+    prediction_hash_algorithm: 'sha256'
+    unsafe_write_actions: 0
+    timezone_contract: string
+  }
+  calibration: TelemetryValidationMetrics
+  validation: TelemetryValidationMetrics
+  holdout: TelemetryValidationMetrics
+  gates: TelemetryValidationGate[]
+  cases: TelemetryCaseScore[]
+  boundaries: string[]
+}
+
 export interface KnowledgeDoc {
   id: string
   title: string

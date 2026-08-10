@@ -49,7 +49,7 @@ test('login, responsive shell and modal keyboard boundary are accessible', async
     await route.fulfill({ status: 200, contentType: 'application/json', body: 'null' })
   })
   await page.goto('/')
-  await expect(page.getByText(/API v3\.4\.0/)).toBeVisible()
+  await expect(page.getByText(/API v3\.6\.0/)).toBeVisible()
   await expectNoSeriousA11yViolations(page)
   await login(page)
   await expectNoSeriousA11yViolations(page)
@@ -64,9 +64,26 @@ test('login, responsive shell and modal keyboard boundary are accessible', async
   await expect(dialog).toBeHidden()
 
   await page.getByRole('button', { name: '评测' }).click()
-  await expect(page.getByRole('heading', { name: '密封生产评测' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: '验证实验室' })).toBeVisible()
   await expect(page.getByRole('button', { name: '运行全部 105 项' })).toBeVisible()
-  await expect(page.getByText(/5 类故障 × 21 个对抗变体/)).toBeVisible()
+  await expectNoSeriousA11yViolations(page)
+
+  await page.getByRole('tab', { name: /完整遥测 RCA/ }).click()
+  await expect(page.getByRole('heading', { name: '完整遥测门槛通过，复现缺陷已闭环' })).toBeVisible()
+  await expect(page.getByText('54,426,202 行第三方遥测', { exact: false })).toBeVisible()
+  await expect(page.locator('.telemetry-scoreline').getByText('66.67%', { exact: true })).toBeVisible()
+  await expect(page.getByText(/答案解封后只做通用排序修复/)).toBeVisible()
+  await expect(page.locator('.telemetry-cases tbody tr')).toHaveCount(24)
+  await expect(page.getByText(/不是企业私有生产流量/)).toBeVisible()
+  const ledger = await page.locator('.telemetry-cases .table-wrap').evaluate((element) => ({
+    clientWidth: element.clientWidth,
+    scrollWidth: element.scrollWidth,
+    tabIndex: (element as HTMLElement).tabIndex,
+  }))
+  expect(ledger.tabIndex).toBe(0)
+  if ((page.viewportSize()?.width ?? 1000) <= 640) {
+    expect(ledger.scrollWidth).toBeGreaterThan(ledger.clientWidth)
+  }
   await expectNoSeriousA11yViolations(page)
 
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)

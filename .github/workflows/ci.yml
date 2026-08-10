@@ -129,6 +129,15 @@ jobs:
           pytest --cov=app --cov-report=term-missing --cov-report=json:coverage.json --cov-fail-under=82
           python ../scripts/check-coverage.py coverage.json
 
+      - name: Enforce telemetry validator coverage separately
+        working-directory: backend
+        run: >-
+          pytest tests/test_telemetry_validation.py
+          --cov=app.telemetry_validation
+          --cov-config=.coveragerc-telemetry
+          --cov-report=term-missing
+          --cov-fail-under=50
+
       - name: Show fault-lab log on failure
         if: failure()
         run: cat "${RUNNER_TEMP}/ops-sandbox.log"
