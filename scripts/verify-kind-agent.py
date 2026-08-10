@@ -19,7 +19,7 @@ class VerificationFailure(RuntimeError):
     pass
 
 
-def request_json(
+def request_json_value(
     base_url: str,
     method: str,
     path: str,
@@ -27,7 +27,7 @@ def request_json(
     token: str | None = None,
     payload: dict[str, Any] | None = None,
     expected_status: int = 200,
-) -> dict[str, Any]:
+) -> Any:
     data = None
     headers = {"Accept": "application/json"}
     if payload is not None:
@@ -60,8 +60,43 @@ def request_json(
         value = json.loads(body.decode("utf-8"))
     except (UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise VerificationFailure(f"{method} {path} did not return JSON") from exc
+    return value
+
+
+def request_json(
+    base_url: str,
+    method: str,
+    path: str,
+    *,
+    token: str | None = None,
+    payload: dict[str, Any] | None = None,
+    expected_status: int = 200,
+) -> dict[str, Any]:
+    value = request_json_value(
+        base_url,
+        method,
+        path,
+        token=token,
+        payload=payload,
+        expected_status=expected_status,
+    )
     if not isinstance(value, dict):
         raise VerificationFailure(f"{method} {path} did not return a JSON object")
+    return value
+
+
+def request_json_list(
+    base_url: str,
+    method: str,
+    path: str,
+    *,
+    token: str | None = None,
+) -> list[dict[str, Any]]:
+    value = request_json_value(base_url, method, path, token=token)
+    if not isinstance(value, list) or not all(isinstance(item, dict) for item in value):
+        raise VerificationFailure(
+            f"{method} {path} did not return an array of JSON objects"
+        )
     return value
 
 
@@ -160,6 +195,55 @@ def poll_for(
     )
 
 
+def wait_for_initial_job_settlement(
+    base_url: str,
+    run_id: str,
+    token: str,
+    timeout: float,
+) -> dict[str, Any]:
+    """Wait until the worker has committed its final checkpoint for the start job.
+
+    ``awaiting_approval`` can become visible one checkpoint before the worker marks
+    its job successful. Approving that transient revision correctly trips the
+    optimistic lock, so the verifier waits for the job boundary and then reads the
+    authoritative revision used by the human decision.
+    """
+    deadline = time.monotonic() + timeout
+    last_status = "missing"
+    while time.monotonic() < deadline:
+        jobs = request_json_list(
+            base_url,
+            "GET",
+            f"/api/runs/{run_id}/jobs",
+            token=token,
+        )
+        initial_jobs = [job for job in jobs if job.get("stage") == "start"]
+        if initial_jobs:
+            last_status = str(initial_jobs[-1].get("status", "unknown"))
+            if last_status == "failed":
+                raise VerificationFailure(
+                    f"initial job for run {run_id} failed: "
+                    f"{initial_jobs[-1].get('last_error')}"
+                )
+            if last_status == "succeeded":
+                settled = request_json(
+                    base_url, "GET", f"/api/runs/{run_id}", token=token
+                )
+                require(
+                    settled.get("status") == "awaiting_approval",
+                    (
+                        f"run {run_id} changed to {settled.get('status')} after its "
+                        "initial job settled"
+                    ),
+                )
+                return settled
+        time.sleep(0.2)
+    raise VerificationFailure(
+        f"initial job for run {run_id} did not settle in {timeout:.0f}s; "
+        f"last status={last_status}"
+    )
+
+
 def verify(args: argparse.Namespace) -> dict[str, Any]:
     readiness = request_json(args.base_url, "GET", "/api/ready")
     kube_health = readiness.get("tool_runtime", {}).get("kubernetes_staging", {})
@@ -200,6 +284,12 @@ def verify(args: argparse.Namespace) -> dict[str, Any]:
         run_id,
         admin_token,
         {"awaiting_approval"},
+        args.timeout,
+    )
+    waiting = wait_for_initial_job_settlement(
+        args.base_url,
+        run_id,
+        admin_token,
         args.timeout,
     )
     require(waiting.get("risk_level") == "medium", "scale plan was not medium risk")

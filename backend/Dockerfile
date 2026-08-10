@@ -30,6 +30,7 @@ COPY --chown=10001:10001 ops_sandbox /app/ops_sandbox
 COPY --chown=10001:10001 local_model_service /app/local_model_service
 COPY --chown=10001:10001 kubernetes_connector /app/kubernetes_connector
 COPY --chown=10001:10001 scripts/check-coverage.py /app/scripts/check-coverage.py
+COPY --chown=10001:10001 scripts/verify-kind-agent.py /app/scripts/verify-kind-agent.py
 ENV COVERAGE_FILE=/tmp/.coverage \
     PYTEST_ADDOPTS="-p no:cacheprovider"
 USER harbor

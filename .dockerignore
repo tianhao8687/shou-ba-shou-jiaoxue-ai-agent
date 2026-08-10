@@ -16,6 +16,7 @@ docs/
 design-system/
 scripts/*
 !scripts/check-coverage.py
+!scripts/verify-kind-agent.py
 .git/
 .gitignore
 README.md
