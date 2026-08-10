@@ -97,6 +97,8 @@ class RecordingStore:
         self.claimed = False
         self.finished_status = None
         self.requeued = False
+        self.registry_heartbeats = 0
+        self.registry_removed = False
 
     def reconcile_orphaned_runs(self):
         return []
@@ -121,6 +123,14 @@ class RecordingStore:
         del args, kwargs
         self.requeued = True
         return self.job
+
+    def heartbeat_worker(self, worker_id, metadata=None):
+        del worker_id, metadata
+        self.registry_heartbeats += 1
+
+    def remove_worker(self, worker_id):
+        del worker_id
+        self.registry_removed = True
 
 
 class FailingEngine:
@@ -178,3 +188,5 @@ def test_worker_background_lifecycle_is_observable_when_queue_is_empty() -> None
     worker.start()
     worker.stop()
     assert worker.health()["status"] == "stopped"
+    assert store.registry_heartbeats >= 1
+    assert store.registry_removed is True

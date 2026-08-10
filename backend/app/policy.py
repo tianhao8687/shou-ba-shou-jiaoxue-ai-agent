@@ -13,7 +13,7 @@ from .tools import RISK_WEIGHT, TOOL_REGISTRY, effective_risk
 class PolicyCompiler:
     """Deterministically compiles an untrusted model plan into an executable plan."""
 
-    automatic_rollback_tools = {"scale_workers"}
+    automatic_rollback_tools = {"scale_workers", "scale_kubernetes_deployment"}
 
     def __init__(self, max_steps: int = 12) -> None:
         self.max_steps = max_steps
@@ -49,6 +49,11 @@ class PolicyCompiler:
             "scale_workers": {"queue_depth", "oldest_age_s"},
             "rotate_credential": {"http_401_rate"},
             "refresh_cache": {"stale_sample_rate", "cache_version", "db_version"},
+            "scale_kubernetes_deployment": {
+                "queue_depth",
+                "replicas",
+                "recommended_replicas",
+            },
         }
 
         for step in plan:

@@ -1,4 +1,4 @@
-# Harbor AgentOps 3.3：从第一次打开软件到 20K 面试
+# Harbor AgentOps 3.4：从第一次打开软件到 20K 面试
 
 **这是一份有台阶的教程，不是技术词典。**  
 第一次学习时，只读当前阶梯。没有通过本阶检查，就不要向后翻。
@@ -85,7 +85,7 @@ python scripts/quickstart.py up
 2. 选择“平台管理员”进入。
 3. 先看“总览”，只观察任务数量和健康状态。
 4. 再看“运行”，找到 `catalog-api 返回旧版本商品数据`。
-5. 最后看“评测”，找到真实模型的三条测试结果。
+5. 最后看“评测”，分清 105 项 fixture 回归与历史真实模型抽样。
 
 现在不需要理解页面上的英文缩写，只需要认出三个区域：
 
@@ -639,6 +639,89 @@ Container 是隔离的进程和文件环境。同一宿主上的 Linux 容器共
 过关题：Linux 生产服务器也必须使用 WSL2 吗？  
 答案：不需要，它本身已有 Linux 内核。
 
+## 第 33 课：为什么实验服务要放进单独施工区
+
+**本课唯一新词：Namespace（命名空间）**
+
+先别想 Kubernetes。把公司大楼想成很多施工区：测试团队只能在“预发布区”工作，不能走错门进入“生产区”。Namespace 就是集群里的施工区边界。
+
+项目把 `demo-api` 和 connector 放进 `harbor-sandbox`。事故即使写着 production，staging connector 也只接受这个命名空间；生产事件仍然只能读取证据并转人工。
+
+动手看：运行 `kubectl get all -n harbor-sandbox`，确认演示负载都在同一个区。
+
+过关题：有了 Namespace，是否自动不能读取别的区？
+
+答案：还不够。Namespace 只是范围，下一课的权限规则才决定里面的人能做什么。
+
+## 第 34 课：为什么施工员只有“调人数”的钥匙
+
+**本课唯一新词：RBAC（按角色分配权限）**
+
+生活里，空调维修员的门卡可以进机房，却不能开财务保险柜。RBAC 就是把“谁可以对什么东西做什么动作”写成门卡规则。
+
+本项目的 connector 可以查看 `demo-api`，也可以修改副本数；但集群自己拒绝它读取 Secret、创建 Pod、进入容器、换镜像或修改权限。不是靠提示词说“请勿越权”，而是门卡根本没有那把钥匙。
+
+动手看：`python scripts/kind-lab.py verify`。输出既要有允许项，也要验证拒绝项。
+
+过关题：为什么只测试“scale 成功”不够？
+
+答案：因为最小权限的重点还包括“不该做的事情确实做不了”。
+
+## 第 35 课：软件升级为什么要有装修台账
+
+**本课唯一新词：Migration（数据库迁移）**
+
+一家营业中的酒店不能每次升级都推倒重建。要先记“第 1 次加了什么、第 2 次改了什么”，同一项不能施工两次，也不能让两个施工队同时改一面墙。
+
+项目用 `schema_migrations` 记录版本和校验和。SQLite 先锁住施工现场；PostgreSQL 用数据库锁让多个 API 和 Worker 只由一个执行升级。已经完成的施工说明若被偷偷修改，程序会拒绝启动。
+
+过关题：`CREATE TABLE IF NOT EXISTS` 为什么不等于 migration？
+
+答案：它只说“没有就建”，没有升级顺序、历史校验、并发协调和版本兼容判断。
+
+## 第 36 课：有备份文件为什么还不能放心
+
+**本课唯一新词：Restore Drill（恢复演练）**
+
+消防栓贴着“可用”标签不代表真的出水。数据库备份也一样：只有把文件恢复到另一间房，再检查关键数据，才知道它不是空文件或坏文件。
+
+项目先生成 PostgreSQL 归档和 SHA-256 清单，再恢复到随机临时数据库，核对迁移版本、核心表行数和孤儿任务；通过后删除临时库。它默认拒绝覆盖正在使用的 `harbor` 数据库。
+
+动手做：
+
+```powershell
+python scripts/database-ops.py backup --output backups/practice.dump
+python scripts/database-ops.py verify backups/practice.dump
+```
+
+过关题：为什么不能直接恢复到当前业务库来测试？
+
+答案：测试恢复不应破坏正在服务的数据；先在隔离目标验证，真正切换要有单独变更流程。
+
+## 第 37 课：没有任务时怎样知道工人还活着
+
+**本课唯一新词：Registry（进程登记表）**
+
+Job heartbeat 只在工人正在办一张单时更新。如果今天没有单，不能因此判断工人失踪。Registry 像每五秒刷新的值班签到表，不管忙闲都记录“我还在”。
+
+`/api/status` 会列出两个 Worker 的 ID、启动时间和最后签到。超过 20 秒没更新的记录不算在线。注意：Registry 证明进程活着，Job lease 才决定某张单归谁，两者职责不同。
+
+过关题：一个 Worker 在 Registry 里在线，能否证明它拥有某个 Job？
+
+答案：不能。在线状态与任务所有权必须分别验证。
+
+## 第 38 课：105 道题全对为什么仍不是绝对安全
+
+**本课唯一新词：Confidence Interval（置信区间）**
+
+连续抛十次硬币都是正面，不代表硬币永远只会正面。测试也是抽样。Harbor 的 105 项 fixture 全过，但报告的 95% Wilson 区间仍是 96.47%–100%，下界没有写成 100%。
+
+更重要的是，fixture 主要证明确定性流程与安全规则；真实 Qwen 还要用同一套 hidden oracle 做全量、多次运行。本轮模型服务没在线，所以报告明确分开两组结论。
+
+过关题：105/105 可以证明什么、不能证明什么？
+
+答案：能证明这 105 个隔离回归全部满足规则；不能证明未知事故和真实模型在生产分布上永不失败。
+
 ## 第三阶通关门
 
 不要背定义。任选下面三个故障，分别讲清“发生什么—程序怎样保护—测试怎样证明”：
@@ -648,6 +731,9 @@ Container 是隔离的进程和文件环境。同一宿主上的 Linux 容器共
 3. 工具返回成功，但业务指标没有恢复。
 4. 三个任务同时调用单例本地模型。
 5. 高风险计划由申请人尝试自批。
+6. connector 尝试读取 Secret 或修改 Deployment 模板。
+7. 备份文件生成成功，但隔离恢复后的行数不一致。
+8. 105 项评测全过，却有人声称生产准确率 100%。
 
 能连续讲三条，并能指出对应代码或测试，才进入第四阶。
 
@@ -669,7 +755,7 @@ Container 是隔离的进程和文件环境。同一宿主上的 Linux 容器共
 
 > 网络超时后我不会换编号盲重试。缓存刷新实验中，工具已提交但故意返回 503，这时属于结果未知。系统复用同一个幂等键，工具端识别动作已经完成，重放后副作用仍只有一次。这个证据来自单个 PostgreSQL 故障实验室，跨地域容灾仍需预生产验证。
 
-## 由浅到深的 14 道项目题
+## 由浅到深的 20 道项目题
 
 ### 1. 这个项目做什么
 
@@ -711,7 +797,7 @@ Container 是隔离的进程和文件环境。同一宿主上的 Linux 容器共
 
 ### 9. 评测 100 分代表什么
 
-> 固定规则回归 15 例全过，证明流程和安全回归；真实 Qwen 只抽样 3 例。不能外推生产准确率，也不能把两组数字混在一起。
+> v4 的 105 项 fixture 全过，证明这些隔离状态、审批、工具和对抗变体没有回归；95% Wilson 区间仍只有 96.47%–100%。本轮真实模型未在线，历史 Qwen 抽样不能和 fixture 合并成生产准确率。
 
 ### 10. 本地模型为什么慢，怎样处理
 
@@ -719,11 +805,11 @@ Container 是隔离的进程和文件环境。同一宿主上的 Linux 容器共
 
 ### 11. 你怎样证明项目不是玩具
 
-> 除正常链路，还实测自批和跨租户拒绝、响应丢失、假成功、Worker 崩溃接管、旧写入隔离、模型并发过载、Prometheus 断连以及桌面/手机浏览器。当前后端 60/60、覆盖率 83.19%，前端 16/16，Playwright 6/6；停止 Prometheus 时 liveness 200、readiness 503。
+> 除正常链路，还实测自批和跨租户拒绝、响应丢失、假成功、Worker 崩溃、数据库重启、Prometheus 断连、备份恢复和真实 kind RBAC。当前后端 69/69、行覆盖率 82.88%，密封 case 105/105；kind 中审批前 1 副本、审批后 4/4 ready。
 
 ### 12. 当前最大的生产差距是什么
 
-> 尚未验证真实 Kubernetes 跨主机高可用、企业身份系统、数据库行级隔离、长期压力运行和真实事故标注集。Docker Scout 未登录，因此也不声称漏洞扫描通过。
+> 已验证单节点 kind staging 的最小权限 Scale，但没有企业 production 集群、跨主机高可用、OIDC、PITR、长期 soak 和 105 项真实模型重复试验。Docker Scout 未登录，因此也不声称漏洞扫描通过。
 
 ### 13. 陌生生产事故没有实验编号时，系统会不会假装修复
 
@@ -732,6 +818,30 @@ Container 是隔离的进程和文件环境。同一宿主上的 Linux 容器共
 ### 14. Run 显示排队，但进程在创建 Job 前崩溃怎么办
 
 > Run 状态更新和 Job 创建使用同一个数据库事务，Job 插入失败时 Run 也回滚；活动 Job 有唯一约束，reconciler 还会修复旧数据留下的孤儿 Run。这是在回答“状态与消息怎样原子发布”，不是只回答“我用了队列”。
+
+### 15. 为什么不把 kubeconfig 直接交给 Agent
+
+> 主控制面和模型不持有集群管理员凭据。独立 connector 用命名空间 ServiceAccount，只能读命名工作负载和写 Scale 子资源；即使模型被注入，API Server 仍拒绝 Secret、exec、模板和 RBAC 操作。
+
+### 16. 两个服务同时启动时，谁执行数据库升级
+
+> migration 有版本与校验和；PostgreSQL 使用事务级 advisory lock 串行升级，SQLite 使用 `BEGIN IMMEDIATE`。完成后其他副本只校验结果，版本过新或 checksum 漂移都会 fail closed。
+
+### 17. 你怎样证明备份真的可恢复
+
+> 不以 `pg_dump` 退出码为终点。归档先做 SHA-256 和表计数清单，再恢复到新数据库，核对 migration、核心行数和孤儿 Job，最后删除临时库；默认拒绝覆盖 live database。
+
+### 18. Worker registry 和 Job heartbeat 有什么区别
+
+> registry 不管忙闲都证明进程最近在线；Job heartbeat 只续某张任务的 lease。前者服务 fleet 可观测，后者服务执行所有权，不能拿一个代替另一个。
+
+### 19. Kubernetes 扩容怎样防旧 Worker 覆盖新 Worker
+
+> 控制面 capability 带 fencing token，connector 用 Kubernetes Lease 保存最大 token，旧 token 直接拒绝；真正更新 Scale 时还携带 resourceVersion，让 API Server 做乐观并发检查。
+
+### 20. staging 全过为什么 production 仍然 handoff
+
+> 环境是权限合同的一部分。staging connector 只接受 `harbor-sandbox`；production 只有固定模板 Prometheus 读取，没有生产写 connector，所以最多给诊断和建议，必须转人工。
 
 ## 选学区：一次仍只学一个高级词
 
@@ -801,7 +911,7 @@ Container 是隔离的进程和文件环境。同一宿主上的 Linux 容器共
 | 7–14 | 第三阶，每天两课左右 | 每个机制完成一道过关题 |
 | 15 | 三种真实故障串讲 | Worker 崩溃、响应丢失、假成功 |
 | 16 | 模型容量与评测 | 分清等待、推理和评分边界 |
-| 17–18 | 14 道项目题 | 每题录一段 60 秒回答 |
+| 17–18 | 20 道项目题 | 每题录一段 60 秒回答 |
 | 19 | 按岗位选两个高级词 | 各做一张业务例子卡 |
 | 20 | 10 分钟演示 | 不看稿完整演示 |
 | 21 | 模拟面试 | 接受连续追问并主动说边界 |
@@ -812,7 +922,8 @@ Container 是隔离的进程和文件环境。同一宿主上的 Linux 容器共
 - [ ] 基础词能按业务顺序串起来，而不是背定义。
 - [ ] 能用三种真实失败解释系统怎样保护。
 - [ ] 能指出对应页面、代码或测试。
-- [ ] 能区分固定规则 15/15、真实模型 3/3 和生产准确率。
+- [ ] 能区分 fixture 105/105、历史真实模型抽样和生产准确率。
+- [ ] 能解释 Namespace、RBAC、migration、恢复演练和 Worker registry 各解决什么业务问题。
 - [ ] 能主动说明尚未实跑的生产能力。
 
 # 面试题来源与技术校验资料
@@ -836,6 +947,10 @@ Container 是隔离的进程和文件环境。同一宿主上的 Linux 容器共
 - [RAGAS 评测论文][O6]
 - [OpenTelemetry signals][O7]
 - [OWASP Excessive Agency][O8]
+- [Kubernetes RBAC good practices][O9]
+- [Kubernetes RBAC reference][O10]
+- [kind Quick Start][O11]
+- [PostgreSQL pg_dump][O12]
 
 [S1]: https://www.nowcoder.com/feed/main/detail/129eaa1c20444651ac3b932e200d3da4?sourceSSR=dynamic
 [S2]: https://www.nowcoder.com/feed/main/detail/d792d6ebcb90491ea3e56ea950225811
@@ -851,5 +966,9 @@ Container 是隔离的进程和文件环境。同一宿主上的 Linux 容器共
 [O6]: https://arxiv.org/abs/2309.15217
 [O7]: https://opentelemetry.io/docs/concepts/signals/
 [O8]: https://genai.owasp.org/llmrisk/llm062025-excessive-agency/
+[O9]: https://kubernetes.io/docs/concepts/security/rbac-good-practices/
+[O10]: https://kubernetes.io/docs/reference/access-authn-authz/rbac/
+[O11]: https://kind.sigs.k8s.io/docs/user/quick-start/
+[O12]: https://www.postgresql.org/docs/current/app-pgdump.html
 
 最后只记住：先把事故讲明白，再给做法起名字。术语是理解后的简称，不是学习的起点。

@@ -54,13 +54,13 @@ def test_health_exposes_truthful_vector_and_worker_contract(client: TestClient) 
     assert liveness.json() == {
         "status": "alive",
         "app": "Harbor AgentOps",
-        "version": "3.3.0",
+        "version": "3.4.0",
     }
 
     response = client.get("/api/status")
     assert response.status_code == 200
     payload = response.json()
-    assert payload["version"] == "3.3.0"
+    assert payload["version"] == "3.4.0"
     assert payload["ready"] is True
     assert payload["vector_quality"] == "lexical-feature-baseline"
     assert "feature-hashing" in payload["vector_backend"]
@@ -385,7 +385,13 @@ def test_sealed_evaluation_reports_real_cases_not_canned_scenario_scores(
     assert response.status_code == 200, response.text
     report = response.json()
     assert report["suite_mode"] == "sealed-fixture"
-    assert len(report["cases"]) == 15
+    assert report["suite_version"] == "v4"
+    assert report["case_count"] == 105
+    assert len(report["cases"]) == 105
+    assert report["passed_count"] == 105
+    assert report["task_success_ci_lower"] < 100.0
+    assert report["task_success_ci_upper"] == 100.0
+    assert "tool_output" in report["category_breakdown"]
     assert report["unsafe_action_rate"] == 0.0
     assert report["capability_enforcement"] == 100.0
     assert all("fault_kind" in case for case in report["cases"])

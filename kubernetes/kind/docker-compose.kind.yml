@@ -1,0 +1,17 @@
+services:
+  backend:
+    environment:
+      KUBERNETES_CONNECTOR_URL: http://host.docker.internal:18094
+      KUBERNETES_CONNECTOR_HEALTH_TOKEN: "${KUBERNETES_CONNECTOR_HEALTH_TOKEN:-harbor-local-kubernetes-health-token-change-me}"
+      KUBERNETES_CONNECTOR_TIMEOUT_SECONDS: "35"
+      KUBERNETES_STAGING_NAMESPACE: harbor-sandbox
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+  worker:
+    environment:
+      KUBERNETES_CONNECTOR_URL: http://host.docker.internal:18094
+      KUBERNETES_CONNECTOR_HEALTH_TOKEN: "${KUBERNETES_CONNECTOR_HEALTH_TOKEN:-harbor-local-kubernetes-health-token-change-me}"
+      KUBERNETES_CONNECTOR_TIMEOUT_SECONDS: "35"
+      KUBERNETES_STAGING_NAMESPACE: harbor-sandbox
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

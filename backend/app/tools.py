@@ -37,6 +37,23 @@ class PrometheusServiceInput(StrictToolInput):
     window_minutes: int = Field(ge=1, le=120)
 
 
+class KubernetesTargetInput(StrictToolInput):
+    namespace: str = Field(pattern=r"^[a-z0-9][a-z0-9-]{1,62}$")
+    deployment: str = Field(pattern=r"^[a-z0-9][a-z0-9-]{1,62}$")
+
+
+class InspectKubernetesWorkloadInput(KubernetesTargetInput):
+    include_events: bool = True
+    event_limit: int = Field(default=10, ge=0, le=30)
+    wait_for_ready_replicas: int | None = Field(default=None, ge=1, le=5)
+    timeout_seconds: int = Field(default=0, ge=0, le=30)
+
+
+class ScaleKubernetesDeploymentInput(KubernetesTargetInput):
+    target_replicas: int = Field(ge=1, le=5)
+    change_ticket: str = Field(pattern=r"^CHG-\d{4,}$")
+
+
 class InspectLogsInput(LabTargetInput):
     query: str = Field(min_length=2, max_length=160)
     limit: int = Field(ge=1, le=100)
@@ -87,6 +104,24 @@ TOOL_REGISTRY: dict[str, ToolSpec] = {
         "observer",
         True,
         "生产或预发布事件的只读基础观测；PromQL 由服务端模板生成，调用方不能提交任意查询。",
+    ),
+    "inspect_kubernetes_workload": ToolSpec(
+        "inspect_kubernetes_workload",
+        "读取隔离 Kubernetes namespace 中的 Deployment、Pod、事件和容量信号",
+        RiskLevel.LOW,
+        InspectKubernetesWorkloadInput,
+        "observer",
+        True,
+        "仅用于配置好的 staging namespace 与 Deployment 白名单；不能读取 Secret 或执行 Pod 命令。",
+    ),
+    "scale_kubernetes_deployment": ToolSpec(
+        "scale_kubernetes_deployment",
+        "通过 Kubernetes deployments/scale 子资源调整白名单 Deployment 副本数",
+        RiskLevel.MEDIUM,
+        ScaleKubernetesDeploymentInput,
+        "on-call-lead",
+        False,
+        "仅用于隔离 staging namespace；副本范围 1–5，不能修改镜像、命令、ServiceAccount 或 Pod 模板。",
     ),
     "query_metrics": ToolSpec(
         "query_metrics", "读取实验服务的时序指标快照", RiskLevel.LOW, QueryMetricsInput, "observer", True,
@@ -601,14 +636,27 @@ class PrometheusReadOnlyClient:
             }
 
 
-class RoutingToolClient:
-    """Route sealed-lab tools and production observers without widening either boundary."""
+class KubernetesConnectorClient:
+    """HTTP boundary to the in-cluster, namespace-scoped Kubernetes connector."""
 
-    name = "routed-tool-boundary"
+    name = "kubernetes-namespace-connector"
+    tool_names = frozenset(
+        {"inspect_kubernetes_workload", "scale_kubernetes_deployment"}
+    )
 
-    def __init__(self, lab: ToolClient, prometheus: PrometheusReadOnlyClient) -> None:
-        self.lab = lab
-        self.prometheus = prometheus
+    def __init__(
+        self,
+        base_url: str,
+        health_token: str,
+        timeout_seconds: float,
+        transport: httpx.BaseTransport | None = None,
+    ) -> None:
+        self.base_url = base_url.rstrip("/")
+        if not self.base_url.startswith(("http://", "https://")):
+            raise ValueError("Kubernetes connector URL must be an absolute http(s) URL")
+        self.health_token = health_token
+        self.timeout_seconds = timeout_seconds
+        self.transport = transport
 
     def invoke(
         self,
@@ -620,7 +668,92 @@ class RoutingToolClient:
         job_id: str,
         fencing_token: int,
     ) -> ToolCallResponse:
-        target = self.prometheus if tool_name in self.prometheus.tool_names else self.lab
+        if tool_name not in self.tool_names:
+            raise RuntimeError(f"Kubernetes connector does not implement {tool_name}")
+        with httpx.Client(
+            timeout=httpx.Timeout(self.timeout_seconds, connect=2.0),
+            transport=self.transport,
+        ) as client:
+            response = client.post(
+                f"{self.base_url}/v1/tools/{tool_name}",
+                json=payload,
+                headers={
+                    "Authorization": f"Bearer {capability_token}",
+                    "X-Idempotency-Key": idempotency_key,
+                    "X-Harbor-Control-Tenant": tenant_id,
+                    "X-Harbor-Job-Id": job_id,
+                    "X-Harbor-Fencing-Token": str(fencing_token),
+                },
+            )
+        try:
+            body = response.json()
+        except ValueError as exc:
+            raise RuntimeError(
+                f"Kubernetes connector returned non-JSON HTTP {response.status_code}"
+            ) from exc
+        if response.status_code >= 400:
+            raise RuntimeError(
+                body.get("detail") or f"Kubernetes connector HTTP {response.status_code}"
+            )
+        return ToolCallResponse(
+            status=str(body.get("status", "failed")),
+            summary=str(body.get("summary", "Kubernetes connector 未返回摘要。")),
+            output=dict(body.get("output") or {}),
+            error=body.get("error"),
+        )
+
+    def health(self) -> dict[str, Any]:
+        try:
+            with httpx.Client(timeout=2.0, transport=self.transport) as client:
+                response = client.get(
+                    f"{self.base_url}/health",
+                    headers={"Authorization": f"Bearer {self.health_token}"},
+                )
+                response.raise_for_status()
+                body = response.json()
+            return {"status": body.get("status", "ready"), "mode": self.name, **body}
+        except Exception as exc:
+            return {
+                "status": "unavailable",
+                "mode": self.name,
+                "detail": f"{type(exc).__name__}: Kubernetes connector is not ready",
+            }
+
+
+class RoutingToolClient:
+    """Route each tool to its separately permissioned external boundary."""
+
+    name = "routed-tool-boundary"
+
+    def __init__(
+        self,
+        lab: ToolClient,
+        prometheus: PrometheusReadOnlyClient | None = None,
+        kubernetes: ToolClient | None = None,
+    ) -> None:
+        self.lab = lab
+        self.prometheus = prometheus
+        self.kubernetes = kubernetes
+
+    def invoke(
+        self,
+        tool_name: str,
+        payload: dict[str, Any],
+        idempotency_key: str,
+        capability_token: str,
+        tenant_id: str,
+        job_id: str,
+        fencing_token: int,
+    ) -> ToolCallResponse:
+        if self.prometheus is not None and tool_name in self.prometheus.tool_names:
+            target = self.prometheus
+        elif (
+            self.kubernetes is not None
+            and tool_name in getattr(self.kubernetes, "tool_names", frozenset())
+        ):
+            target = self.kubernetes
+        else:
+            target = self.lab
         return target.invoke(
             tool_name,
             payload,
@@ -633,16 +766,16 @@ class RoutingToolClient:
 
     def health(self) -> dict[str, Any]:
         lab_health = self.lab.health()
-        prometheus_health = self.prometheus.health()
-        ready = (
-            lab_health.get("status") == "ready"
-            and prometheus_health.get("status") == "ready"
-        )
+        boundaries: dict[str, dict[str, Any]] = {"lab": lab_health}
+        if self.prometheus is not None:
+            boundaries["production_observer"] = self.prometheus.health()
+        if self.kubernetes is not None:
+            boundaries["kubernetes_staging"] = self.kubernetes.health()
+        ready = all(item.get("status") == "ready" for item in boundaries.values())
         return {
             "status": "ready" if ready else "unavailable",
             "mode": self.name,
-            "lab": lab_health,
-            "production_observer": prometheus_health,
+            **boundaries,
         }
 
 
@@ -795,34 +928,40 @@ def create_tool_executor(
     prometheus_url: str = "",
     prometheus_bearer_token: str = "",
     prometheus_timeout_seconds: float = 5.0,
+    kubernetes_connector_url: str = "",
+    kubernetes_connector_health_token: str = "",
+    kubernetes_connector_timeout_seconds: float = 10.0,
 ) -> tuple[ToolExecutor, InMemoryFaultLabClient | None]:
+    prometheus = (
+        PrometheusReadOnlyClient(
+            prometheus_url,
+            prometheus_bearer_token,
+            prometheus_timeout_seconds,
+            capabilities,
+        )
+        if prometheus_url
+        else None
+    )
+    kubernetes = (
+        KubernetesConnectorClient(
+            kubernetes_connector_url,
+            kubernetes_connector_health_token,
+            kubernetes_connector_timeout_seconds,
+        )
+        if kubernetes_connector_url
+        else None
+    )
     if mode == "remote":
         client: ToolClient = RemoteToolClient(base_url, health_token, timeout_seconds)
-        if prometheus_url:
-            client = RoutingToolClient(
-                client,
-                PrometheusReadOnlyClient(
-                    prometheus_url,
-                    prometheus_bearer_token,
-                    prometheus_timeout_seconds,
-                    capabilities,
-                ),
-            )
+        if prometheus is not None or kubernetes is not None:
+            client = RoutingToolClient(client, prometheus, kubernetes)
         return ToolExecutor(client, capabilities), None
     if mode != "inprocess":
         raise ValueError("TOOL_MODE must be 'remote' or 'inprocess'")
     lab = InMemoryFaultLabClient()
     client = (
-        RoutingToolClient(
-            lab,
-            PrometheusReadOnlyClient(
-                prometheus_url,
-                prometheus_bearer_token,
-                prometheus_timeout_seconds,
-                capabilities,
-            ),
-        )
-        if prometheus_url
+        RoutingToolClient(lab, prometheus, kubernetes)
+        if prometheus is not None or kubernetes is not None
         else lab
     )
     return ToolExecutor(client, capabilities), lab

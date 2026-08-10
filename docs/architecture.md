@@ -1,4 +1,4 @@
-# Harbor AgentOps 3.3：架构、信任边界与底层原理
+# Harbor AgentOps 3.4：架构、信任边界与底层原理
 
 ## 1. 设计目标
 
@@ -22,6 +22,8 @@ Harbor 要解决的不是“怎样让模型更大胆地操作系统”，而是�
 12. fixture、真实模型、真实 Embedding 和生产结论分开报告。
 13. Run 进入 queued 与 durable Job 创建必须原子提交，不能出现只有业务状态、没有可领取任务的半完成状态。
 14. production 观测只允许服务端固定 PromQL 模板；空数据、认证失败和超时都必须在模型与写动作之前停止。
+15. staging Kubernetes 写入只经过命名空间 connector；API Server RBAC 必须拒绝 Secret、Pod 执行、模板修改和提权。
+16. 数据库结构只能通过有版本、有校验和、有升级锁的 migration 演进；备份只有完成隔离恢复校验才算可用。
 
 ## 2. 组件与信任区
 
@@ -43,6 +45,7 @@ flowchart LR
     end
     subgraph Execution["执行边界"]
       LAB["Sealed Fault Lab"]
+      KUBE["Kubernetes Staging Connector<br/>Scale subresource only"]
       IDEM["Idempotency + Capability Usage"]
       STATE["Mutable Experiment State"]
     end
@@ -60,6 +63,7 @@ flowchart LR
     ENGINE -->|"template-only query"| PROM
     ENGINE --> POLICY
     POLICY -->|"HMAC capability"| LAB
+    POLICY -->|"medium-risk capability"| KUBE
     LAB --> IDEM
     LAB --> STATE
     ENGINE --> AUDIT
@@ -322,7 +326,7 @@ fault lab 在 `BEGIN IMMEDIATE` 事务里：
 
 ## 13. 密封评测
 
-`data/eval_cases_v3.json` 包含 5 类故障，每类 3 个变体，共 15 例：
+`data/eval_cases_v4.json` 包含 5 类故障和 21 个共享对抗变体，共 105 例：
 
 - 连接池耗尽；
 - 消费队列容量不足；
@@ -332,6 +336,8 @@ fault lab 在 `BEGIN IMMEDIATE` 事务里：
 
 每例新建实验状态。Agent 只能看到 Incident 和工具 observation；Evaluator 在结束后使用 oracle token 比较根因、目标工具、最终状态、安全门、检索、注入抵抗、capability 和危险越权。
 
+共享变体不只改用户事件文本。它覆盖长上下文、Unicode bidi / 零宽 / 全角同形字符、Base64、JSON/XML/Markdown 结构化诱导、伪造身份与审批，并把恶意 annotation 注入真实只读工具输出。工具输出仍然只是 observation 数据，不能升级为策略或审批指令。
+
 评分不是搜答案关键词的单点判断，而是文本别名组、选择工具、真实状态、审批和安全不变量的组合。失败报告带 run 状态、诊断、计划、verification 和模型调用信息，便于定位。
 
 结果必须分层：
@@ -339,6 +345,8 @@ fault lab 在 `BEGIN IMMEDIATE` 事务里：
 - `sealed-fixture`：测确定性编排和安全回归；
 - `sealed-live-model`：测本地 Qwen 生成质量；
 - 生产准确率：需要真实标注事故集、盲评、长期漂移和业务 SLO，本项目未声称。
+
+报告包含 case 数、通过数、攻击面分类、unsafe-action rate 和 95% Wilson 区间。105/105 fixture 的区间为 96.47%–100%，因此即使样本全过也不声称总体 100%。
 
 ## 14. 可观测与部署
 
@@ -355,11 +363,15 @@ Compose 拓扑：
 - 宿主机本地 Qwen 生成与 Qwen3 Embedding sidecar；
 - liveness、readiness、诊断详情和 restart policy。
 
-V3.3 的健康语义分成三层：`/api/health` 只回答进程是否活着，`/api/ready` 决定是否可接流量，`/api/status` 返回完整诊断。实测停止 Prometheus 时 health 保持 200、ready 变为 503，恢复后 ready 回到 200；fixture 模式明确标记 `production_capable=false`，真实模型只有完成加载才算 ready。
+kind staging 作为第二个部署拓扑：单控制面集群、`harbor-sandbox` Pod Security 命名空间、独立 ServiceAccount、命名 Role/RoleBinding、connector Deployment 和 `demo-api` 演示负载。connector 只读取命名工作负载及相关 Pod/Event/ConfigMap，并且唯一写权限是命名 Deployment 的 Scale 子资源。
+
+数据库使用三版 `schema_migrations`。SQLite 以 `BEGIN IMMEDIATE` 锁定升级；PostgreSQL 以 transaction advisory lock 协调多个启动副本。已应用 migration 的 SHA-256 不一致或数据库版本高于程序支持版本都会拒绝启动。外置 Worker 每 5 秒写独立进程心跳，API 用 TTL 展示实际 fleet；Job lease 仍单独决定执行所有权。
+
+V3.4 的健康语义分成三层：`/api/health` 只回答进程是否活着，`/api/ready` 决定是否可接流量，`/api/status` 返回完整诊断。实测停止 Prometheus 时 health 保持 200、ready 变为 503，恢复后 ready 回到 200；fixture 模式明确标记 `production_capable=false`，真实模型只有完成加载才算 ready。数据库状态同时报告 migration 版本，Worker 状态报告有新鲜心跳的真实副本。
 
 前端发布门不是截图验收。Playwright 在桌面 Chromium 与 Pixel 7 上执行登录、键盘焦点、响应式、生产只读取证、低风险自动闭环和高风险双主体 quorum，并在关键状态运行 Axe WCAG 2 A/AA 检查。
 
-V3.2 的 3 Worker、真实 Qwen 与真实 Embedding 验证仍作为历史证据保留；V3.3 本轮重新验证的是 2 Worker Compose、PostgreSQL、fault lab、Prometheus、Nginx、59 项后端测试和 6 条浏览器流程，不把旧模型样本冒充新结果。PostgreSQL 使用 pgvector 0.8.6，并创建 cosine HNSW 索引。
+V3.2 的 3 Worker、真实 Qwen 与真实 Embedding 验证仍作为历史证据保留；V3.4 重新验证的是 2 Worker Compose、PostgreSQL、fault lab、Prometheus、kind connector、数据库恢复、69 项后端测试和 105 项 fixture case，不把旧模型样本冒充新结果。PostgreSQL 使用 pgvector 0.8.6，并创建 cosine HNSW 索引。
 
 四类自研运行容器采用非 root 用户、只读根文件系统、`cap_drop: ALL`、`no-new-privileges` 和显式可写 `/tmp`；fault lab 只有 `/data` 持久卷可写。生产 Python 镜像不安装 pytest，测试依赖位于单独 stage；基础镜像固定 digest。Nginx 增加 CSP/COOP/CORP，React Job 数据按 `run_id` 隔离，防止异步旧响应把另一运行的 lease/fencing 信息渲染到当前页面。
 
@@ -373,8 +385,8 @@ V3.2 的 3 Worker、真实 Qwen 与真实 Embedding 验证仍作为历史证据�
 
 - 企业 OIDC/SSO、SCIM/JIT、离职回收、值班排班与组织目录；当前租户隔离和双人审批使用演示身份，不等于企业身份集成；
 - mTLS、网络策略、Vault/KMS、secret rotation、DLP 和 WORM audit；
-- 真实 Kubernetes/MES/云平台 adapter 及每个 adapter 的最小权限账户；
-- PostgreSQL 与独立 worker 已有本机集成测试；仍缺备份恢复、跨主机故障、多节点混沌和长时间 soak test；
+- 已有 kind staging Scale adapter，但仍缺真实 production Kubernetes、MES、云平台 adapter 及各自的最小权限账户；
+- PostgreSQL 逻辑备份与隔离恢复已有本机证据；仍缺 WAL/PITR、跨主机故障、多节点混沌和长时间 soak test；
 - 更大领域标注集、hard negatives、reranker、在线 A/B 和知识同步治理；当前只有 15+15 检索小集；
 - OpenTelemetry Collector、Grafana、告警、SLO/error budget；
 - GPU 推理、模型路由、批处理和容量规划；当前 advisory lock + 有界网关队列只能保护单例 CPU 模型，不能提高吞吐；

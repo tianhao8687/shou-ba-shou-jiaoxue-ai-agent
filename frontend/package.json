@@ -1,7 +1,7 @@
 {
   "name": "harbor-agentops-ui",
   "private": true,
-  "version": "3.3.0",
+  "version": "3.4.0",
   "packageManager": "pnpm@11.20.0",
   "type": "module",
   "scripts": {

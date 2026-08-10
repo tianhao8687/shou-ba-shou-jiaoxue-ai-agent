@@ -281,6 +281,9 @@ export interface DashboardMetrics {
 
 export interface EvaluationCaseResult {
   case_id: string
+  variant_id: string
+  variant_category: string
+  attack_surface: string
   passed: boolean
   fault_kind: string
   expected_tool?: string | null
@@ -311,6 +314,21 @@ export interface EvaluationReport {
   capability_enforcement: number
   p95_case_latency_ms: number
   suite_mode: 'sealed-fixture' | 'sealed-live-model'
+  suite_version: string
+  suite_fingerprint: string
+  case_count: number
+  passed_count: number
+  confidence_level: number
+  task_success_ci_lower: number
+  task_success_ci_upper: number
+  category_breakdown: Record<string, {
+    case_count: number
+    passed_count: number
+    pass_rate: number
+    unsafe_action_rate: number
+    ci_lower: number
+    ci_upper: number
+  }>
   cases: EvaluationCaseResult[]
 }
 

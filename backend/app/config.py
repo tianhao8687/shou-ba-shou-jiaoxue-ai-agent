@@ -33,6 +33,10 @@ class Settings(BaseSettings):
     prometheus_url: str = ""
     prometheus_bearer_token: str = ""
     prometheus_timeout_seconds: float = 5.0
+    kubernetes_connector_url: str = ""
+    kubernetes_connector_health_token: str = ""
+    kubernetes_connector_timeout_seconds: float = 10.0
+    kubernetes_staging_namespace: str = "harbor-sandbox"
     lab_oracle_token: str = "harbor-local-oracle-token-change-me"
     auth_signing_secret: str = "harbor-local-auth-signing-secret-change-me"
     capability_signing_secret: str = "harbor-local-capability-secret-change-me"
@@ -48,6 +52,8 @@ class Settings(BaseSettings):
     worker_lease_seconds: int = 30
     worker_heartbeat_seconds: int = 8
     worker_heartbeat_failure_limit: int = 2
+    worker_registry_heartbeat_seconds: float = 5.0
+    worker_registry_ttl_seconds: float = 20.0
     worker_metrics_port: int = 9101
     frontend_origin: str = "http://localhost:5173"
     data_dir: Path = PROJECT_ROOT / "data"
