@@ -188,7 +188,7 @@ V3.2 保留并实测真实 `OpenVINO/Qwen3-Embedding-0.6B-int4-cw-ov`。sidecar 
 
 融合不是固定“向量权重越大越先进”。校准时直接使用 52% dense 权重，留出前实验出现 MRR 回归；最终使用 lexical strength 调节：精确 AIOps 术语由 BM25 主导，弱词面查询提高 dense 权重。15 条校准集上语义 R@1 从 0.9333 到 1.0；另 15 条留出集 R@1=0.9333、R@3=1.0、MRR=0.9667，与词法基线持平。结论是“不回归且能真实运行”，不是“小样本证明全面提升”。
 
-PostgreSQL 模式使用 pgvector cosine `<=>` 和 HNSW。表名包含向量维度，因此从 256 维 fallback 切换到 1024 维 Qwen 时不会对旧列做危险的原地迁移；知识表是可重建派生索引，源文档仍是 Markdown。
+PostgreSQL 模式使用 pgvector cosine `<=>` 和 HNSW。表名包含向量维度，因此从 256 维 fallback 切换到 1024 维 Qwen 时不会对旧列做危险的原地迁移；知识表是可重建派生索引，源文档仍是 Markdown。API 和多个 Worker 可能同时面对一张全新数据库，因此扩展、派生表、知识种子与索引初始化由独立的 transaction advisory lock 串行；`IF NOT EXISTS` 本身不能消除并发 `CREATE EXTENSION` 的系统目录竞态。
 
 服务路由分数固定为 0.72，并用 `routed` 标签展示；它不是伪造的相似度。metadata route 与 learned retrieval 分开报告，便于评测和调试。
 
@@ -365,13 +365,13 @@ Compose 拓扑：
 
 kind staging 作为第二个部署拓扑：单控制面集群、`harbor-sandbox` Pod Security 命名空间、独立 ServiceAccount、命名 Role/RoleBinding、connector Deployment 和 `demo-api` 演示负载。connector 只读取命名工作负载及相关 Pod/Event/ConfigMap，并且唯一写权限是命名 Deployment 的 Scale 子资源。
 
-数据库使用三版 `schema_migrations`。SQLite 以 `BEGIN IMMEDIATE` 锁定升级；PostgreSQL 以 transaction advisory lock 协调多个启动副本。已应用 migration 的 SHA-256 不一致或数据库版本高于程序支持版本都会拒绝启动。外置 Worker 每 5 秒写独立进程心跳，API 用 TTL 展示实际 fleet；Job lease 仍单独决定执行所有权。
+数据库使用三版 `schema_migrations`。SQLite 以 `BEGIN IMMEDIATE` 锁定升级；PostgreSQL 以 transaction advisory lock 协调多个启动副本。已应用 migration 的 SHA-256 不一致或数据库版本高于程序支持版本都会拒绝启动。Schema migration 与 pgvector 派生索引使用不同的数据库级锁键，避免把两种职责混成一个全局互斥区。外置 Worker 每 5 秒写独立进程心跳，API 用 TTL 展示实际 fleet；Job lease 仍单独决定执行所有权。
 
 V3.4 的健康语义分成三层：`/api/health` 只回答进程是否活着，`/api/ready` 决定是否可接流量，`/api/status` 返回完整诊断。实测停止 Prometheus 时 health 保持 200、ready 变为 503，恢复后 ready 回到 200；fixture 模式明确标记 `production_capable=false`，真实模型只有完成加载才算 ready。数据库状态同时报告 migration 版本，Worker 状态报告有新鲜心跳的真实副本。
 
 前端发布门不是截图验收。Playwright 在桌面 Chromium 与 Pixel 7 上执行登录、键盘焦点、响应式、生产只读取证、低风险自动闭环和高风险双主体 quorum，并在关键状态运行 Axe WCAG 2 A/AA 检查。
 
-V3.2 的 3 Worker、真实 Qwen 与真实 Embedding 验证仍作为历史证据保留；V3.4 重新验证的是 2 Worker Compose、PostgreSQL、fault lab、Prometheus、kind connector、数据库恢复、69 项后端测试和 105 项 fixture case，不把旧模型样本冒充新结果。PostgreSQL 使用 pgvector 0.8.6，并创建 cosine HNSW 索引。
+V3.2 的 3 Worker、真实 Qwen 与真实 Embedding 验证仍作为历史证据保留；V3.4 重新验证的是 2 Worker Compose、PostgreSQL、fault lab、Prometheus、kind connector、数据库恢复、70 项后端测试和 105 项 fixture case，不把旧模型样本冒充新结果。PostgreSQL 使用 pgvector 0.8.6，并创建 cosine HNSW 索引。
 
 四类自研运行容器采用非 root 用户、只读根文件系统、`cap_drop: ALL`、`no-new-privileges` 和显式可写 `/tmp`；fault lab 只有 `/data` 持久卷可写。生产 Python 镜像不安装 pytest，测试依赖位于单独 stage；基础镜像固定 digest。Nginx 增加 CSP/COOP/CORP，React Job 数据按 `run_id` 隔离，防止异步旧响应把另一运行的 lease/fencing 信息渲染到当前页面。
 

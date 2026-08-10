@@ -805,7 +805,7 @@ Job heartbeat 只在工人正在办一张单时更新。如果今天没有单，
 
 ### 11. 你怎样证明项目不是玩具
 
-> 除正常链路，还实测自批和跨租户拒绝、响应丢失、假成功、Worker 崩溃、数据库重启、Prometheus 断连、备份恢复和真实 kind RBAC。当前后端 69/69、行覆盖率 82.88%，密封 case 105/105；kind 中审批前 1 副本、审批后 4/4 ready。
+> 除正常链路，还实测自批和跨租户拒绝、响应丢失、假成功、Worker 崩溃、数据库重启、Prometheus 断连、备份恢复和真实 kind RBAC。当前后端 70/70、行覆盖率 83.41%，密封 case 105/105；kind 中审批前 1 副本、审批后 4/4 ready。
 
 ### 12. 当前最大的生产差距是什么
 
@@ -825,7 +825,7 @@ Job heartbeat 只在工人正在办一张单时更新。如果今天没有单，
 
 ### 16. 两个服务同时启动时，谁执行数据库升级
 
-> migration 有版本与校验和；PostgreSQL 使用事务级 advisory lock 串行升级，SQLite 使用 `BEGIN IMMEDIATE`。完成后其他副本只校验结果，版本过新或 checksum 漂移都会 fail closed。
+> migration 有版本与校验和；PostgreSQL 使用事务级 advisory lock 串行升级，SQLite 使用 `BEGIN IMMEDIATE`。pgvector 冷启动另用一个锁键串行创建扩展、派生表和索引，因为 `IF NOT EXISTS` 也挡不住两个进程同时创建扩展的竞态。完成后其他副本只校验结果，版本过新或 checksum 漂移都会 fail closed。
 
 ### 17. 你怎样证明备份真的可恢复
 
