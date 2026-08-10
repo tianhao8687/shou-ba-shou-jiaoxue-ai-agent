@@ -93,6 +93,7 @@ V3.3 已在本机真实运行 `OpenVINO/Qwen3-Embedding-0.6B-int4-cw-ov`：last-
 - kind staging connector 使用命名空间 ServiceAccount；集群只允许读取命名工作负载并更新 `deployments/scale`，拒绝 Secret、Pod 创建/exec、模板更新和 RBAC 修改。
 - staging 真实链路已完成“1 副本调查 → medium 风险审批 → 4/4 ready → 独立验证 → 实验复位”；connector 以 Kubernetes Lease 保存最大 fencing token 和幂等结果。
 - 数据库使用带 SHA-256 漂移检查的 3 版 migration；PostgreSQL advisory lock 防多个 API / Worker 同时升级。
+- pgvector 冷启动把扩展、派生表、知识种子与 HNSW 初始化放在另一把事务级 advisory lock 内；并发回归会让两个初始化线程同时起跑，防止新库上的 `CREATE EXTENSION` 竞态。
 - Worker 即使空闲也写数据库进程心跳，`/api/status` 能证明当前 fleet 的在线副本，不再固定返回 `verified=false`。
 - PostgreSQL custom-format 备份已真实恢复到隔离临时库，并核对迁移版本、核心表行数与孤儿 Job 后删除临时库。
 - v4 评测为 5 类故障 × 21 个变体 = 105 case，加入工具输出注入、长上下文、Unicode 和结构化诱导，并报告 95% Wilson 区间。
@@ -348,7 +349,7 @@ GitHub Actions 对每个 PR 和 `main` 提交执行五个稳定检查：`Quality
 
 | 证据 | 结果 |
 |---|---|
-| 后端 | 69/69；总覆盖率 82.88%，Store 78.77%，Worker 84.44%，并使用独立 PostgreSQL 和网络 Fault Lab |
+| 后端 | 70/70；总覆盖率 83.41%，Store 78.77%，Worker 84.44%，并使用独立 PostgreSQL 和网络 Fault Lab |
 | 前端 | 18/18 单元测试；TypeScript 与生产构建通过 |
 | 浏览器 | 桌面 + 移动 6/6；包含 Axe 可访问性、审批、只读取证与真实运行链路 |
 | 前端 | 16/16；TypeScript、生产构建通过 |
@@ -403,7 +404,7 @@ docs/               架构和机器可读证据
 - 自动补偿目前仅白名单允许 `scale_workers`；重启、凭据和缓存回滚保持人工接管，避免假装存在安全的通用逆操作。
 - 本地 Qwen CPU 单次推理历史样本约 68–77 秒，不适合高并发在线决策；数据库 advisory lock 与网关有界队列能保护容量，但不能提高吞吐，生产仍需 GPU、批处理、模型路由与容量 SLO。
 - 审计可查询但不是 WORM；生产还需不可篡改存储、集中 DLP、mTLS、Vault/KMS 与安全运营接入。
-- 82.88% 行覆盖率不等于 82.88% 质量；真实 production connector、长期 soak、跨主机故障、企业身份和 105 项真实模型重复试验仍必须单独验证。
+- 83.41% 行覆盖率不等于 83.41% 质量；真实 production connector、长期 soak、跨主机故障、企业身份和 105 项真实模型重复试验仍必须单独验证。
 - Docker Scout 因本机未登录 Docker ID 没有完成 CVE 数据库扫描；交付只声称镜像 digest 固定和运行权限加固，不声称漏洞扫描通过。
 
 完整原理见 [docs/architecture.md](docs/architecture.md)。

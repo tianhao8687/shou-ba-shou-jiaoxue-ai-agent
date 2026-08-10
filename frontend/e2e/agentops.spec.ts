@@ -45,6 +45,9 @@ async function expectNoSeriousA11yViolations(page: Page) {
 test.describe.configure({ mode: 'serial' })
 
 test('login, responsive shell and modal keyboard boundary are accessible', async ({ page }) => {
+  await page.route('**/api/evaluations/latest', async (route) => {
+    await route.fulfill({ status: 200, contentType: 'application/json', body: 'null' })
+  })
   await page.goto('/')
   await expect(page.getByText(/API v3\.4\.0/)).toBeVisible()
   await expectNoSeriousA11yViolations(page)

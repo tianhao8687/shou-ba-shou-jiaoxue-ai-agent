@@ -403,6 +403,15 @@ class PgVectorHybridIndex(HybridMemoryIndex):
         import psycopg
 
         with psycopg.connect(self.database_url) as connection, connection.cursor() as cursor:
+            # API and standalone workers can start against the same fresh
+            # database at the same instant. PostgreSQL's IF NOT EXISTS does
+            # not make concurrent CREATE EXTENSION calls race-free, so keep
+            # extension, table, seed and index setup in one database-scoped
+            # transaction lock.
+            cursor.execute(
+                "SELECT pg_advisory_xact_lock(hashtextextended("
+                "current_database() || ':harbor-agentops:retrieval-index', 0))"
+            )
             cursor.execute("CREATE EXTENSION IF NOT EXISTS vector")
             cursor.execute(
                 f"""

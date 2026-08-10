@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from pathlib import Path
 from threading import Barrier, Event, Lock, Thread
 import time
 from types import SimpleNamespace
@@ -12,10 +13,53 @@ import pytest
 from app.schemas import Incident, RunRecord
 from app.store import PostgresStore
 from app.migrations import LATEST_SCHEMA_VERSION
+from app.retrieval import create_retriever
 import app.store as store_module
 
 
 POSTGRES_URL = os.getenv("HARBOR_TEST_POSTGRES_URL")
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+
+
+@pytest.mark.skipif(
+    not POSTGRES_URL,
+    reason="set HARBOR_TEST_POSTGRES_URL to a dedicated PostgreSQL test database",
+)
+def test_pgvector_initialization_serializes_parallel_process_startup() -> None:
+    assert POSTGRES_URL is not None
+    with psycopg.connect(POSTGRES_URL) as connection, connection.cursor() as cursor:
+        cursor.execute("DROP EXTENSION IF EXISTS vector CASCADE")
+
+    barrier = Barrier(3)
+    failures: list[BaseException] = []
+    backends: list[str] = []
+    guard = Lock()
+
+    def initialize() -> None:
+        barrier.wait()
+        try:
+            retriever = create_retriever(
+                PROJECT_ROOT / "data",
+                "pgvector",
+                POSTGRES_URL,
+            )
+            with guard:
+                backends.append(retriever.backend_name)
+        except BaseException as exc:  # preserve the original cross-thread failure
+            with guard:
+                failures.append(exc)
+
+    threads = [Thread(target=initialize) for _ in range(2)]
+    for thread in threads:
+        thread.start()
+    barrier.wait()
+    for thread in threads:
+        thread.join(timeout=30)
+
+    assert all(not thread.is_alive() for thread in threads)
+    assert failures == []
+    assert len(backends) == 2
+    assert all("postgres-pgvector" in backend for backend in backends)
 
 
 @pytest.mark.skipif(
