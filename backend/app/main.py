@@ -13,6 +13,7 @@ from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 
 from .config import Settings, get_settings
 from .evaluation import EvaluationService
+from .external_validation import ExternalValidationReport, load_external_report
 from .metrics import build_metrics
 from .observability import CONCURRENCY_CONFLICTS
 from .runtime import build_agent_runtime
@@ -40,7 +41,7 @@ from .store import ConcurrencyError, Store
 from .tools import FAULT_DEFINITIONS, TOOL_REGISTRY
 
 
-APP_VERSION = "3.4.0"
+APP_VERSION = "3.5.0"
 
 
 def _token(authorization: str | None) -> str:
@@ -100,6 +101,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             resolved.capability_signing_secret,
             model_adapter,
         )
+        external_validation = load_external_report(
+            resolved.data_dir / "external" / "evidence-v1.json"
+        )
         app.state.settings = resolved
         app.state.store = store
         app.state.retriever = retriever
@@ -108,6 +112,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         app.state.engine = engine
         app.state.worker = worker
         app.state.evaluator = evaluator
+        app.state.external_validation = external_validation
         app.state.model_adapter = model_adapter
         app.state.tool_executor = tool_executor
         app.state.inprocess_lab = inprocess_lab
@@ -490,6 +495,18 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     ) -> EvaluationReport | None:
         _authorize(user, ["observer"])
         return request.app.state.store.latest_evaluation(user.tenant_id)
+
+    @app.get(
+        "/api/evaluations/external/latest",
+        response_model=ExternalValidationReport | None,
+        tags=["evaluations"],
+    )
+    def latest_external_validation(
+        request: Request,
+        user: Annotated[UserIdentity, Depends(current_user)],
+    ) -> ExternalValidationReport | None:
+        _authorize(user, ["observer"])
+        return request.app.state.external_validation
 
     @app.post("/api/evaluations/run", response_model=EvaluationReport, tags=["evaluations"])
     def run_evaluation(

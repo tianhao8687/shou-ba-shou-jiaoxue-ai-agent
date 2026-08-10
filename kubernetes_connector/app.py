@@ -431,7 +431,7 @@ def create_app(
 ) -> FastAPI:
     resolved = settings or ConnectorSettings.from_env()
     connector = NamespaceConnector(resolved, api or InClusterKubernetesApi())
-    application = FastAPI(title="Harbor Kubernetes Connector", version="3.4.0")
+    application = FastAPI(title="Harbor Kubernetes Connector", version="3.5.0")
     application.state.connector = connector
 
     @application.get("/live", include_in_schema=False)

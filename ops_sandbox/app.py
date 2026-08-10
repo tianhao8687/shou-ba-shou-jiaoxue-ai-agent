@@ -244,7 +244,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Harbor Sealed Fault Lab",
-    version="3.4.0",
+    version="3.5.0",
     description="独立故障状态、隐藏真值、签名能力与持久幂等工具边界。",
     lifespan=lifespan,
 )

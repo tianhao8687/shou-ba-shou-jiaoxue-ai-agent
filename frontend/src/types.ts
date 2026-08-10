@@ -332,6 +332,65 @@ export interface EvaluationReport {
   cases: EvaluationCaseResult[]
 }
 
+export interface ExternalValidationGate {
+  id: string
+  passed: boolean
+  observed: number | boolean
+  operator: '>=' | '<=' | '=='
+  threshold: number | boolean
+}
+
+export interface ExternalValidationDataset {
+  id: string
+  source_id: string
+  data_class: string
+  evaluation_kind: string
+  record_count: number
+  holdout_count: number
+  metrics: Record<string, unknown>
+  gates: ExternalValidationGate[]
+  passed: boolean
+  limitations: string[]
+}
+
+export interface ExternalValidationProvenance {
+  source_id: string
+  file_id: string
+  url: string
+  revision: string
+  sha256: string
+  bytes: number
+  cache_hit: boolean
+  verified_at: string
+}
+
+export interface ExternalValidationReport {
+  schema: 'harbor-external-validation-evidence/v1'
+  suite_version: string
+  manifest_fingerprint: string
+  generated_at: string
+  verdict: 'pass' | 'fail'
+  production_claim: false
+  sources_verified: number
+  source_files_verified: number
+  raw_data_committed: false
+  aggregate: {
+    dataset_count: number
+    total_external_records: number
+    holdout_records: number
+    passed_dataset_count: number
+    gate_count: number
+    passed_gate_count: number
+    all_source_hashes_verified: boolean
+    unsafe_write_actions: number
+    external_fault_type_count: number
+    autonomous_taxonomy_coverage: number
+  }
+  datasets: ExternalValidationDataset[]
+  provenance: ExternalValidationProvenance[]
+  boundaries: string[]
+}
+
 export interface KnowledgeDoc {
   id: string
   title: string

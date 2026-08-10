@@ -1,4 +1,4 @@
-# 手把手教学 AI Agent：Harbor AgentOps 3.4
+# 手把手教学 AI Agent：Harbor AgentOps 3.5
 
 这是一个从零基础教程逐步走到生产型 AI Agent 工程实践的完整求职项目。建议第一次访问先阅读 [由浅入深学习指南](./LEARNING_GUIDE.md)，再运行应用和查看架构。
 
@@ -8,6 +8,8 @@
 - [系统架构与设计原理](./docs/architecture.md)：状态机、RAG、工具治理、恢复、评测与可观测性。
 - [厦门 AI Agent 20K+ 岗位与项目报告](./career/厦门_AI_Agent_20K以上岗位与Harbor_AgentOps_3.2最终报告_2026-08-08.md)：26 家公司、28 个岗位和项目能力映射。
 - [v3.4 交付与验收报告](./docs/项目成熟度审计与v3.4交付报告_2026-08-10.md)：已实测内容、机器证据和未完成边界。
+- [外部数据验证报告](./docs/外部数据验证报告_2026-08-10.md)：Loghub、NAB、AIOps Challenge 2025 的固定版本、留出方法、真实结果和生产边界。
+- [v3.5 成熟度复评](./docs/项目成熟度审计与v3.5外部验证交付报告_2026-08-10.md)：外部验证加入后的重新评分、招聘映射和下一阶段差距。
 - [v3.3 成熟度审计与整改报告](./docs/项目成熟度审计与v3.3整改报告_2026-08-10.md)：按源码、容器、数据库、故障和浏览器行为复评，不用 Markdown 代替证据。
 - [v3.4 1–4 项交付与复评报告](./docs/项目成熟度审计与v3.4交付报告_2026-08-10.md)：真实 kind staging、迁移、备份恢复、可靠性和 105 项对抗评测。
 - [岗位明细 CSV](./career/厦门_AI_Agent_20K以上岗位明细_2026-08-08.csv)：逐条招聘来源和需求证据。
@@ -22,6 +24,8 @@ Harbor AgentOps 是一个本地优先、证据约束、可恢复的 AIOps Agent 
 
 - 运行输入没有 `expected_cause`、标准计划或预期答案。
 - 105 个密封评测 case 每次创建新实验和数据库；oracle 只在运行结束后由评测器读取。
+- 外部套件实际下载第三方日志、真实时序和 400 个故障案例；提交号、字节数与 SHA-256 固定，原始文件不进入 Git。
+- 评测页面把内部 fixture 与外部证据分成两个标签；当前外部基线 9/9 门槛通过，但 AIOps 外部故障自动覆盖明确显示为 0%，不包装成生产满分。
 - 模型只输出小型 `CompactDraftProposal`，不能签发权限或直接调用工具。
 - 服务端根据真实观察物化前置条件、成功条件、风险、容量目标和回滚。
 - 所有 Run 都绑定控制面租户；列表、详情、任务、指标、证据和动作接口按租户隔离。
@@ -266,7 +270,7 @@ python scripts/verify-kind-agent.py
 
 最后一条命令验证审批前无写入、审批后真实扩到 4/4 ready、独立检查和实验复位。只复查 RBAC 与 connector 健康可执行 `python scripts/kind-lab.py verify`；删除实验集群执行 `python scripts/kind-lab.py down`。
 
-### 5. 数据恢复、可靠性与 105 项评测
+### 5. 数据恢复、可靠性与内部/外部评测
 
 ```powershell
 # 生成带 SHA-256 manifest 的事务一致备份，并恢复到隔离临时库验证
@@ -281,6 +285,12 @@ python scripts/reliability-lab.py `
 
 # fixture 全量密封评测；真实模型在线时将 mode 改为 live
 python scripts/run-evaluation-suite.py --mode fixture
+
+# 首次联网获取 8 个固定版本外部文件、校验哈希并运行留出评测
+python scripts/run-external-validation.py
+
+# 使用已经验真的缓存断网复跑
+python scripts/run-external-validation.py --offline
 ```
 
 ## 演示身份
@@ -344,17 +354,15 @@ python scripts/benchmark-api.py --requests 2000 --concurrency 64
 python scripts/check-portability.py
 ```
 
-GitHub Actions 对每个 PR 和 `main` 提交执行五个稳定检查：`Quality gates`、`Backend tests`、`Frontend tests`、`Compose smoke and browser E2E`、`kind least-privilege staging E2E`。Compose job 还执行备份恢复和依赖故障矩阵；kind job验证真实 RBAC、审批、Scale 与独立就绪证据。
+GitHub Actions 对每个 PR 和 `main` 提交执行六个稳定检查：`Quality gates`、`Pinned external data validation`、`Backend tests`、`Frontend tests`、`Compose smoke and browser E2E`、`kind least-privilege staging E2E`。外部数据 job 先联网核验固定字节，再断网复跑；Compose job 执行备份恢复和依赖故障矩阵；kind job 验证真实 RBAC、审批、Scale 与独立就绪证据。
 
-2026-08-10 v3.4 本机验证：
+2026-08-10 v3.5 本机验证：
 
 | 证据 | 结果 |
 |---|---|
-| 后端 | 70/70；总覆盖率 83.41%，Store 78.77%，Worker 84.44%，并使用独立 PostgreSQL 和网络 Fault Lab |
-| 前端 | 18/18 单元测试；TypeScript 与生产构建通过 |
+| 后端 | 本机 72 passed、7 项环境集成测试 skipped；总覆盖率 82.04%，新增外部评测模块 98%；PostgreSQL/Fault Lab 全量仍由 CI job 执行 |
+| 前端 | 19/19 单元测试；TypeScript 与生产构建通过 |
 | 浏览器 | 桌面 + 移动 6/6；包含 Axe 可访问性、审批、只读取证与真实运行链路 |
-| 前端 | 16/16；TypeScript、生产构建通过 |
-| 浏览器 | 6/6；桌面 Chromium + Pixel 7；三条关键业务流均带 Axe WCAG 2 A/AA 检查 |
 | 完整启动入口 | 中文目录直接运行 `quickstart.py up --workers 2`，逐镜像构建、就绪等待和 HTTP smoke 全通过 |
 | 双 Worker | 两个当前容器分别处理 5 个和 4 个成功 Job；PostgreSQL 16 连接竞争单 Job 仍只领取一次 |
 | 生产观测 | 正常 Prometheus 模拟返回 4/4 指标后才调用模型；空数据、401、超时均无模型调用、无写动作并转人工 |
@@ -367,8 +375,9 @@ GitHub Actions 对每个 PR 和 `main` 提交执行五个稳定检查：`Quality
 | 数据恢复 | 120,236-byte 备份已恢复；3 个 migration、核心表行数和 0 orphan Job 一致 |
 | 可靠性 | 8 次运行、4 次 Worker 重启、2 次 DB 重启、1 次 Prometheus 停机；0 失败 |
 | 密封评测 | v4 105/105 fixture 通过、0 unsafe action；95% Wilson 区间 96.47%–100% |
+| 外部数据 | 3 个独立来源、8 个文件哈希匹配、34,984 条记录、29,125 条留出；9/9 基础门槛通过，外部自动故障覆盖 0% |
 
-本轮详细证据、整改前后评分与未完成边界见 `docs/项目成熟度审计与v3.4交付报告_2026-08-10.md`；机器可读的 105 项结果见 `docs/evaluation-evidence-v4.json`。历史真实模型明细仍见 `docs/validation-evidence-v3.2-2026-08-08.json`。fixture 成绩和历史真实 Qwen 抽样都不能外推成生产准确率。
+本轮工程基线见 `docs/项目成熟度审计与v3.4交付报告_2026-08-10.md`，新增外部验证见 `docs/外部数据验证报告_2026-08-10.md`；机器可读结果分别为 `docs/evaluation-evidence-v4.json` 和 `data/external/evidence-v1.json`。fixture、公开外部数据和历史真实 Qwen 抽样都不能外推成目标公司的生产准确率。
 
 ## 目录
 
@@ -382,15 +391,16 @@ backend/app/
   migrations.py     版本化 schema、校验和、SQLite/PostgreSQL 升级锁
   tools.py          工具注册表、capability、幂等客户端
   evaluation.py     密封实验、隐藏 oracle、逐项评分
+  external_validation.py  外部来源校验、隔离切分、检测与安全评分
 ops_sandbox/        独立持久故障与工具服务
 kubernetes_connector/命名空间最小权限 Kubernetes 工具边界
 kubernetes/kind/    固定版本 kind 集群、RBAC、演示工作负载与 Compose override
 local_model_service/本地 OpenVINO Qwen sidecar
 local_embedding_service/本地 OpenVINO Qwen3 Embedding sidecar
 frontend/           运行、评测、知识、策略控制台
-data/               手册、检索集与 V4 105 项密封用例
+data/               手册、检索集、V4 密封用例与外部来源/证据清单
 observability/      Prometheus 配置
-scripts/            启动、真实模型/Embedding 验证、检索评测、压测
+scripts/            启动、真实模型/Embedding、外部数据、检索评测与压测
 docs/               架构和机器可读证据
 ```
 

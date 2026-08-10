@@ -1,0 +1,352 @@
+{
+  "schema": "harbor-external-validation-evidence/v1",
+  "suite_version": "external-v1",
+  "manifest_fingerprint": "e6ef994ff09ba2ea582cf9f5f3f853d920159f0c6344f2b65066370f9df58507",
+  "generated_at": "2026-08-10T15:42:06.383349Z",
+  "verdict": "pass",
+  "production_claim": false,
+  "sources_verified": 3,
+  "source_files_verified": 8,
+  "raw_data_committed": false,
+  "aggregate": {
+    "dataset_count": 3,
+    "total_external_records": 34984,
+    "holdout_records": 29125,
+    "passed_dataset_count": 3,
+    "gate_count": 9,
+    "passed_gate_count": 9,
+    "all_source_hashes_verified": true,
+    "unsafe_write_actions": 0,
+    "external_fault_type_count": 18,
+    "autonomous_taxonomy_coverage": 0.0
+  },
+  "datasets": [
+    {
+      "id": "loghub-bgl-holdout",
+      "source_id": "loghub-bgl-2k",
+      "data_class": "production-system-log-sample",
+      "evaluation_kind": "supervised log anomaly triage with sealed row holdout",
+      "record_count": 2000,
+      "holdout_count": 1300,
+      "metrics": {
+        "sample_count": 1300,
+        "positive_count": 90,
+        "tp": 83,
+        "fp": 11,
+        "tn": 1199,
+        "fn": 7,
+        "precision": 0.883,
+        "recall": 0.9222,
+        "f1": 0.9022,
+        "balanced_accuracy": 0.9566,
+        "fit_count": 388,
+        "tune_count": 312,
+        "holdout_count": 1300,
+        "selected_threshold": 0.95,
+        "feature_contract": "level + component + type + normalized raw content tokens/bigrams",
+        "forbidden_inference_fields": [
+          "Label",
+          "EventId",
+          "EventTemplate"
+        ],
+        "unseen_template_holdout": {
+          "sample_count": 106,
+          "positive_count": 22,
+          "tp": 15,
+          "fp": 3,
+          "tn": 81,
+          "fn": 7,
+          "precision": 0.8333,
+          "recall": 0.6818,
+          "f1": 0.75,
+          "balanced_accuracy": 0.8231
+        }
+      },
+      "gates": [
+        {
+          "id": "log_holdout_f1",
+          "passed": true,
+          "observed": 0.9022,
+          "operator": ">=",
+          "threshold": 0.6
+        },
+        {
+          "id": "log_holdout_balanced_accuracy",
+          "passed": true,
+          "observed": 0.9566,
+          "operator": ">=",
+          "threshold": 0.7
+        }
+      ],
+      "passed": true,
+      "limitations": [
+        "The 2k file is a publisher-provided sample, not the full 708.76 MiB BGL corpus.",
+        "This measures anomaly triage on log lines; it does not prove root-cause diagnosis or repair.",
+        "Hash partitioning prevents row overlap, but repeated operational patterns may occur across partitions."
+      ]
+    },
+    {
+      "id": "nab-real-timeseries-holdout",
+      "source_id": "numenta-nab-real",
+      "data_class": "real-world-time-series",
+      "evaluation_kind": "causal robust anomaly detection with series-level holdout",
+      "record_count": 32584,
+      "holdout_count": 27425,
+      "metrics": {
+        "point_count": 27425,
+        "window_count": 6,
+        "event_hits": 5,
+        "alert_count": 151,
+        "true_alerts": 33,
+        "false_alerts": 118,
+        "event_recall": 0.8333,
+        "alert_precision": 0.2185,
+        "event_f1": 0.3463,
+        "false_alerts_per_1000_points": 4.3026,
+        "median_detection_delay_seconds": 21600.0,
+        "calibration_series": [
+          "nab-cpu-calibration",
+          "nab-speed-calibration"
+        ],
+        "holdout_series": [
+          "nab-network-holdout",
+          "nab-machine-holdout"
+        ],
+        "selected_parameters": {
+          "causal_window_points": 96,
+          "robust_score_threshold": 6.0,
+          "persistence_points": 2,
+          "refractory_points": 12
+        },
+        "per_holdout_series": {
+          "nab-network-holdout": {
+            "point_count": 4730,
+            "window_count": 2,
+            "event_hits": 2,
+            "alert_count": 94,
+            "true_alerts": 18,
+            "false_alerts": 76,
+            "event_recall": 1.0,
+            "alert_precision": 0.1915,
+            "event_f1": 0.3214,
+            "false_alerts_per_1000_points": 16.0677,
+            "median_detection_delay_seconds": 17700.0
+          },
+          "nab-machine-holdout": {
+            "point_count": 22695,
+            "window_count": 4,
+            "event_hits": 3,
+            "alert_count": 57,
+            "true_alerts": 15,
+            "false_alerts": 42,
+            "event_recall": 0.75,
+            "alert_precision": 0.2632,
+            "event_f1": 0.3896,
+            "false_alerts_per_1000_points": 1.8506,
+            "median_detection_delay_seconds": 58500.0
+          }
+        },
+        "oracle_visibility": "anomaly windows are used only after holdout alerts are generated"
+      },
+      "gates": [
+        {
+          "id": "timeseries_event_recall",
+          "passed": true,
+          "observed": 0.8333,
+          "operator": ">=",
+          "threshold": 0.5
+        },
+        {
+          "id": "timeseries_alert_precision",
+          "passed": true,
+          "observed": 0.2185,
+          "operator": ">=",
+          "threshold": 0.2
+        },
+        {
+          "id": "timeseries_event_f1",
+          "passed": true,
+          "observed": 0.3463,
+          "operator": ">=",
+          "threshold": 0.3
+        },
+        {
+          "id": "timeseries_false_alerts_per_1000",
+          "passed": true,
+          "observed": 4.3026,
+          "operator": "<=",
+          "threshold": 25.0
+        }
+      ],
+      "passed": true,
+      "limitations": [
+        "Only four pinned NAB series are used; this is not a score on the complete 58-file benchmark.",
+        "The detector raises read-only triage alerts and does not identify a root cause or execute a repair.",
+        "Two series tune generic detector parameters; the two holdout series are never used for tuning."
+      ]
+    },
+    {
+      "id": "aiops-2025-no-evidence-safety",
+      "source_id": "aiops-challenge-2025",
+      "data_class": "third-party-chaos-injected-kubernetes-incidents",
+      "evaluation_kind": "calibrated abstention and oracle-isolation contract",
+      "record_count": 400,
+      "holdout_count": 400,
+      "metrics": {
+        "case_count": 400,
+        "matched_oracle_count": 400,
+        "abstention_count": 400,
+        "insufficient_evidence_abstention_rate": 1.0,
+        "unsafe_write_actions": 0,
+        "oracle_leaks": 0,
+        "unique_fault_types": 18,
+        "autonomous_taxonomy_matches": 0,
+        "autonomous_taxonomy_coverage": 0.0,
+        "fault_type_distribution": {
+          "pod failure": 45,
+          "node memory stress": 38,
+          "io fault": 28,
+          "network corrupt": 27,
+          "network delay": 25,
+          "node cpu stress": 23,
+          "cpu stress": 22,
+          "network loss": 21,
+          "node disk fill": 21,
+          "code error": 21,
+          "dns error": 21,
+          "memory stress": 20,
+          "target port misconfig": 18,
+          "pod kill": 15,
+          "jvm latency": 15,
+          "jvm gc": 14,
+          "jvm cpu": 13,
+          "jvm exception": 13
+        },
+        "ground_truth_evidence_modalities": {
+          "metric": 954,
+          "log": 752,
+          "trace": 172
+        },
+        "diagnostic_accuracy": null,
+        "diagnostic_accuracy_reason": "The lightweight input contains only a time window; the 12 GB telemetry archives were not downloaded, so guessing the hidden cause is forbidden."
+      },
+      "gates": [
+        {
+          "id": "insufficient_evidence_abstention_rate",
+          "passed": true,
+          "observed": 1.0,
+          "operator": ">=",
+          "threshold": 1.0
+        },
+        {
+          "id": "unsafe_write_actions",
+          "passed": true,
+          "observed": 0,
+          "operator": "<=",
+          "threshold": 0
+        },
+        {
+          "id": "oracle_leaks",
+          "passed": true,
+          "observed": 0,
+          "operator": "<=",
+          "threshold": 0
+        }
+      ],
+      "passed": true,
+      "limitations": [
+        "The lightweight suite downloads case inputs and ground truth, not the approximately 12 GB extracted telemetry archives.",
+        "Therefore it measures safe abstention and taxonomy coverage, not AIOps 2025 root-cause accuracy.",
+        "These are controlled chaos incidents on a benchmark stack, not private enterprise production incidents."
+      ]
+    }
+  ],
+  "provenance": [
+    {
+      "source_id": "loghub-bgl-2k",
+      "file_id": "loghub-bgl-2k-structured",
+      "url": "https://raw.githubusercontent.com/logpai/loghub/dd61d0952749ee7963bde24220d1be5ede023033/BGL/BGL_2k.log_structured.csv",
+      "revision": "dd61d0952749ee7963bde24220d1be5ede023033",
+      "sha256": "3fe74103c0b02a28514534e2a47257a3f770135ca61afd425bbd3b9d6a31fe26",
+      "bytes": 425129,
+      "cache_hit": true,
+      "verified_at": "2026-08-10T15:42:02.078362Z"
+    },
+    {
+      "source_id": "numenta-nab-real",
+      "file_id": "nab-cpu-calibration",
+      "url": "https://raw.githubusercontent.com/numenta/NAB/ea702d75cc2258d9d7dd35ca8e5e2539d71f3140/data/realAWSCloudwatch/ec2_cpu_utilization_24ae8d.csv",
+      "revision": "ea702d75cc2258d9d7dd35ca8e5e2539d71f3140",
+      "sha256": "ab446fbd8b9f37507eb2fdb06315826d8daeef02e241133ce06e0ee571ba53d9",
+      "bytes": 105367,
+      "cache_hit": true,
+      "verified_at": "2026-08-10T15:42:02.078901Z"
+    },
+    {
+      "source_id": "numenta-nab-real",
+      "file_id": "nab-speed-calibration",
+      "url": "https://raw.githubusercontent.com/numenta/NAB/ea702d75cc2258d9d7dd35ca8e5e2539d71f3140/data/realTraffic/speed_7578.csv",
+      "revision": "ea702d75cc2258d9d7dd35ca8e5e2539d71f3140",
+      "sha256": "15ba994384730cb5a2e6818f17ded1430b40d92eb7a08e5b1a48a445c8c350f6",
+      "bytes": 25928,
+      "cache_hit": true,
+      "verified_at": "2026-08-10T15:42:02.079294Z"
+    },
+    {
+      "source_id": "numenta-nab-real",
+      "file_id": "nab-network-holdout",
+      "url": "https://raw.githubusercontent.com/numenta/NAB/ea702d75cc2258d9d7dd35ca8e5e2539d71f3140/data/realAWSCloudwatch/ec2_network_in_5abac7.csv",
+      "revision": "ea702d75cc2258d9d7dd35ca8e5e2539d71f3140",
+      "sha256": "c27ef93f582af63bf42e80d804764cbe64ae987620f3cfab5477d6ebb3c6157e",
+      "bytes": 120827,
+      "cache_hit": true,
+      "verified_at": "2026-08-10T15:42:02.079963Z"
+    },
+    {
+      "source_id": "numenta-nab-real",
+      "file_id": "nab-machine-holdout",
+      "url": "https://raw.githubusercontent.com/numenta/NAB/ea702d75cc2258d9d7dd35ca8e5e2539d71f3140/data/realKnownCause/machine_temperature_system_failure.csv",
+      "revision": "ea702d75cc2258d9d7dd35ca8e5e2539d71f3140",
+      "sha256": "92bf5b87fc7f9bba8ca0b7ec63ccaac8cb4a1371a258e8c29a10ae9c018d82a4",
+      "bytes": 732223,
+      "cache_hit": true,
+      "verified_at": "2026-08-10T15:42:02.080774Z"
+    },
+    {
+      "source_id": "numenta-nab-real",
+      "file_id": "nab-anomaly-windows",
+      "url": "https://raw.githubusercontent.com/numenta/NAB/ea702d75cc2258d9d7dd35ca8e5e2539d71f3140/labels/combined_windows.json",
+      "revision": "ea702d75cc2258d9d7dd35ca8e5e2539d71f3140",
+      "sha256": "1e1fbc4601321aad8d0f8b3784c8134299379f68f6c1f7777565f8ffd57ab6b1",
+      "bytes": 15359,
+      "cache_hit": true,
+      "verified_at": "2026-08-10T15:42:02.081114Z"
+    },
+    {
+      "source_id": "aiops-challenge-2025",
+      "file_id": "aiops-2025-input",
+      "url": "https://www.aiops.cn/gitlab/aiops-live-benchmark/agenticopseval/-/raw/69cf36430b43024d02530c610b1a4738b5c9a7fb/AIOps2025/input.json",
+      "revision": "69cf36430b43024d02530c610b1a4738b5c9a7fb",
+      "sha256": "db10c6d517ca5a8ab8fb73f203b345f729bdc396581e9d9d55afd92d6591f0e9",
+      "bytes": 74146,
+      "cache_hit": true,
+      "verified_at": "2026-08-10T15:42:02.081648Z"
+    },
+    {
+      "source_id": "aiops-challenge-2025",
+      "file_id": "aiops-2025-groundtruth",
+      "url": "https://www.aiops.cn/gitlab/aiops-live-benchmark/agenticopseval/-/raw/69cf36430b43024d02530c610b1a4738b5c9a7fb/AIOps2025/groundtruth.jsonl",
+      "revision": "69cf36430b43024d02530c610b1a4738b5c9a7fb",
+      "sha256": "e79a77f610b4a0d08f23c3a6d6aa96576035e4b7f5ec481abae90801d5e70eb0",
+      "bytes": 335053,
+      "cache_hit": true,
+      "verified_at": "2026-08-10T15:42:02.082262Z"
+    }
+  ],
+  "boundaries": [
+    "通过只表示固定版本的公开数据合同和预声明门槛成立，不代表已经在目标公司的私有生产流量上验证。",
+    "Loghub 与 NAB 测量只读检测和分流质量，不验证自动根因修复。",
+    "AIOps 2025 轻量模式只验证无遥测时拒绝猜测；完整归档评测前，根因准确率仍是未测量。",
+    "第三方原始文件只保留在 Git 忽略的本地缓存；仓库仅保存 URL、版本、哈希、许可证、聚合指标和来源回执。"
+  ]
+}

@@ -11,6 +11,7 @@ node_modules/
 .tools/
 backups/
 artifacts/reliability/
+artifacts/external-validation/
 dist/
 .vite/
 playwright-report/
