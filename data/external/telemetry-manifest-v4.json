@@ -1,0 +1,109 @@
+{
+  "schema": "harbor-telemetry-source-manifest/v1",
+  "suite_version": "telemetry-v4",
+  "frozen_at": "2026-08-11T02:00:00+08:00",
+  "ruleset_version": "deterministic-rca-v3",
+  "source": {
+    "id": "aiops-challenge-2025",
+    "publisher": "AIOps Challenge / Dan Pei",
+    "title": "AIOps Challenge 2025 multimodal telemetry",
+    "repository_url": "https://www.aiops.cn/gitlab/aiops-live-benchmark/agenticopseval/-/tree/main/AIOps2025",
+    "revision": "575c95a02987447b3668874f543802018040afea",
+    "data_class": "third-party-chaos-injected-kubernetes-telemetry",
+    "independence": "The project authors did not create the 400 incidents, telemetry, or labels.",
+    "license": {
+      "name": "CC BY-NC 4.0",
+      "url": "https://creativecommons.org/licenses/by-nc/4.0/",
+      "raw_redistribution": "not-committed"
+    }
+  },
+  "metadata": {
+    "input": {
+      "url": "https://www.aiops.cn/gitlab/aiops-live-benchmark/agenticopseval/-/raw/575c95a02987447b3668874f543802018040afea/AIOps2025/input.json",
+      "local_name": "aiops2025/input.json",
+      "sha256": "db10c6d517ca5a8ab8fb73f203b345f729bdc396581e9d9d55afd92d6591f0e9",
+      "bytes": 74146,
+      "role": "predictor-input"
+    },
+    "oracle": {
+      "url": "https://www.aiops.cn/gitlab/aiops-live-benchmark/agenticopseval/-/raw/575c95a02987447b3668874f543802018040afea/AIOps2025/groundtruth.jsonl",
+      "local_name": "aiops2025/groundtruth.jsonl",
+      "sha256": "e79a77f610b4a0d08f23c3a6d6aa96576035e4b7f5ec481abae90801d5e70eb0",
+      "bytes": 335053,
+      "role": "post-freeze-scoring-only"
+    }
+  },
+  "archives": [
+    {
+      "id": "aiops-2025-06-09",
+      "date": "2025-06-09",
+      "role": "calibration",
+      "url": "https://www.aiops.cn/gitlab/aiops-live-benchmark/agenticopseval/-/raw/575c95a02987447b3668874f543802018040afea/AIOps2025/2025-06-09.tar.gz?lfs=true",
+      "local_name": "aiops2025-telemetry/2025-06-09.tar.gz",
+      "extract_dir": "aiops2025-telemetry/2025-06-09",
+      "sha256": "c5cd27de256f9ef9a215d38394980d6556f272e4ce5c7f9b0cfd632f8d0f0d18",
+      "md5": "13b568b8f3da2b77ffa765cf20502253",
+      "bytes": 419611075,
+      "coverage_start": "2025-06-09T00:00:00Z",
+      "coverage_end": "2025-06-09T15:59:59Z"
+    },
+    {
+      "id": "aiops-2025-06-17",
+      "date": "2025-06-17",
+      "role": "validation",
+      "url": "https://www.aiops.cn/gitlab/aiops-live-benchmark/agenticopseval/-/raw/575c95a02987447b3668874f543802018040afea/AIOps2025/2025-06-17.tar.gz?lfs=true",
+      "local_name": "aiops2025-telemetry/2025-06-17.tar.gz",
+      "extract_dir": "aiops2025-telemetry/2025-06-17",
+      "sha256": "1b57de94079b46fe87fbf87d5ba3b8e453d8250784ade7f6b356880652bad5a7",
+      "md5": "9e19c346a5f1095c523c1901df89330e",
+      "bytes": 450546122,
+      "coverage_start": "2025-06-16T16:00:00Z",
+      "coverage_end": "2025-06-17T15:59:59Z"
+    },
+    {
+      "id": "aiops-2025-06-18",
+      "date": "2025-06-18",
+      "role": "validation",
+      "url": "https://www.aiops.cn/gitlab/aiops-live-benchmark/agenticopseval/-/raw/575c95a02987447b3668874f543802018040afea/AIOps2025/2025-06-18.tar.gz?lfs=true",
+      "local_name": "aiops2025-telemetry/2025-06-18.tar.gz",
+      "extract_dir": "aiops2025-telemetry/2025-06-18",
+      "sha256": "03c323ec9469c3875bfe2723600636b969344881fb6213cc172575b3aae682f5",
+      "md5": "aa43548b39da19ce7b87997183634a54",
+      "bytes": 472359711,
+      "coverage_start": "2025-06-17T16:00:00Z",
+      "coverage_end": "2025-06-18T15:59:59Z"
+    },
+    {
+      "id": "aiops-2025-06-19",
+      "date": "2025-06-19",
+      "role": "holdout",
+      "url": "https://www.aiops.cn/gitlab/aiops-live-benchmark/agenticopseval/-/raw/575c95a02987447b3668874f543802018040afea/AIOps2025/2025-06-19.tar.gz?lfs=true",
+      "local_name": "aiops2025-telemetry/2025-06-19.tar.gz",
+      "extract_dir": "aiops2025-telemetry/2025-06-19",
+      "sha256": "7cf8b88fc69d6aad20daaac6adadc3e7a7c25d2df02c205067002101fd9b7d63",
+      "md5": "19fcd4e7067f7c2f93a96b9ed76f1884",
+      "bytes": 555227586,
+      "coverage_start": "2025-06-18T16:00:00Z",
+      "coverage_end": "2025-06-19T15:59:59Z"
+    }
+  ],
+  "protocol": {
+    "predictor_oracle_access": "forbidden",
+    "prediction_freeze": "atomic-json-then-sha256",
+    "scorer_order": "oracle-opened-after-prediction-freeze",
+    "write_actions": "disabled",
+    "timezone_contract": "archive names are CST; row timestamps and case windows are UTC"
+  },
+  "gates": {
+    "archive_hashes_verified": true,
+    "holdout_case_count_min": 20,
+    "prediction_freeze_verified": true,
+    "oracle_leaks_max": 0,
+    "unsafe_write_actions_max": 0,
+    "multimodal_case_coverage_min": 0.35,
+    "entity_top3_accuracy_min": 0.4,
+    "fault_type_top3_accuracy_min": 0.3,
+    "exact_rca_top1_accuracy_min": 0.1,
+    "evidence_modality_recall_min": 0.5
+  }
+}

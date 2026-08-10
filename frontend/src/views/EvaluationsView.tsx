@@ -1,12 +1,14 @@
 import { useMemo, useState, type CSSProperties } from 'react'
-import { Check, Database, FlaskConical, Play, RefreshCw, ShieldCheck, Target, Wrench, X } from 'lucide-react'
+import { Activity, Check, Database, FlaskConical, Play, RefreshCw, ShieldCheck, Target, Wrench, X } from 'lucide-react'
 import { ExternalValidationPanel } from '../components/ExternalValidationPanel'
-import type { EvaluationReport, ExternalValidationReport, UserIdentity } from '../types'
+import { TelemetryValidationPanel } from '../components/TelemetryValidationPanel'
+import type { EvaluationReport, ExternalValidationReport, TelemetryValidationReport, UserIdentity } from '../types'
 import { formatDateTime } from '../utils'
 
 interface EvaluationsViewProps {
   report?: EvaluationReport
   externalReport?: ExternalValidationReport
+  telemetryReport?: TelemetryValidationReport
   user: UserIdentity
   busy: boolean
   onRun: (liveModel: boolean, caseLimit?: number) => Promise<void>
@@ -37,10 +39,10 @@ const categoryLabel: Record<string, string> = {
   tool_output: '工具输出',
 }
 
-export function EvaluationsView({ report, externalReport, user, busy, onRun }: EvaluationsViewProps) {
+export function EvaluationsView({ report, externalReport, telemetryReport, user, busy, onRun }: EvaluationsViewProps) {
   const isAdmin = user.roles.includes('admin')
   const [category, setCategory] = useState('all')
-  const [suite, setSuite] = useState<'sealed' | 'external'>('sealed')
+  const [suite, setSuite] = useState<'sealed' | 'external' | 'telemetry'>('sealed')
   const sealedSummaryMatchesCases = report
     ? report.case_count === report.cases.length && report.passed_count <= report.case_count
     : true
@@ -57,7 +59,7 @@ export function EvaluationsView({ report, externalReport, user, busy, onRun }: E
   return (
     <div className="page-view eval-view">
       <header className="page-heading eval-heading">
-        <div><span className="section-kicker">EVIDENCE-BOUND VALIDATION LAB</span><h1>验证实验室</h1><p>内部夹具负责可重复的控制面回归，外部公开数据负责检验陌生日志、真实时序和未知故障边界。两套结果分开呈现，不把自编题成绩冒充生产效果。</p></div>
+        <div><span className="section-kicker">EVIDENCE-BOUND VALIDATION LAB</span><h1>验证实验室</h1><p>内部夹具验证控制面回归，轻量外部数据验证陌生输入边界，完整遥测验证多模态根因候选。三层结果分开呈现，不把自编题成绩或公开基准冒充生产效果。</p></div>
         {suite === 'sealed' && <div className="eval-actions">
           <button className="button secondary" type="button" disabled={busy || !isAdmin} onClick={() => onRun(true, 3)}>{busy ? <RefreshCw className="spin" size={17} /> : <FlaskConical size={17} />}真实 Qwen 抽样 3 项</button>
           <button className="button primary" type="button" disabled={busy || !isAdmin} onClick={() => onRun(false)}>{busy ? <RefreshCw className="spin" size={17} /> : <Play size={17} />}{busy ? '105 项隔离实验运行中…' : '运行全部 105 项'}</button>
@@ -69,9 +71,10 @@ export function EvaluationsView({ report, externalReport, user, busy, onRun }: E
       <div className="evaluation-tabs" role="tablist" aria-label="评测套件">
         <button type="button" role="tab" aria-selected={suite === 'sealed'} className={suite === 'sealed' ? 'active' : ''} onClick={() => setSuite('sealed')}><FlaskConical size={15} /><span>内部密封回归</span><small>{report ? `${sealedPassedCount}/${sealedCaseCount}` : '未运行'}</small></button>
         <button type="button" role="tab" aria-selected={suite === 'external'} className={suite === 'external' ? 'active' : ''} onClick={() => setSuite('external')}><Database size={15} /><span>外部数据验证</span><small>{externalReport ? `${externalReport.aggregate.passed_gate_count}/${externalReport.aggregate.gate_count} 门槛` : '未运行'}</small></button>
+        <button type="button" role="tab" aria-selected={suite === 'telemetry'} className={suite === 'telemetry' ? 'active' : ''} onClick={() => setSuite('telemetry')}><Activity size={15} /><span>完整遥测 RCA</span><small>{telemetryReport ? `${telemetryReport.gates.filter((item) => item.passed).length}/${telemetryReport.gates.length} 门槛` : '未运行'}</small></button>
       </div>
 
-      {suite === 'external' ? <ExternalValidationPanel report={externalReport} /> : !report ? (
+      {suite === 'telemetry' ? <TelemetryValidationPanel report={telemetryReport} /> : suite === 'external' ? <ExternalValidationPanel report={externalReport} /> : !report ? (
         <section className="empty-state panel"><FlaskConical size={28} /><h2>还没有密封评测证据</h2><p>管理员可先运行可复现夹具套件，再用本地 Qwen 做少量真实模型回归。</p></section>
       ) : (
         <>

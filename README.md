@@ -1,4 +1,4 @@
-# 手把手教学 AI Agent：Harbor AgentOps 3.5
+# 手把手教学 AI Agent：Harbor AgentOps 3.6
 
 这是一个从零基础教程逐步走到生产型 AI Agent 工程实践的完整求职项目。建议第一次访问先阅读 [由浅入深学习指南](./LEARNING_GUIDE.md)，再运行应用和查看架构。
 
@@ -10,6 +10,8 @@
 - [v3.4 交付与验收报告](./docs/项目成熟度审计与v3.4交付报告_2026-08-10.md)：已实测内容、机器证据和未完成边界。
 - [外部数据验证报告](./docs/外部数据验证报告_2026-08-10.md)：Loghub、NAB、AIOps Challenge 2025 的固定版本、留出方法、真实结果和生产边界。
 - [v3.5 成熟度复评](./docs/项目成熟度审计与v3.5外部验证交付报告_2026-08-10.md)：外部验证加入后的重新评分、招聘映射和下一阶段差距。
+- [完整遥测 RCA 验证报告](./docs/完整遥测RCA验证报告_2026-08-11.md)：四天、54,426,202 行公开日志/指标/调用链的三阶段隔离、失败复盘与最终盲测。
+- [v3.6 可交付复评](./docs/项目成熟度审计与v3.6完整遥测交付报告_2026-08-11.md)：基于实现、测试和真实数据重新评分，并映射 20K+ 招聘要求。
 - [v3.3 成熟度审计与整改报告](./docs/项目成熟度审计与v3.3整改报告_2026-08-10.md)：按源码、容器、数据库、故障和浏览器行为复评，不用 Markdown 代替证据。
 - [v3.4 1–4 项交付与复评报告](./docs/项目成熟度审计与v3.4交付报告_2026-08-10.md)：真实 kind staging、迁移、备份恢复、可靠性和 105 项对抗评测。
 - [岗位明细 CSV](./career/厦门_AI_Agent_20K以上岗位明细_2026-08-08.csv)：逐条招聘来源和需求证据。
@@ -24,8 +26,8 @@ Harbor AgentOps 是一个本地优先、证据约束、可恢复的 AIOps Agent 
 
 - 运行输入没有 `expected_cause`、标准计划或预期答案。
 - 105 个密封评测 case 每次创建新实验和数据库；oracle 只在运行结束后由评测器读取。
-- 外部套件实际下载第三方日志、真实时序和 400 个故障案例；提交号、字节数与 SHA-256 固定，原始文件不进入 Git。
-- 评测页面把内部 fixture 与外部证据分成两个标签；当前外部基线 9/9 门槛通过，但 AIOps 外部故障自动覆盖明确显示为 0%，不包装成生产满分。
+- 外部套件实际下载第三方日志、真实时序和 AIOps Challenge 2025 完整遥测；提交号、字节数与 SHA-256 固定，约 1.90 GB 原始归档不进入 Git。
+- 评测页面把内部 fixture、轻量外部证据和完整遥测 RCA 分成三个标签；原始未见日盲测与修复后两次重放都通过 10/10 门槛，并把严格根因从盲测快照 29.17% 到可复现运行线 25.00% 的变化直接展示，不包装成生产满分。
 - 模型只输出小型 `CompactDraftProposal`，不能签发权限或直接调用工具。
 - 服务端根据真实观察物化前置条件、成功条件、风险、容量目标和回滚。
 - 所有 Run 都绑定控制面租户；列表、详情、任务、指标、证据和动作接口按租户隔离。
@@ -75,7 +77,7 @@ flowchart TB
 | API | Python 3.12、FastAPI、Pydantic v2、OpenAPI |
 | 模型 | 本机 Qwen3-VL-8B-Instruct INT4、OpenVINO GenAI、OpenAI-compatible sidecar |
 | Agent | 显式状态机、checkpoint、HITL、Plan IR、确定性策略编译 |
-| 数据 | SQLite 开发模式；PostgreSQL 16 + pgvector 部署模式 |
+| 数据 | SQLite 开发模式；PostgreSQL 16 + pgvector 部署模式；DuckDB 直接扫描外部 Parquet |
 | 检索 | 文档切块、metadata route、BM25、Qwen3 Embedding 1024d、adaptive RRF、pgvector HNSW |
 | 执行 | 独立 FastAPI fault lab、HMAC capability、持久幂等 |
 | 可靠性 | durable jobs、job lease、Worker registry heartbeat、CAS、fencing、补偿动作 |
@@ -102,6 +104,17 @@ V3.3 已在本机真实运行 `OpenVINO/Qwen3-Embedding-0.6B-int4-cw-ov`：last-
 - Worker 即使空闲也写数据库进程心跳，`/api/status` 能证明当前 fleet 的在线副本，不再固定返回 `verified=false`。
 - PostgreSQL custom-format 备份已真实恢复到隔离临时库，并核对迁移版本、核心表行数与孤儿 Job 后删除临时库。
 - v4 评测为 5 类故障 × 21 个变体 = 105 case，加入工具输出注入、长上下文、Unicode 和结构化诱导，并报告 95% Wilson 区间。
+
+## 3.6 完整遥测盲测增量
+
+- 数据清单固定 AIOps Challenge 2025 官方仓库提交、四个日期归档、精确字节数、SHA-256 与发布者 MD5；下载只允许指定 HTTPS 域名并限制大小，解压拒绝路径穿越、符号链接和设备文件。
+- 四天共扫描 54,426,202 行：27,069,861 行日志、4,162,034 行指标和 23,194,307 行调用链；DuckDB 直接过滤 Parquet 的事故时间窗，不把全量数据塞入 Python 内存。
+- 6 月 9 日 16 案例用于校准；6 月 17/18 日各 24 案例用于两轮验证并保留 7/10、8/10 的失败记录；修复数据语义和融合缺陷后冻结 `deterministic-rca-v3`。
+- 6 月 19 日 24 案例此前未参与开发。预测器无 oracle 参数，预测先原子落盘并固定 SHA-256，评分器随后才打开标签；最终 0 次 oracle 泄漏、0 次危险写操作。
+- 原始盲测快照为故障 Top-3 79.17%、实体 Top-3 58.33%、严格根因 Top-1 29.17%、证据模态召回 86.11%、多模态覆盖 75%、P95 61 ms，10/10 预注册质量门通过；冻结预测文件保持不变。
+- 交付前第二次断网重放暴露 DuckDB 并行聚合与同分候选缺少二级排序，结果会随无序行先后漂移。实现改为单线程确定聚合、稳定文件选择和显式字典序裁决；没有用已打开的留出标签调回高分。
+- 修复后两次独立重放的语义 SHA-256 完全一致，运行线为故障 Top-3 66.67%、实体 Top-3 58.33%、严格根因 Top-1 25.00%、证据模态召回 68.06%、多模态覆盖 50%，仍为 10/10 门槛。它是“答案已打开后的复现审计”，不是第二次盲测。
+- 后端新增只读聚合 API，前端新增“完整遥测 RCA”面板；原始遥测保持 Git 忽略，页面不会暴露逐案 oracle。
 
 ## 快速启动
 
@@ -291,6 +304,17 @@ python scripts/run-external-validation.py
 
 # 使用已经验真的缓存断网复跑
 python scripts/run-external-validation.py --offline
+
+# 首次联网下载四天完整遥测并执行三阶段 RCA 验证（约 1.90 GB）
+python scripts/run-telemetry-validation.py --require-gates `
+  --predictions .runtime/telemetry-online.json `
+  --output .runtime/telemetry-online-evidence.json
+
+# 原始归档已验真时，断网复算；质量门和语义预测都必须相同
+python scripts/run-telemetry-validation.py --offline --require-gates `
+  --assert-semantic-equals .runtime/telemetry-online.json `
+  --predictions .runtime/telemetry-offline.json `
+  --output .runtime/telemetry-offline-evidence.json
 ```
 
 ## 演示身份
@@ -310,7 +334,7 @@ python scripts/run-external-validation.py --offline
 ## 测试与验证
 
 ```powershell
-# 后端测试镜像：60 项 + 分层覆盖率门禁；生产镜像不携带 pytest
+# 后端测试镜像：89 项 + 分层覆盖率门禁；生产镜像不携带 pytest / DuckDB
 # 以下命令从仓库根目录执行
 docker build --target test -t harbor-agentops-backend-test -f backend/Dockerfile .
 docker run --rm --network harbor-agentops_default `
@@ -325,8 +349,11 @@ docker run --rm --network harbor-agentops_default `
 cd backend
 pip install -r requirements-dev.txt
 pytest --cov=app --cov-report=term
+pytest tests/test_telemetry_validation.py `
+  --cov=app.telemetry_validation `
+  --cov-config=.coveragerc-telemetry --cov-fail-under=50
 
-# 前端 16 项、类型与生产构建
+# 前端 21 项、类型、生产构建和桌面/移动真实浏览器 E2E
 cd ../frontend
 pnpm test
 pnpm typecheck
@@ -354,15 +381,15 @@ python scripts/benchmark-api.py --requests 2000 --concurrency 64
 python scripts/check-portability.py
 ```
 
-GitHub Actions 对每个 PR 和 `main` 提交执行六个稳定检查：`Quality gates`、`Pinned external data validation`、`Backend tests`、`Frontend tests`、`Compose smoke and browser E2E`、`kind least-privilege staging E2E`。外部数据 job 先联网核验固定字节，再断网复跑；Compose job 执行备份恢复和依赖故障矩阵；kind job 验证真实 RBAC、审批、Scale 与独立就绪证据。
+GitHub Actions 对每个 PR 和 `main` 提交执行六个稳定检查：`Quality gates`、`Pinned external data validation`、`Backend tests`、`Frontend tests`、`Compose smoke and browser E2E`、`kind least-privilege staging E2E`。外部轻量数据 job 先联网核验固定字节，再断网复跑；Compose job 执行备份恢复和依赖故障矩阵；kind job 验证真实 RBAC、审批、Scale 与独立就绪证据。约 1.90 GB 的完整遥测另设手动 workflow，并缓存验真原始文件，避免每个小改动浪费带宽和 CI 时间。
 
-2026-08-10 v3.5 本机验证：
+2026-08-11 v3.6 本机验证：
 
 | 证据 | 结果 |
 |---|---|
-| 后端 | 本机 72 passed、7 项环境集成测试 skipped；总覆盖率 82.04%，新增外部评测模块 98%；PostgreSQL/Fault Lab 全量仍由 CI job 执行 |
-| 前端 | 19/19 单元测试；TypeScript 与生产构建通过 |
-| 浏览器 | 桌面 + 移动 6/6；包含 Axe 可访问性、审批、只读取证与真实运行链路 |
+| 后端 | Linux 测试镜像连接独立 PostgreSQL/Fault Lab：91/91；控制面覆盖率 85.16%，`store.py` 78.77%、`worker.py` 84.44%；遥测验证器独立 9/9、覆盖率 62.53% |
+| 前端 | 21/21 组件测试；TypeScript 与生产构建通过 |
+| 浏览器 | 桌面 Chromium + Pixel 7 共 6/6；包含新遥测页、24 行账本、Axe WCAG 2A/AA、整页无溢出、只读生产事件、低风险闭环和双主体审批 |
 | 完整启动入口 | 中文目录直接运行 `quickstart.py up --workers 2`，逐镜像构建、就绪等待和 HTTP smoke 全通过 |
 | 双 Worker | 两个当前容器分别处理 5 个和 4 个成功 Job；PostgreSQL 16 连接竞争单 Job 仍只领取一次 |
 | 生产观测 | 正常 Prometheus 模拟返回 4/4 指标后才调用模型；空数据、401、超时均无模型调用、无写动作并转人工 |
@@ -376,8 +403,10 @@ GitHub Actions 对每个 PR 和 `main` 提交执行六个稳定检查：`Quality
 | 可靠性 | 8 次运行、4 次 Worker 重启、2 次 DB 重启、1 次 Prometheus 停机；0 失败 |
 | 密封评测 | v4 105/105 fixture 通过、0 unsafe action；95% Wilson 区间 96.47%–100% |
 | 外部数据 | 3 个独立来源、8 个文件哈希匹配、34,984 条记录、29,125 条留出；9/9 基础门槛通过，外部自动故障覆盖 0% |
+| 完整遥测 RCA | 4 个日期归档哈希匹配、54,426,202 行；原始盲测 79.17%/29.17%，确定排序后的两次重放语义一致并为 66.67%/25.00%；两者均 10/10 门槛、0 oracle 运行时泄漏、0 危险写入 |
+| 恢复与可移植性回归 | pgvector 扩展卸载后留下缺失向量列的表壳，两个并发副本可自动修复；覆盖率门禁同时接受 Windows `\` 与 Linux `/` 路径，并对缺失模块失败关闭 |
 
-本轮工程基线见 `docs/项目成熟度审计与v3.4交付报告_2026-08-10.md`，新增外部验证见 `docs/外部数据验证报告_2026-08-10.md`；机器可读结果分别为 `docs/evaluation-evidence-v4.json` 和 `data/external/evidence-v1.json`。fixture、公开外部数据和历史真实 Qwen 抽样都不能外推成目标公司的生产准确率。
+本轮工程基线见 `docs/项目成熟度审计与v3.6完整遥测交付报告_2026-08-11.md`，完整方法和失败账本见 `docs/完整遥测RCA验证报告_2026-08-11.md`；机器可读结果分别为 `docs/evaluation-evidence-v4.json`、`data/external/evidence-v1.json` 和 `data/external/telemetry-evidence-v4.json`。fixture、公开外部数据和历史真实 Qwen 抽样都不能外推成目标公司的生产准确率。
 
 ## 目录
 
@@ -392,6 +421,7 @@ backend/app/
   tools.py          工具注册表、capability、幂等客户端
   evaluation.py     密封实验、隐藏 oracle、逐项评分
   external_validation.py  外部来源校验、隔离切分、检测与安全评分
+  telemetry_validation.py 完整遥测安全获取、Parquet 窗口分析、多模态融合与盲评分
 ops_sandbox/        独立持久故障与工具服务
 kubernetes_connector/命名空间最小权限 Kubernetes 工具边界
 kubernetes/kind/    固定版本 kind 集群、RBAC、演示工作负载与 Compose override
@@ -415,7 +445,8 @@ docs/               架构和机器可读证据
 - 自动补偿目前仅白名单允许 `scale_workers`；重启、凭据和缓存回滚保持人工接管，避免假装存在安全的通用逆操作。
 - 本地 Qwen CPU 单次推理历史样本约 68–77 秒，不适合高并发在线决策；数据库 advisory lock 与网关有界队列能保护容量，但不能提高吞吐，生产仍需 GPU、批处理、模型路由与容量 SLO。
 - 审计可查询但不是 WORM；生产还需不可篡改存储、集中 DLP、mTLS、Vault/KMS 与安全运营接入。
-- 83.41% 行覆盖率不等于 83.41% 质量；真实 production connector、长期 soak、跨主机故障、企业身份和 105 项真实模型重复试验仍必须单独验证。
+- 公开遥测 79.17%/29.17% 是原始盲测快照，不是当前可复现运行线；修复无序同分裁决后的诚实基线是故障 Top-3 66.67%、严格根因 Top-1 25.00%。两组都只代表固定日期离线证据；目标公司影子流量、漂移监测、本地 Qwen reranker A/B、真实 production connector 与长期 soak 仍必须单独验证。
+- 测试覆盖率不等于业务质量；真实 production connector、跨主机故障、企业身份和 105 项真实模型重复试验仍必须单独验证。
 - Docker Scout 因本机未登录 Docker ID 没有完成 CVE 数据库扫描；交付只声称镜像 digest 固定和运行权限加固，不声称漏洞扫描通过。
 
 完整原理见 [docs/architecture.md](docs/architecture.md)。

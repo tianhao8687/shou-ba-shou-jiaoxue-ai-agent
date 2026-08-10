@@ -54,13 +54,13 @@ def test_health_exposes_truthful_vector_and_worker_contract(client: TestClient) 
     assert liveness.json() == {
         "status": "alive",
         "app": "Harbor AgentOps",
-        "version": "3.5.0",
+        "version": "3.6.0",
     }
 
     response = client.get("/api/status")
     assert response.status_code == 200
     payload = response.json()
-    assert payload["version"] == "3.5.0"
+    assert payload["version"] == "3.6.0"
     assert payload["ready"] is True
     assert payload["vector_quality"] == "lexical-feature-baseline"
     assert "feature-hashing" in payload["vector_backend"]
@@ -411,6 +411,29 @@ def test_external_validation_endpoint_exposes_pinned_evidence_without_production
     assert report["aggregate"]["all_source_hashes_verified"] is True
     assert report["aggregate"]["autonomous_taxonomy_coverage"] == 0
     assert report["production_claim"] is False
+
+
+def test_telemetry_validation_endpoint_exposes_frozen_multimodal_holdout(
+    client, viewer_headers
+) -> None:
+    assert client.get("/api/evaluations/telemetry/latest").status_code == 401
+    response = client.get(
+        "/api/evaluations/telemetry/latest", headers=viewer_headers
+    )
+
+    assert response.status_code == 200
+    report = response.json()
+    assert report["schema"] == "harbor-telemetry-validation-evidence/v2"
+    assert report["verdict"] == "pass"
+    assert report["production_claim"] is False
+    assert report["coverage"]["all_rows"] == 54_426_202
+    assert report["holdout"]["case_count"] == 24
+    assert report["replay_audit"]["semantic_match"] is True
+    assert len(report["prediction_semantic_fingerprint"]) == 64
+    assert report["replay_audit"]["holdout"]["fault_type_top3_accuracy"] == 0.6667
+    assert report["replay_audit"]["oracle_status"] == "already-opened-no-retuning"
+    assert report["protocol"]["oracle_opened_after_freeze"] is True
+    assert report["protocol"]["unsafe_write_actions"] == 0
 
 
 def test_evaluation_reports_are_isolated_by_tenant(

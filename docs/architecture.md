@@ -1,4 +1,4 @@
-# Harbor AgentOps 3.5：架构、信任边界与底层原理
+# Harbor AgentOps 3.6：架构、信任边界与底层原理
 
 ## 1. 设计目标
 
@@ -362,6 +362,18 @@ fault lab 在 `BEGIN IMMEDIATE` 事务里：
 
 机器证据经 `/api/evaluations/external/latest` 只读公开。前端把它与 105 项内部 fixture 分栏显示，同时展示 21.85% 的 NAB alert precision 和 0% 外部自动故障覆盖，防止“总门槛通过”掩盖业务缺口。
 
+### 14.1 完整多模态遥测 RCA
+
+3.6 增加第二条外部验证链，使用 AIOps Challenge 2025 官方日包中的 logs、metrics、traces 与逐模态标签。四个归档固定到同一 40 位提交，并同时校验字节数、SHA-256 和发布方 MD5；压缩包总计 1,897,744,494 字节，解压后共扫描 54,426,202 行。原始文件仍位于 Git 忽略目录，API 只暴露聚合证据。
+
+数据协议按日期而不是随机行隔离：6 月 9 日 16 例用于 calibration，6 月 17/18 日共 48 例用于 validation，规则冻结后才在此前未见的 6 月 19 日 24 例上做 final holdout。前两次盲测分别只有 7/10 和 8/10 门槛通过；打开答案后它们永久降级为开发证据，不再参与最终成绩。
+
+预测器只接收输入时间窗和遥测索引，没有 oracle 参数。它先原子写出预测并计算 SHA-256，再由另一个阶段打开 ground truth；最终预测哈希固定为 `e1dcd9bd3764105ebd666aa6670e23ea45bc638e752cac155c66825bdaa02b53`。单元测试重新计算此哈希，并检查 `oracle_opened_after_freeze=true`、oracle leaks 为 0、unsafe writes 为 0。
+
+DuckDB 直接扫描分区 Parquet，并把 UTC 时间过滤与列裁剪下推。日志侧提取高特异签名；指标侧对事故前基线和事故窗做领域化对比；调用链侧比较 source→destination 边的吞吐和延迟。融合器先在每种模态内按故障和实体取最强证据，再跨模态合并，防止字段或指标数量变成虚假票数。缺失实体按运行时非空值回退，字符串 `null` 也视为缺失；TiDB、TiKV、PD 使用组件域映射。
+
+原始 holdout 盲测的故障 Top-3 为 79.17%、实体 Top-3 为 58.33%、严格根因 Top-1 为 29.17%，10/10 预声明门槛通过。交付重放随后发现并行聚合与同分候选缺少稳定二级键；当前实现使用单线程 DuckDB、确定文件选择和显式字典序裁决，两次重放语义 SHA-256 一致，运行线为 66.67%、58.33%、25.00%，仍通过 10/10。完整文件哈希用于证明某次冻结后未被篡改；排除 `generated_at` 与 `latency_ms` 的语义指纹用于跨运行比较。`/api/evaluations/telemetry/latest` 与前端第三个评测标签同时只读展示历史盲测和复现审计；它不向普通用户返回逐案答案，也不授权任何写操作。
+
 ## 15. 可观测与部署
 
 Run 内 Trace 记录每节点输入/输出摘要、耗时和状态；Audit 记录租户、登录主体、审批票、工具、capability JTI、幂等键、lease 和 rollback。Prometheus 暴露运行、节点、模型、工具、审批、并发冲突与 fault lab 指标。
@@ -379,7 +391,7 @@ Compose 拓扑：
 
 kind staging 作为第二个部署拓扑：单控制面集群、`harbor-sandbox` Pod Security 命名空间、独立 ServiceAccount、命名 Role/RoleBinding、connector Deployment 和 `demo-api` 演示负载。connector 只读取命名工作负载及相关 Pod/Event/ConfigMap，并且唯一写权限是命名 Deployment 的 Scale 子资源。API / Worker 同时加入 kind 的私有 Docker network，直接访问 control-plane NodePort；用于宿主机脚本的 `18094` 只绑定回环地址，从而兼容 Linux runner，又不把服务放宽到 `0.0.0.0`。
 
-数据库使用三版 `schema_migrations`。SQLite 以 `BEGIN IMMEDIATE` 锁定升级；PostgreSQL 以 transaction advisory lock 协调多个启动副本。已应用 migration 的 SHA-256 不一致或数据库版本高于程序支持版本都会拒绝启动。Schema migration 与 pgvector 派生索引使用不同的数据库级锁键，避免把两种职责混成一个全局互斥区。外置 Worker 每 5 秒写独立进程心跳，API 用 TTL 展示实际 fleet；Job lease 仍单独决定执行所有权。
+数据库使用三版 `schema_migrations`。SQLite 以 `BEGIN IMMEDIATE` 锁定升级；PostgreSQL 以 transaction advisory lock 协调多个启动副本。已应用 migration 的 SHA-256 不一致或数据库版本高于程序支持版本都会拒绝启动。Schema migration 与 pgvector 派生索引使用不同的数据库级锁键，避免把两种职责混成一个全局互斥区。恢复测试还会先创建向量表、卸载 pgvector 并保留缺少 `embedding` 列的表壳，再让两个并发副本重建扩展、补列、回填、恢复 `NOT NULL` 和 HNSW；同一测试连续运行两次仍通过。外置 Worker 每 5 秒写独立进程心跳，API 用 TTL 展示实际 fleet；Job lease 仍单独决定执行所有权。
 
 V3.5 的健康语义分成三层：`/api/health` 只回答进程是否活着，`/api/ready` 决定是否可接流量，`/api/status` 返回完整诊断。实测停止 Prometheus 时 health 保持 200、ready 变为 503，恢复后 ready 回到 200；fixture 模式明确标记 `production_capable=false`，真实模型只有完成加载才算 ready。数据库状态同时报告 migration 版本，Worker 状态报告有新鲜心跳的真实副本。
 

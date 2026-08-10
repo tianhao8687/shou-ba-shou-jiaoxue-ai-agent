@@ -426,6 +426,16 @@ class PgVectorHybridIndex(HybridMemoryIndex):
                 )
                 """
             )
+            # DROP EXTENSION ... CASCADE removes pgvector-typed columns and
+            # indexes but can leave the rest of a table behind. A process
+            # restart must repair that valid PostgreSQL recovery state rather
+            # than trusting CREATE TABLE IF NOT EXISTS as a schema check.
+            # Add the column nullable, repopulate every retained row below,
+            # then restore the NOT NULL contract before building the index.
+            cursor.execute(
+                f"ALTER TABLE {self.table_name} "
+                f"ADD COLUMN IF NOT EXISTS embedding VECTOR({self.dimensions})"
+            )
             for chunk in self.chunks:
                 cursor.execute(
                     f"""
@@ -440,6 +450,9 @@ class PgVectorHybridIndex(HybridMemoryIndex):
             cursor.execute(
                 f"DELETE FROM {self.table_name} WHERE NOT (chunk_id = ANY(%s))",
                 ([chunk.chunk_id for chunk in self.chunks],),
+            )
+            cursor.execute(
+                f"ALTER TABLE {self.table_name} ALTER COLUMN embedding SET NOT NULL"
             )
             cursor.execute(
                 f"""

@@ -27,8 +27,24 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 )
 def test_pgvector_initialization_serializes_parallel_process_startup() -> None:
     assert POSTGRES_URL is not None
+    # Warm the derived table first. PostgreSQL then leaves a real orphaned
+    # table shell when the vector extension and its typed column are removed.
+    # This reproduces restart/recovery behavior, not only first-boot behavior.
+    create_retriever(
+        PROJECT_ROOT / "data",
+        "pgvector",
+        POSTGRES_URL,
+    )
     with psycopg.connect(POSTGRES_URL) as connection, connection.cursor() as cursor:
         cursor.execute("DROP EXTENSION IF EXISTS vector CASCADE")
+        cursor.execute(
+            "SELECT to_regclass('knowledge_chunks_v3_1_d256'), "
+            "EXISTS (SELECT 1 FROM information_schema.columns "
+            "WHERE table_name='knowledge_chunks_v3_1_d256' AND column_name='embedding')"
+        )
+        table_name, embedding_exists = cursor.fetchone()
+        assert table_name == "knowledge_chunks_v3_1_d256"
+        assert embedding_exists is False
 
     barrier = Barrier(3)
     failures: list[BaseException] = []

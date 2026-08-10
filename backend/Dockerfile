@@ -25,6 +25,7 @@ COPY backend/requirements-dev.txt /app/backend/requirements-dev.txt
 RUN pip install --no-cache-dir -r /app/backend/requirements-dev.txt
 COPY --chown=10001:10001 backend/tests /app/backend/tests
 COPY --chown=10001:10001 backend/pyproject.toml /app/backend/pyproject.toml
+COPY --chown=10001:10001 backend/.coveragerc-telemetry /app/backend/.coveragerc-telemetry
 COPY --chown=10001:10001 ops_sandbox /app/ops_sandbox
 COPY --chown=10001:10001 local_model_service /app/local_model_service
 COPY --chown=10001:10001 kubernetes_connector /app/kubernetes_connector

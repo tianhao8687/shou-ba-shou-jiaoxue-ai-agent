@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
-import type { EvaluationReport, ExternalValidationReport, UserIdentity } from '../types'
+import type { EvaluationReport, ExternalValidationReport, TelemetryValidationReport, UserIdentity } from '../types'
 import { EvaluationsView } from './EvaluationsView'
 
 const user: UserIdentity = {
@@ -121,6 +121,55 @@ const externalReport: ExternalValidationReport = {
   boundaries: ['公开数据通过不等于企业生产验证。'],
 }
 
+const telemetryMetrics = {
+  case_count: 24,
+  fault_type_top1_accuracy: 0.4167,
+  fault_type_top3_accuracy: 0.7917,
+  entity_top1_accuracy: 0.4167,
+  entity_top3_accuracy: 0.5833,
+  exact_rca_top1_accuracy: 0.2917,
+  evidence_modality_recall: 0.8611,
+  multimodal_case_coverage: 0.75,
+  abstention_rate: 0,
+  median_case_latency_ms: 43,
+  p95_case_latency_ms: 61,
+}
+
+const telemetryReport: TelemetryValidationReport = {
+  schema: 'harbor-telemetry-validation-evidence/v2',
+  suite_version: 'telemetry-v4',
+  ruleset_version: 'deterministic-rca-v3',
+  manifest_fingerprint: 'manifest-fingerprint',
+  prediction_fingerprint: 'e1dcd9bd3764105ebd666aa6670e23ea45bc638e752cac155c66825bdaa02b53',
+  prediction_semantic_fingerprint: '3'.repeat(64),
+  generated_at: '2026-08-11T00:00:00Z',
+  verdict: 'pass',
+  production_claim: false,
+  raw_data_committed: false,
+  replay_audit: {
+    schema: 'harbor-telemetry-replay-audit/v1', audited_at: '2026-08-11T01:31:59+08:00', oracle_status: 'already-opened-no-retuning', tie_break_contract: 'stable ordering', replay_count: 2,
+    semantic_fingerprint: '0'.repeat(64), semantic_match: true, full_artifact_hashes: ['1'.repeat(64), '2'.repeat(64)], volatile_fields_excluded: ['generated_at', 'latency_ms'],
+    holdout: { ...telemetryMetrics, fault_type_top1_accuracy: 0.3333, fault_type_top3_accuracy: 0.6667, exact_rca_top1_accuracy: 0.25, evidence_modality_recall: 0.6806, multimodal_case_coverage: 0.5 },
+    p95_case_latency_ms_range: [93, 97], passed_gates: 10, gate_count: 10, verdict: 'pass', production_claim: false, notes: ['not a second blind run'],
+  },
+  source: {
+    id: 'aiops-challenge-2025', title: 'AIOps Challenge 2025 multimodal telemetry', repository_url: 'https://www.aiops.cn/gitlab/example', revision: 'a'.repeat(40), independence: 'third-party',
+    license: { name: 'CC BY-NC 4.0', url: 'https://creativecommons.org/licenses/by-nc/4.0/', raw_redistribution: 'not-committed' },
+  },
+  coverage: {
+    by_archive: {}, total_rows: { logs: 25_000_000, metrics: 4_000_000, traces: 25_426_202 }, all_rows: 54_426_202, archive_bytes: 1_897_744_494, calibration_cases: 16, validation_cases: 48, holdout_cases: 24,
+  },
+  protocol: {
+    prediction_frozen_at: '2026-08-11T00:00:00Z', oracle_opened_at: '2026-08-11T00:00:01Z', oracle_opened_after_freeze: true, predictor_oracle_access: 'none', prediction_hash_algorithm: 'sha256', unsafe_write_actions: 0, timezone_contract: 'UTC rows',
+  },
+  calibration: { ...telemetryMetrics, case_count: 16 },
+  validation: { ...telemetryMetrics, case_count: 48 },
+  holdout: telemetryMetrics,
+  gates: Array.from({ length: 10 }, (_, index) => ({ id: index === 0 ? 'archive_hashes_verified' : `gate-${index}`, passed: true, observed: true, operator: '==', threshold: true })),
+  cases: [{ uuid: 'holdout-case-01', role: 'holdout', predicted_fault_type: 'code error', predicted_entity: 'cartservice', fault_type_top1: true, fault_type_top3: true, entity_top1: true, entity_top3: true, network_pair_match: null, exact_rca_top1: true, evidence_modality_recall: 1, evidence_modalities: ['log', 'metric'], abstained: false }],
+  boundaries: ['第三方混沌注入数据不等于企业生产认证。'],
+}
+
 describe('EvaluationsView', () => {
   it('shows sample uncertainty and filters the matrix by attack category', () => {
     render(<EvaluationsView report={report} user={user} busy={false} onRun={vi.fn()} />)
@@ -162,6 +211,20 @@ describe('EvaluationsView', () => {
     expect(screen.getByText('21.9%')).toBeInTheDocument()
     expect(screen.getByText('0%', { selector: 'strong' })).toBeInTheDocument()
     expect(screen.getByText(/不是企业私有生产数据认证/)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '运行全部 105 项' })).not.toBeInTheDocument()
+  })
+
+  it('shows the frozen real-telemetry holdout separately from fixture scores', () => {
+    render(<EvaluationsView report={report} telemetryReport={telemetryReport} user={user} busy={false} onRun={vi.fn()} />)
+
+    fireEvent.click(screen.getByRole('tab', { name: /完整遥测 RCA 10\/10 门槛/ }))
+
+    expect(screen.getByRole('heading', { name: '完整遥测门槛通过，复现缺陷已闭环' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: '并列排序已固定，2 次重放语义一致' })).toBeInTheDocument()
+    expect(screen.getAllByText('66.67%')).toHaveLength(2)
+    expect(screen.getByText(/答案解封后只做通用排序修复/)).toBeInTheDocument()
+    expect(screen.getByText('holdout-case-01')).toBeInTheDocument()
+    expect(screen.getByText(/预测 SHA-256 冻结后才打开答案/)).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: '运行全部 105 项' })).not.toBeInTheDocument()
   })
 })

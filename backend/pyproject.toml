@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "harbor-agentops-api"
-version = "3.5.0"
+version = "3.6.0"
 description = "Durable, evidence-bound and least-privilege AIOps agent control plane"
 requires-python = ">=3.12"
 dependencies = [
@@ -23,3 +23,4 @@ addopts = "-q"
 
 [tool.coverage.run]
 source = ["app"]
+omit = ["*/telemetry_validation.py"]
