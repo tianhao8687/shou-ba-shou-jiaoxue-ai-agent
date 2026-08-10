@@ -25,7 +25,19 @@ class Store(ABC):
     def initialize(self) -> None: ...
 
     @abstractmethod
+    def ping(self) -> None:
+        """Raise when the durable store cannot serve a trivial query."""
+        ...
+
+    @abstractmethod
     def save_run(self, run: RunRecord) -> RunRecord: ...
+
+    @abstractmethod
+    def save_run_and_enqueue(
+        self, run: RunRecord, stage: str
+    ) -> tuple[RunRecord, JobRecord]:
+        """CAS-save a run and create its durable job in the same transaction."""
+        ...
 
     @abstractmethod
     def save_run_with_lease(
@@ -36,10 +48,17 @@ class Store(ABC):
     def get_run(self, run_id: str) -> RunRecord | None: ...
 
     @abstractmethod
-    def list_runs(self) -> list[RunRecord]: ...
+    def list_runs(
+        self, tenant_id: str | None = None, limit: int | None = None
+    ) -> list[RunRecord]: ...
 
     @abstractmethod
     def enqueue_job(self, run_id: str, stage: str) -> JobRecord: ...
+
+    @abstractmethod
+    def reconcile_orphaned_runs(self) -> list[JobRecord]:
+        """Repair queued runs that have no queued or claimed durable job."""
+        ...
 
     @abstractmethod
     def claim_job(self, worker_id: str, lease_seconds: int) -> JobRecord | None: ...
@@ -48,6 +67,11 @@ class Store(ABC):
     def heartbeat_job(
         self, job_id: str, worker_id: str, fencing_token: int, lease_seconds: int
     ) -> JobRecord: ...
+
+    @abstractmethod
+    def assert_job_lease(
+        self, job_id: str, worker_id: str, fencing_token: int
+    ) -> None: ...
 
     @abstractmethod
     def finish_job(
@@ -79,7 +103,7 @@ class Store(ABC):
     def save_evaluation(self, report: EvaluationReport) -> EvaluationReport: ...
 
     @abstractmethod
-    def latest_evaluation(self) -> EvaluationReport | None: ...
+    def latest_evaluation(self, tenant_id: str) -> EvaluationReport | None: ...
 
     @abstractmethod
     def model_inference_slot(self) -> AbstractContextManager[None]: ...
@@ -129,6 +153,28 @@ POSTGRES_JOB_COLUMNS_FROM_UPDATE = ", ".join(
     f"j.{column.strip()}" for column in JOB_COLUMNS.split(",")
 )
 
+ACTIVE_JOB_STATUSES = (JobStatus.QUEUED, JobStatus.CLAIMED)
+
+
+def _new_job(run_id: str, stage: str, *, now: datetime | None = None) -> JobRecord:
+    created_at = now or utc_now()
+    return JobRecord(
+        id=f"JOB-{uuid4().hex[:12].upper()}",
+        run_id=run_id,
+        stage=stage,
+        available_at=created_at,
+        created_at=created_at,
+        updated_at=created_at,
+    )
+
+
+def _recovery_stage(run: RunRecord) -> str:
+    if run.current_node == "queued":
+        return "start"
+    if run.current_node == "execute" and run.approval.decision == "approved":
+        return "resume"
+    return "retry"
+
 
 class SQLiteStore(Store):
     def __init__(self, database_url: str) -> None:
@@ -169,6 +215,8 @@ class SQLiteStore(Store):
                     version INTEGER NOT NULL DEFAULT 0
                 );
                 CREATE INDEX IF NOT EXISTS idx_agent_runs_updated ON agent_runs(updated_at DESC);
+                CREATE INDEX IF NOT EXISTS idx_agent_runs_tenant_updated
+                    ON agent_runs(json_extract(payload, '$.tenant_id'), updated_at DESC);
                 CREATE TABLE IF NOT EXISTS agent_jobs (
                     id TEXT PRIMARY KEY,
                     run_id TEXT NOT NULL,
@@ -187,49 +235,127 @@ class SQLiteStore(Store):
                 CREATE INDEX IF NOT EXISTS idx_agent_jobs_claim
                     ON agent_jobs(status, available_at, lease_until, created_at);
                 CREATE INDEX IF NOT EXISTS idx_agent_jobs_run ON agent_jobs(run_id, created_at DESC);
+                CREATE UNIQUE INDEX IF NOT EXISTS idx_agent_jobs_active_stage
+                    ON agent_jobs(run_id, stage)
+                    WHERE status IN ('queued', 'claimed');
                 CREATE TABLE IF NOT EXISTS evaluation_reports (
                     id TEXT PRIMARY KEY,
+                    tenant_id TEXT NOT NULL DEFAULT 'xm-ops',
                     payload TEXT NOT NULL,
                     created_at TEXT NOT NULL
                 );
                 """
             )
+            columns = {
+                row[1] for row in connection.execute("PRAGMA table_info(evaluation_reports)")
+            }
+            if "tenant_id" not in columns:
+                connection.execute(
+                    "ALTER TABLE evaluation_reports ADD COLUMN tenant_id TEXT NOT NULL DEFAULT 'xm-ops'"
+                )
+            connection.execute(
+                "CREATE INDEX IF NOT EXISTS idx_evaluation_reports_tenant_created "
+                "ON evaluation_reports(tenant_id, created_at DESC)"
+            )
 
-    def save_run(self, run: RunRecord) -> RunRecord:
+    def ping(self) -> None:
+        with self._connect() as connection:
+            connection.execute("SELECT 1").fetchone()
+
+    @staticmethod
+    def _save_run_in_transaction(
+        connection: sqlite3.Connection, run: RunRecord
+    ) -> tuple[int, datetime]:
         expected = run.version
         next_version = expected + 1
         candidate = run.model_copy(update={"version": next_version, "updated_at": utc_now()})
+        row = connection.execute(
+            "SELECT version FROM agent_runs WHERE id = ?", (run.id,)
+        ).fetchone()
+        if row is None:
+            if expected != 0:
+                raise ConcurrencyError(f"运行 {run.id} 已被删除或版本失效")
+            connection.execute(
+                "INSERT INTO agent_runs(id, payload, updated_at, version) VALUES (?, ?, ?, ?)",
+                (run.id, candidate.model_dump_json(), candidate.updated_at.isoformat(), next_version),
+            )
+        else:
+            current = int(row["version"])
+            if current != expected:
+                raise ConcurrencyError(f"运行 {run.id} 版本冲突：期望 {expected}，当前 {current}")
+            cursor = connection.execute(
+                "UPDATE agent_runs SET payload=?, updated_at=?, version=? WHERE id=? AND version=?",
+                (
+                    candidate.model_dump_json(),
+                    candidate.updated_at.isoformat(),
+                    next_version,
+                    run.id,
+                    expected,
+                ),
+            )
+            if cursor.rowcount != 1:
+                raise ConcurrencyError(f"运行 {run.id} 在保存期间被其他请求更新")
+        return next_version, candidate.updated_at
+
+    @staticmethod
+    def _active_job_in_transaction(
+        connection: sqlite3.Connection, run_id: str, stage: str
+    ) -> JobRecord | None:
+        row = connection.execute(
+            f"""
+            SELECT {JOB_COLUMNS} FROM agent_jobs
+            WHERE run_id=? AND stage=? AND status IN (?, ?)
+            ORDER BY created_at LIMIT 1
+            """,
+            (run_id, stage, *ACTIVE_JOB_STATUSES),
+        ).fetchone()
+        return _job_from_row(row) if row else None
+
+    @staticmethod
+    def _insert_job_in_transaction(
+        connection: sqlite3.Connection, run_id: str, stage: str
+    ) -> JobRecord:
+        existing = SQLiteStore._active_job_in_transaction(connection, run_id, stage)
+        if existing is not None:
+            return existing
+        job = _new_job(run_id, stage)
+        connection.execute(
+            """
+            INSERT INTO agent_jobs(
+                id, run_id, stage, status, owner, lease_until, fencing_token, attempts,
+                available_at, created_at, updated_at, last_error
+            ) VALUES (?, ?, ?, ?, NULL, NULL, 0, 0, ?, ?, ?, NULL)
+            """,
+            (
+                job.id,
+                run_id,
+                stage,
+                JobStatus.QUEUED,
+                job.available_at.isoformat(),
+                job.created_at.isoformat(),
+                job.updated_at.isoformat(),
+            ),
+        )
+        return job
+
+    def save_run(self, run: RunRecord) -> RunRecord:
         with self._connect() as connection:
             connection.execute("BEGIN IMMEDIATE")
-            row = connection.execute(
-                "SELECT version FROM agent_runs WHERE id = ?", (run.id,)
-            ).fetchone()
-            if row is None:
-                if expected != 0:
-                    raise ConcurrencyError(f"运行 {run.id} 已被删除或版本失效")
-                connection.execute(
-                    "INSERT INTO agent_runs(id, payload, updated_at, version) VALUES (?, ?, ?, ?)",
-                    (run.id, candidate.model_dump_json(), candidate.updated_at.isoformat(), next_version),
-                )
-            else:
-                current = int(row["version"])
-                if current != expected:
-                    raise ConcurrencyError(f"运行 {run.id} 版本冲突：期望 {expected}，当前 {current}")
-                cursor = connection.execute(
-                    "UPDATE agent_runs SET payload=?, updated_at=?, version=? WHERE id=? AND version=?",
-                    (
-                        candidate.model_dump_json(),
-                        candidate.updated_at.isoformat(),
-                        next_version,
-                        run.id,
-                        expected,
-                    ),
-                )
-                if cursor.rowcount != 1:
-                    raise ConcurrencyError(f"运行 {run.id} 在保存期间被其他请求更新")
+            next_version, updated_at = self._save_run_in_transaction(connection, run)
         run.version = next_version
-        run.updated_at = candidate.updated_at
+        run.updated_at = updated_at
         return run
+
+    def save_run_and_enqueue(
+        self, run: RunRecord, stage: str
+    ) -> tuple[RunRecord, JobRecord]:
+        with self._connect() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            next_version, updated_at = self._save_run_in_transaction(connection, run)
+            job = self._insert_job_in_transaction(connection, run.id, stage)
+        run.version = next_version
+        run.updated_at = updated_at
+        return run, job
 
     def save_run_with_lease(
         self, run: RunRecord, job_id: str, worker_id: str, fencing_token: int
@@ -280,35 +406,56 @@ class SQLiteStore(Store):
             ).fetchone()
         return _with_version(row["payload"], int(row["version"])) if row else None
 
-    def list_runs(self) -> list[RunRecord]:
+    def list_runs(
+        self, tenant_id: str | None = None, limit: int | None = None
+    ) -> list[RunRecord]:
+        query = "SELECT payload, version FROM agent_runs"
+        parameters: list[str | int] = []
+        if tenant_id is not None:
+            query += " WHERE json_extract(payload, '$.tenant_id') = ?"
+            parameters.append(tenant_id)
+        query += " ORDER BY updated_at DESC"
+        if limit is not None:
+            query += " LIMIT ?"
+            parameters.append(limit)
         with self._connect() as connection:
-            rows = connection.execute(
-                "SELECT payload, version FROM agent_runs ORDER BY updated_at DESC"
-            ).fetchall()
+            rows = connection.execute(query, parameters).fetchall()
         return [_with_version(row["payload"], int(row["version"])) for row in rows]
 
     def enqueue_job(self, run_id: str, stage: str) -> JobRecord:
-        now = utc_now()
-        job = JobRecord(id=f"JOB-{uuid4().hex[:12].upper()}", run_id=run_id, stage=stage)
         with self._connect() as connection:
-            connection.execute(
-                """
-                INSERT INTO agent_jobs(
-                    id, run_id, stage, status, owner, lease_until, fencing_token, attempts,
-                    available_at, created_at, updated_at, last_error
-                ) VALUES (?, ?, ?, ?, NULL, NULL, 0, 0, ?, ?, ?, NULL)
-                """,
-                (
-                    job.id,
-                    run_id,
-                    stage,
-                    JobStatus.QUEUED,
-                    now.isoformat(),
-                    now.isoformat(),
-                    now.isoformat(),
-                ),
-            )
-        return job
+            connection.execute("BEGIN IMMEDIATE")
+            if connection.execute(
+                "SELECT 1 FROM agent_runs WHERE id=?", (run_id,)
+            ).fetchone() is None:
+                raise ValueError(f"run {run_id} does not exist")
+            return self._insert_job_in_transaction(connection, run_id, stage)
+
+    def reconcile_orphaned_runs(self) -> list[JobRecord]:
+        repaired: list[JobRecord] = []
+        with self._connect() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            rows = connection.execute(
+                "SELECT payload, version FROM agent_runs ORDER BY updated_at"
+            ).fetchall()
+            for row in rows:
+                run = _with_version(row["payload"], int(row["version"]))
+                if run.status != "queued":
+                    continue
+                active = connection.execute(
+                    """
+                    SELECT 1 FROM agent_jobs
+                    WHERE run_id=? AND status IN (?, ?) LIMIT 1
+                    """,
+                    (run.id, *ACTIVE_JOB_STATUSES),
+                ).fetchone()
+                if active is None:
+                    repaired.append(
+                        self._insert_job_in_transaction(
+                            connection, run.id, _recovery_stage(run)
+                        )
+                    )
+        return repaired
 
     def claim_job(self, worker_id: str, lease_seconds: int) -> JobRecord | None:
         now = utc_now()
@@ -383,6 +530,26 @@ class SQLiteStore(Store):
         if result is None:
             raise LeaseLostError(f"job {job_id} disappeared")
         return result
+
+    def assert_job_lease(
+        self, job_id: str, worker_id: str, fencing_token: int
+    ) -> None:
+        with self._connect() as connection:
+            row = connection.execute(
+                """
+                SELECT 1 FROM agent_jobs
+                WHERE id=? AND status=? AND owner=? AND fencing_token=? AND lease_until>?
+                """,
+                (
+                    job_id,
+                    JobStatus.CLAIMED,
+                    worker_id,
+                    fencing_token,
+                    utc_now().isoformat(),
+                ),
+            ).fetchone()
+        if row is None:
+            raise LeaseLostError(f"job {job_id} lease has been lost")
 
     def finish_job(
         self,
@@ -467,17 +634,26 @@ class SQLiteStore(Store):
         with self._connect() as connection:
             connection.execute(
                 """
-                INSERT INTO evaluation_reports(id, payload, created_at) VALUES (?, ?, ?)
-                ON CONFLICT(id) DO UPDATE SET payload=excluded.payload, created_at=excluded.created_at
+                INSERT INTO evaluation_reports(id, tenant_id, payload, created_at)
+                VALUES (?, ?, ?, ?)
+                ON CONFLICT(id) DO UPDATE SET tenant_id=excluded.tenant_id,
+                    payload=excluded.payload, created_at=excluded.created_at
                 """,
-                (report.id, report.model_dump_json(), report.created_at.isoformat()),
+                (
+                    report.id,
+                    report.tenant_id,
+                    report.model_dump_json(),
+                    report.created_at.isoformat(),
+                ),
             )
         return report
 
-    def latest_evaluation(self) -> EvaluationReport | None:
+    def latest_evaluation(self, tenant_id: str) -> EvaluationReport | None:
         with self._connect() as connection:
             row = connection.execute(
-                "SELECT payload FROM evaluation_reports ORDER BY created_at DESC LIMIT 1"
+                "SELECT payload FROM evaluation_reports WHERE tenant_id=? "
+                "ORDER BY created_at DESC LIMIT 1",
+                (tenant_id,),
             ).fetchone()
         return EvaluationReport.model_validate_json(row["payload"]) if row else None
 
@@ -515,6 +691,8 @@ class PostgresStore(Store):
                     version INTEGER NOT NULL DEFAULT 0
                 );
                 CREATE INDEX IF NOT EXISTS idx_agent_runs_updated ON agent_runs(updated_at DESC);
+                CREATE INDEX IF NOT EXISTS idx_agent_runs_tenant_updated
+                    ON agent_runs((payload->>'tenant_id'), updated_at DESC);
                 CREATE TABLE IF NOT EXISTS agent_jobs (
                     id TEXT PRIMARY KEY,
                     run_id TEXT NOT NULL REFERENCES agent_runs(id),
@@ -532,42 +710,107 @@ class PostgresStore(Store):
                 CREATE INDEX IF NOT EXISTS idx_agent_jobs_claim
                     ON agent_jobs(status, available_at, lease_until, created_at);
                 CREATE INDEX IF NOT EXISTS idx_agent_jobs_run ON agent_jobs(run_id, created_at DESC);
+                CREATE UNIQUE INDEX IF NOT EXISTS idx_agent_jobs_active_stage
+                    ON agent_jobs(run_id, stage)
+                    WHERE status IN ('queued', 'claimed');
                 CREATE TABLE IF NOT EXISTS evaluation_reports (
                     id TEXT PRIMARY KEY,
+                    tenant_id TEXT NOT NULL DEFAULT 'xm-ops',
                     payload JSONB NOT NULL,
                     created_at TIMESTAMPTZ NOT NULL
                 );
+                ALTER TABLE evaluation_reports
+                    ADD COLUMN IF NOT EXISTS tenant_id TEXT NOT NULL DEFAULT 'xm-ops';
+                CREATE INDEX IF NOT EXISTS idx_evaluation_reports_tenant_created
+                    ON evaluation_reports(tenant_id, created_at DESC);
                 """
             )
 
-    def save_run(self, run: RunRecord) -> RunRecord:
+    def ping(self) -> None:
+        with self._connect() as connection, connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+            cursor.fetchone()
+
+    @staticmethod
+    def _save_run_in_transaction(cursor, run: RunRecord) -> tuple[int, datetime]:
         from psycopg.types.json import Jsonb
 
         expected = run.version
         next_version = expected + 1
         candidate = run.model_copy(update={"version": next_version, "updated_at": utc_now()})
+        cursor.execute("SELECT version FROM agent_runs WHERE id=%s FOR UPDATE", (run.id,))
+        row = cursor.fetchone()
+        if row is None:
+            if expected != 0:
+                raise ConcurrencyError(f"运行 {run.id} 已被删除或版本失效")
+            cursor.execute(
+                "INSERT INTO agent_runs(id,payload,updated_at,version) VALUES (%s,%s,%s,%s)",
+                (run.id, Jsonb(candidate.model_dump(mode="json")), candidate.updated_at, next_version),
+            )
+        else:
+            if int(row[0]) != expected:
+                raise ConcurrencyError(f"运行 {run.id} 版本冲突：期望 {expected}，当前 {row[0]}")
+            cursor.execute(
+                "UPDATE agent_runs SET payload=%s,updated_at=%s,version=%s WHERE id=%s AND version=%s",
+                (Jsonb(candidate.model_dump(mode="json")), candidate.updated_at, next_version, run.id, expected),
+            )
+            if cursor.rowcount != 1:
+                raise ConcurrencyError(f"运行 {run.id} 在保存期间被其他请求更新")
+        return next_version, candidate.updated_at
+
+    @staticmethod
+    def _active_job_in_transaction(cursor, run_id: str, stage: str) -> JobRecord | None:
+        cursor.execute(
+            f"""
+            SELECT {JOB_COLUMNS} FROM agent_jobs
+            WHERE run_id=%s AND stage=%s AND status IN (%s, %s)
+            ORDER BY created_at LIMIT 1
+            """,
+            (run_id, stage, *ACTIVE_JOB_STATUSES),
+        )
+        row = cursor.fetchone()
+        return _job_from_row(row) if row else None
+
+    @staticmethod
+    def _insert_job_in_transaction(cursor, run_id: str, stage: str) -> JobRecord:
+        existing = PostgresStore._active_job_in_transaction(cursor, run_id, stage)
+        if existing is not None:
+            return existing
+        job = _new_job(run_id, stage)
+        cursor.execute(
+            """
+            INSERT INTO agent_jobs(id,run_id,stage,status,owner,lease_until,fencing_token,attempts,
+                available_at,created_at,updated_at,last_error)
+            VALUES (%s,%s,%s,%s,NULL,NULL,0,0,%s,%s,%s,NULL)
+            """,
+            (
+                job.id,
+                run_id,
+                stage,
+                JobStatus.QUEUED,
+                job.available_at,
+                job.created_at,
+                job.updated_at,
+            ),
+        )
+        return job
+
+    def save_run(self, run: RunRecord) -> RunRecord:
         with self._connect() as connection, connection.cursor() as cursor:
-            cursor.execute("SELECT version FROM agent_runs WHERE id=%s FOR UPDATE", (run.id,))
-            row = cursor.fetchone()
-            if row is None:
-                if expected != 0:
-                    raise ConcurrencyError(f"运行 {run.id} 已被删除或版本失效")
-                cursor.execute(
-                    "INSERT INTO agent_runs(id,payload,updated_at,version) VALUES (%s,%s,%s,%s)",
-                    (run.id, Jsonb(candidate.model_dump(mode="json")), candidate.updated_at, next_version),
-                )
-            else:
-                if int(row[0]) != expected:
-                    raise ConcurrencyError(f"运行 {run.id} 版本冲突：期望 {expected}，当前 {row[0]}")
-                cursor.execute(
-                    "UPDATE agent_runs SET payload=%s,updated_at=%s,version=%s WHERE id=%s AND version=%s",
-                    (Jsonb(candidate.model_dump(mode="json")), candidate.updated_at, next_version, run.id, expected),
-                )
-                if cursor.rowcount != 1:
-                    raise ConcurrencyError(f"运行 {run.id} 在保存期间被其他请求更新")
+            next_version, updated_at = self._save_run_in_transaction(cursor, run)
         run.version = next_version
-        run.updated_at = candidate.updated_at
+        run.updated_at = updated_at
         return run
+
+    def save_run_and_enqueue(
+        self, run: RunRecord, stage: str
+    ) -> tuple[RunRecord, JobRecord]:
+        with self._connect() as connection, connection.cursor() as cursor:
+            next_version, updated_at = self._save_run_in_transaction(cursor, run)
+            job = self._insert_job_in_transaction(cursor, run.id, stage)
+        run.version = next_version
+        run.updated_at = updated_at
+        return run, job
 
     def save_run_with_lease(
         self, run: RunRecord, job_id: str, worker_id: str, fencing_token: int
@@ -619,25 +862,55 @@ class PostgresStore(Store):
             row = cursor.fetchone()
         return _with_version(row[0], int(row[1])) if row else None
 
-    def list_runs(self) -> list[RunRecord]:
+    def list_runs(
+        self, tenant_id: str | None = None, limit: int | None = None
+    ) -> list[RunRecord]:
+        query = "SELECT payload,version FROM agent_runs"
+        parameters: list[str | int] = []
+        if tenant_id is not None:
+            query += " WHERE payload->>'tenant_id'=%s"
+            parameters.append(tenant_id)
+        query += " ORDER BY updated_at DESC"
+        if limit is not None:
+            query += " LIMIT %s"
+            parameters.append(limit)
         with self._connect() as connection, connection.cursor() as cursor:
-            cursor.execute("SELECT payload,version FROM agent_runs ORDER BY updated_at DESC")
+            cursor.execute(query, parameters)
             rows = cursor.fetchall()
         return [_with_version(row[0], int(row[1])) for row in rows]
 
     def enqueue_job(self, run_id: str, stage: str) -> JobRecord:
-        now = utc_now()
-        job = JobRecord(id=f"JOB-{uuid4().hex[:12].upper()}", run_id=run_id, stage=stage)
+        with self._connect() as connection, connection.cursor() as cursor:
+            cursor.execute("SELECT 1 FROM agent_runs WHERE id=%s FOR UPDATE", (run_id,))
+            if cursor.fetchone() is None:
+                raise ValueError(f"run {run_id} does not exist")
+            return self._insert_job_in_transaction(cursor, run_id, stage)
+
+    def reconcile_orphaned_runs(self) -> list[JobRecord]:
+        repaired: list[JobRecord] = []
         with self._connect() as connection, connection.cursor() as cursor:
             cursor.execute(
-                """
-                INSERT INTO agent_jobs(id,run_id,stage,status,owner,lease_until,fencing_token,attempts,
-                    available_at,created_at,updated_at,last_error)
-                VALUES (%s,%s,%s,%s,NULL,NULL,0,0,%s,%s,%s,NULL)
-                """,
-                (job.id, run_id, stage, JobStatus.QUEUED, now, now, now),
+                "SELECT id,payload,version FROM agent_runs ORDER BY updated_at FOR UPDATE"
             )
-        return job
+            rows = cursor.fetchall()
+            for run_id, payload, version in rows:
+                run = _with_version(payload, int(version))
+                if run.status != "queued":
+                    continue
+                cursor.execute(
+                    """
+                    SELECT 1 FROM agent_jobs
+                    WHERE run_id=%s AND status IN (%s, %s) LIMIT 1
+                    """,
+                    (run_id, *ACTIVE_JOB_STATUSES),
+                )
+                if cursor.fetchone() is None:
+                    repaired.append(
+                        self._insert_job_in_transaction(
+                            cursor, run_id, _recovery_stage(run)
+                        )
+                    )
+        return repaired
 
     def claim_job(self, worker_id: str, lease_seconds: int) -> JobRecord | None:
         now = utc_now()
@@ -693,6 +966,21 @@ class PostgresStore(Store):
         if row is None:
             raise LeaseLostError(f"job {job_id} lease has been lost")
         return _job_from_row(row)
+
+    def assert_job_lease(
+        self, job_id: str, worker_id: str, fencing_token: int
+    ) -> None:
+        with self._connect() as connection, connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT 1 FROM agent_jobs
+                WHERE id=%s AND status=%s AND owner=%s AND fencing_token=%s AND lease_until>%s
+                """,
+                (job_id, JobStatus.CLAIMED, worker_id, fencing_token, utc_now()),
+            )
+            row = cursor.fetchone()
+        if row is None:
+            raise LeaseLostError(f"job {job_id} lease has been lost")
 
     def finish_job(
         self,
@@ -777,16 +1065,27 @@ class PostgresStore(Store):
         with self._connect() as connection, connection.cursor() as cursor:
             cursor.execute(
                 """
-                INSERT INTO evaluation_reports(id,payload,created_at) VALUES (%s,%s,%s)
-                ON CONFLICT(id) DO UPDATE SET payload=excluded.payload,created_at=excluded.created_at
+                INSERT INTO evaluation_reports(id,tenant_id,payload,created_at)
+                VALUES (%s,%s,%s,%s)
+                ON CONFLICT(id) DO UPDATE SET tenant_id=excluded.tenant_id,
+                    payload=excluded.payload,created_at=excluded.created_at
                 """,
-                (report.id, Jsonb(report.model_dump(mode="json")), report.created_at),
+                (
+                    report.id,
+                    report.tenant_id,
+                    Jsonb(report.model_dump(mode="json")),
+                    report.created_at,
+                ),
             )
         return report
 
-    def latest_evaluation(self) -> EvaluationReport | None:
+    def latest_evaluation(self, tenant_id: str) -> EvaluationReport | None:
         with self._connect() as connection, connection.cursor() as cursor:
-            cursor.execute("SELECT payload FROM evaluation_reports ORDER BY created_at DESC LIMIT 1")
+            cursor.execute(
+                "SELECT payload FROM evaluation_reports WHERE tenant_id=%s "
+                "ORDER BY created_at DESC LIMIT 1",
+                (tenant_id,),
+            )
             row = cursor.fetchone()
         return EvaluationReport.model_validate(row[0]) if row else None
 

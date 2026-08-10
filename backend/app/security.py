@@ -211,8 +211,14 @@ class CapabilityService:
         payload: dict[str, Any],
         actor: UserIdentity,
         required_role: str,
+        job_id: str | None = None,
+        fencing_token: int | None = None,
         max_uses: int = 1,
     ) -> CapabilityGrant:
+        if (job_id is None) != (fencing_token is None):
+            raise ValueError("job_id and fencing_token must be provided together")
+        if fencing_token is not None and fencing_token < 1:
+            raise ValueError("fencing_token must be positive")
         require_any_role(actor, [required_role])
         now = datetime.now(timezone.utc)
         expires_at = now + timedelta(seconds=self.ttl_seconds)
@@ -234,6 +240,9 @@ class CapabilityService:
             "jti": jti,
             "max_uses": max_uses,
         }
+        if job_id is not None:
+            claims["job_id"] = job_id
+            claims["fencing_token"] = fencing_token
         token = _sign(self.secret, {"alg": "HS256", "typ": "HARBOR-CAP"}, claims)
         return CapabilityGrant(token=token, jti=jti, expires_at=expires_at)
 
@@ -246,6 +255,8 @@ class CapabilityService:
         run_id: str | None = None,
         plan_hash_value: str | None = None,
         tenant_id: str | None = None,
+        job_id: str | None = None,
+        fencing_token: int | None = None,
     ) -> dict[str, Any]:
         claims = verify_signed_token(token, self.secret, "harbor-tool")
         if claims.get("tool") != tool_name:
@@ -258,6 +269,10 @@ class CapabilityService:
             raise AuthorizationError("capability plan binding is invalid")
         if tenant_id is not None and claims.get("tenant_id") != tenant_id:
             raise AuthorizationError("capability tenant binding is invalid")
+        if job_id is not None and claims.get("job_id") != job_id:
+            raise AuthorizationError("capability job binding is invalid")
+        if fencing_token is not None and claims.get("fencing_token") != fencing_token:
+            raise AuthorizationError("capability fencing binding is invalid")
         roles = claims.get("roles", [])
         required_role = claims.get("required_role")
         if not claims.get("tenant_id"):

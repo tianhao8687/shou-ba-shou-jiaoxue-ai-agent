@@ -121,7 +121,7 @@ export function RunView({ run, jobs, metrics, health, user, busy, onDecision, on
         <section className="panel trace-panel">
           <div className="panel-heading"><div><span className="section-kicker">CHECKPOINT TRACE</span><h2>执行轨迹</h2></div><span className="panel-meta">{run.traces.length} 个节点 · 第 {run.attempt}/{run.max_attempts} 次尝试</span></div>
           <div className="trace-table-wrap"><table className="data-table trace-table"><thead><tr><th>步骤</th><th>耗时</th><th>状态</th><th>摘要</th><th><span className="sr-only">详情</span></th></tr></thead><tbody>
-            {run.traces.map((trace, index) => <tr key={trace.id} className={selectedTrace?.id === trace.id ? 'selected' : ''} onClick={() => setSelectedTraceId(trace.id)} tabIndex={0} onKeyDown={(event) => (event.key === 'Enter' || event.key === ' ') && setSelectedTraceId(trace.id)}><td><span className="step-number">{String(index + 1).padStart(2, '0')}</span><strong>{trace.label}</strong></td><td className="mono muted">{trace.duration_ms ? formatDuration(trace.duration_ms) : '—'}</td><td><TraceStatusPill status={trace.status} /></td><td className="trace-summary">{trace.summary}</td><td><ArrowRight size={15} /></td></tr>)}
+            {run.traces.map((trace, index) => <tr key={trace.id} className={selectedTrace?.id === trace.id ? 'selected' : ''}><td><span className="step-number">{String(index + 1).padStart(2, '0')}</span><strong>{trace.label}</strong></td><td className="mono muted">{trace.duration_ms ? formatDuration(trace.duration_ms) : '—'}</td><td><TraceStatusPill status={trace.status} /></td><td className="trace-summary">{trace.summary}</td><td><button className="trace-detail-button" type="button" aria-label={`查看${trace.label}详情`} onClick={() => setSelectedTraceId(trace.id)}><ArrowRight size={15} /></button></td></tr>)}
           </tbody></table></div>
         </section>
 
@@ -169,7 +169,7 @@ export function RunView({ run, jobs, metrics, health, user, busy, onDecision, on
       <div className="evidence-execution-grid">
         <section className="panel evidence-panel">
           <div className="panel-heading"><div><span className="section-kicker">GROUNDING + OBSERVATION</span><h2>检索与现场证据</h2></div><span className="panel-meta"><DatabaseZap size={14} /> {run.sources.length + run.observations.length} 条</span></div>
-          <div className="observation-list">{run.observations.map((observation) => <article key={observation.id}><span><Activity size={15} /></span><div><strong>{observation.tool_name}</strong><p>{observation.summary}</p><code>{observation.id} · {observation.transport}</code></div><time>{formatDateTime(observation.captured_at)}</time></article>)}</div>
+          <div className="observation-list">{run.observations.map((observation) => <article key={observation.id}><span><Activity size={15} /></span><div><strong>{observation.tool_name}</strong><p>{observation.summary}</p><code>{observation.id} · {observation.transport}{observation.source_uri ? ` · ${observation.source_uri}` : ''}</code></div><time>{formatDateTime(observation.captured_at)}</time></article>)}</div>
           <div className="source-list">{run.sources.map((source) => <article key={source.chunk_id} className="source-item"><span className="source-code">{source.doc_id}</span><div><strong>{source.title} · {source.section}</strong><p>{source.excerpt}</p><code className="chunk-code">{source.chunk_id} · {source.retrieval_channel}</code></div><span className="score">{Math.round(source.score * 100)}%</span></article>)}</div>
         </section>
 

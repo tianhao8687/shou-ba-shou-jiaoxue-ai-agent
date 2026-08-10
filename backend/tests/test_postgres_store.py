@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 from threading import Barrier, Event, Lock, Thread
 import time
+from types import SimpleNamespace
 from uuid import uuid4
 
 import psycopg
@@ -10,9 +11,52 @@ import pytest
 
 from app.schemas import Incident, RunRecord
 from app.store import PostgresStore
+import app.store as store_module
 
 
 POSTGRES_URL = os.getenv("HARBOR_TEST_POSTGRES_URL")
+
+
+def _postgres_incident() -> Incident:
+    return Incident(
+        title="PostgreSQL 租户查询回归测试",
+        summary="验证租户过滤和 limit 在数据库层执行。",
+        severity="P2",
+        service="postgres-test",
+        environment="lab",
+        symptoms=["租户过滤"],
+    )
+
+
+@pytest.mark.skipif(
+    not POSTGRES_URL,
+    reason="set HARBOR_TEST_POSTGRES_URL to a dedicated PostgreSQL test database",
+)
+def test_postgres_lists_runs_with_tenant_filter_and_database_limit() -> None:
+    assert POSTGRES_URL is not None
+    store = PostgresStore(POSTGRES_URL)
+    store.initialize()
+    suffix = uuid4().hex[:10]
+    tenant_a = f"tenant-a-{suffix}"
+    tenant_b = f"tenant-b-{suffix}"
+    runs = [
+        RunRecord(id=f"RUN-PG-LIST-A1-{suffix}", tenant_id=tenant_a, incident=_postgres_incident()),
+        RunRecord(id=f"RUN-PG-LIST-B1-{suffix}", tenant_id=tenant_b, incident=_postgres_incident()),
+        RunRecord(id=f"RUN-PG-LIST-A2-{suffix}", tenant_id=tenant_a, incident=_postgres_incident()),
+    ]
+    try:
+        for run in runs:
+            store.save_run(run)
+        selected = store.list_runs(tenant_a, limit=1)
+        assert len(selected) == 1
+        assert selected[0].tenant_id == tenant_a
+        assert store.list_runs(f"missing-{suffix}", limit=10) == []
+    finally:
+        with psycopg.connect(POSTGRES_URL) as connection, connection.cursor() as cursor:
+            cursor.execute(
+                "DELETE FROM agent_runs WHERE id = ANY(%s)",
+                ([run.id for run in runs],),
+            )
 
 
 @pytest.mark.skipif(
@@ -112,3 +156,55 @@ def test_postgres_model_slot_serializes_worker_replicas() -> None:
     assert second.is_alive() is False
     assert second_acquired.is_set()
     assert wait_seconds[0] >= 0.1
+
+
+@pytest.mark.skipif(
+    not POSTGRES_URL,
+    reason="set HARBOR_TEST_POSTGRES_URL to a dedicated PostgreSQL test database",
+)
+def test_postgres_atomic_run_job_rollback_and_active_job_dedupe(monkeypatch) -> None:
+    assert POSTGRES_URL is not None
+    store = PostgresStore(POSTGRES_URL)
+    store.initialize()
+    suffix = uuid4().hex[:12].upper()
+    blocker = RunRecord(
+        id=f"RUN-PG-BLOCKER-{suffix}",
+        incident=Incident(
+            title="PostgreSQL 原子提交阻断记录",
+            summary="使用确定性任务主键冲突验证 Run 与 Job 在同一事务回滚。",
+            severity="P2",
+            service="postgres-atomic",
+            environment="lab",
+            symptoms=["模拟任务插入失败"],
+        ),
+    )
+    target = blocker.model_copy(
+        update={"id": f"RUN-PG-TARGET-{suffix}", "version": 0}
+    )
+    dedupe = blocker.model_copy(
+        update={"id": f"RUN-PG-DEDUPE-{suffix}", "version": 0}
+    )
+    collision_hex = "d" * 32
+    ids = [blocker.id, target.id, dedupe.id]
+    try:
+        store.save_run(blocker)
+        monkeypatch.setattr(
+            store_module, "uuid4", lambda: SimpleNamespace(hex=collision_hex)
+        )
+        store.enqueue_job(blocker.id, "start")
+
+        with pytest.raises(psycopg.errors.UniqueViolation):
+            store.save_run_and_enqueue(target, "start")
+        assert target.version == 0
+        assert store.get_run(target.id) is None
+
+        monkeypatch.undo()
+        store.save_run(dedupe)
+        first = store.enqueue_job(dedupe.id, "start")
+        second = store.enqueue_job(dedupe.id, "start")
+        assert second.id == first.id
+        assert len(store.list_jobs(dedupe.id)) == 1
+    finally:
+        with psycopg.connect(POSTGRES_URL) as connection, connection.cursor() as cursor:
+            cursor.execute("DELETE FROM agent_jobs WHERE run_id = ANY(%s)", (ids,))
+            cursor.execute("DELETE FROM agent_runs WHERE id = ANY(%s)", (ids,))

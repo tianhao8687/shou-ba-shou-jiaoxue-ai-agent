@@ -1,6 +1,8 @@
 # Host-only dependency and build artifacts must never overwrite container state.
 frontend/node_modules/
 frontend/dist/
+frontend/playwright-report/
+frontend/test-results/
 
 # Local runtime and test artifacts are not image inputs.
 **/__pycache__/
@@ -12,7 +14,8 @@ backend/harbor.db
 # Delivery documents and local tooling are outside the runtime images.
 docs/
 design-system/
-scripts/
+scripts/*
+!scripts/check-coverage.py
 .git/
 .gitignore
 README.md

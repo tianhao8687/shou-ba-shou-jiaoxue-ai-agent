@@ -94,7 +94,9 @@ jobs:
 
       - name: Run all backend tests with coverage
         working-directory: backend
-        run: pytest --cov=app --cov-report=term-missing --cov-fail-under=80
+        run: |
+          pytest --cov=app --cov-report=term-missing --cov-report=json:coverage.json --cov-fail-under=82
+          python ../scripts/check-coverage.py coverage.json
 
       - name: Show fault-lab log on failure
         if: failure()
@@ -133,9 +135,9 @@ jobs:
           pnpm build
 
   compose-smoke:
-    name: Compose smoke
+    name: Compose smoke and browser E2E
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - name: Check out repository
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
@@ -145,8 +147,34 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Set up pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5
+        with:
+          version: 11.20.0
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: "24"
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: Install browser test dependencies
+        working-directory: frontend
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm exec playwright install --with-deps chromium
+
       - name: Build, start and verify the complete stack
         run: python scripts/quickstart.py up --workers 2 --timeout 240
+
+      - name: Run browser workflows and accessibility checks
+        working-directory: frontend
+        env:
+          PLAYWRIGHT_BASE_URL: http://127.0.0.1:8080
+          DEMO_PASSWORD: harbor-demo-2026
+        run: pnpm e2e
 
       - name: Show service logs on failure
         if: failure()

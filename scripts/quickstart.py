@@ -180,7 +180,7 @@ def start(args: argparse.Namespace) -> None:
             "--scale",
             f"worker={args.workers}",
         )
-        wait_for_http(f"{args.base_url.rstrip('/')}/api/health", args.timeout)
+        wait_for_http(f"{args.base_url.rstrip('/')}/api/ready", args.timeout)
         if not args.skip_smoke:
             completed = subprocess.run(
                 smoke_arguments(args, runtime_environment),

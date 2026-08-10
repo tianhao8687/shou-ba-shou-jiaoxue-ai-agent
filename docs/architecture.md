@@ -1,4 +1,4 @@
-# Harbor AgentOps 3.2：架构、信任边界与底层原理
+# Harbor AgentOps 3.3：架构、信任边界与底层原理
 
 ## 1. 设计目标
 
@@ -20,6 +20,8 @@ Harbor 要解决的不是“怎样让模型更大胆地操作系统”，而是�
 10. worker 的旧 lease 即使恢复执行也不能覆盖新 owner 的状态。
 11. 自动补偿必须与主动作一起编译、审批和哈希，不能成为权限后门。
 12. fixture、真实模型、真实 Embedding 和生产结论分开报告。
+13. Run 进入 queued 与 durable Job 创建必须原子提交，不能出现只有业务状态、没有可领取任务的半完成状态。
+14. production 观测只允许服务端固定 PromQL 模板；空数据、认证失败和超时都必须在模型与写动作之前停止。
 
 ## 2. 组件与信任区
 
@@ -35,6 +37,7 @@ flowchart LR
       ENGINE["State Machine"]
       RAG["Retriever"]
       MODEL["Model Adapter"]
+      PROM["Prometheus Read-only Provider"]
       POLICY["Policy Compiler"]
       AUDIT["Trace / Audit / Metrics"]
     end
@@ -54,6 +57,7 @@ flowchart LR
     JOB --> ENGINE
     ENGINE --> RAG
     ENGINE --> MODEL
+    ENGINE -->|"template-only query"| PROM
     ENGINE --> POLICY
     POLICY -->|"HMAC capability"| LAB
     LAB --> IDEM
@@ -184,6 +188,12 @@ PostgreSQL 模式使用 pgvector cosine `<=>` 和 HNSW。表名包含向量维�
 
 服务路由分数固定为 0.72，并用 `routed` 标签展示；它不是伪造的相似度。metadata route 与 learned retrieval 分开报告，便于评测和调试。
 
+### 7.1 生产 Prometheus 只读边界
+
+没有 `experiment_id` 的 production / staging 事件不会借用 Fault Lab 假装生产。控制面只能调用 `query_prometheus_slo`，服务端根据经过 Schema 校验的 `service`、`environment` 和时间窗口生成四个固定查询：请求率、5xx 百分比、P95 延迟和 `up`。
+
+调用方不能提交 `query` 字段，模型也没有任意 PromQL 接口。Observation 保存 provider、样本数和来源 URI。四项全空时直接 handoff，不调用模型；HTTP 401、超时或未知结果同样停止后续节点。取得可归因指标后模型可以生成诊断，但当前没有 production 写 connector，所以计划被清空并携带证据转人工。
+
 ## 8. Plan IR 与策略编译
 
 每个 `PlanStep` 包含：
@@ -249,6 +259,10 @@ fault lab 重新验签、比较 tool/payload、核对 `X-Harbor-Control-Tenant` 
 
 SQLite 使用事务和条件更新；PostgreSQL claim 使用 `FOR UPDATE SKIP LOCKED`。每次重新 claim 都递增 fencing token。`save_run_with_lease` 和 `finish_job` 同时校验 job id、owner、token 和 lease，所以暂停过久的旧 worker 即使醒来，也不能覆盖新 owner。
 
+Run 进入 `queued` 与 Job 创建由 `save_run_and_enqueue()` 在同一事务完成，并对同一 Run + stage 的 queued / claimed Job 建立部分唯一索引。注入 Job INSERT 失败时，Run 更新同时回滚；reconciler 只修复确实缺少活动 Job 的非终态 Run。
+
+heartbeat 不只是记录日志：连续失败超过预算后会设置共享取消事件。每个节点、模型调用和工具调用前后都检查它。job id 与 fencing token 还进入 capability、HTTP header 和工具端持久记录；即使旧 Worker 手里的签名和幂等键仍有效，工具端也会拒绝较低 token。
+
 SQLite 测试让 32 个线程同时 claim 同一个 job，只有 1 个成功；PostgreSQL 集成测试再让 16 个连接并发 claim，仍然精确一次。恢复测试让 worker #1 的 lease 立即过期，worker #2 用 fencing #2 恢复，旧 token 写入抛出 `LeaseLostError`；真实容器测试还停止了刚完成 claim 的 worker，确认同一 job 被另一个副本以 attempt 2 / fencing 2 接管。
 
 Compose 把 API 和 3 个 worker 副本分成独立进程，共享 PostgreSQL。worker id 展开容器 hostname，避免副本误用同一个 owner；`worker_main.py` 处理 SIGINT/SIGTERM 并等待当前心跳线程收尾。
@@ -264,7 +278,9 @@ Compose 把 API 和 3 个 worker 副本分成独立进程，共享 PostgreSQL。
 - slot 等待时间与实际推理时间分别写入 `ModelInvocation.queue_wait_ms` 和 Prometheus histogram；
 - 锁只包围模型调用，不包围检索、工具读取、策略编译或数据库任务 claim。
 
-修复后同样 3 条并发任务 3/3 完成：等待约 0、67、135 秒，实际推理各约 67–70 秒。这个方案避免容量型假失败，但不提升吞吐；生产仍应使用有界队列、GPU 副本、容量预算和过载拒绝策略。
+修复后同样 3 条并发任务 3/3 完成：等待约 0、67、135 秒，实际推理各约 67–70 秒。V3.3 又在本地网关增加第二层保护：一个执行槽、可配置的有界等待队列和等待超时。队列满返回 429，已入队但超出时间预算返回 503；Prometheus 分别暴露 active、queued、reject、timeout、排队和生成耗时。
+
+数据库 advisory lock 负责跨 Worker 协调，网关 admission queue 负责保护模型进程。两层都不提升吞吐；它们把过载从“线程无限堆积、最后一起超时”变成可观测、可重试的明确合同。真正扩大容量仍需要 GPU 副本、批处理、路由和容量 SLO。
 
 ## 11. 副作用、幂等和不确定结果
 
@@ -337,9 +353,13 @@ Compose 拓扑：
 - Nginx 前端与安全响应头；
 - Prometheus；
 - 宿主机本地 Qwen 生成与 Qwen3 Embedding sidecar；
-- 健康检查与 restart policy。
+- liveness、readiness、诊断详情和 restart policy。
 
-V3.2 已在 Docker Desktop 29.6.1 / WSL 2.7.11 上实际启动 8 个容器。Prometheus 通过 Docker DNS SD 发现每个 worker 的 `:9101/metrics`，backend、宿主机模型、fault lab 和 3 个 worker 共 6/6 targets 为 up。PostgreSQL 使用 pgvector 0.8.6，并创建 cosine HNSW 索引。
+V3.3 的健康语义分成三层：`/api/health` 只回答进程是否活着，`/api/ready` 决定是否可接流量，`/api/status` 返回完整诊断。实测停止 Prometheus 时 health 保持 200、ready 变为 503，恢复后 ready 回到 200；fixture 模式明确标记 `production_capable=false`，真实模型只有完成加载才算 ready。
+
+前端发布门不是截图验收。Playwright 在桌面 Chromium 与 Pixel 7 上执行登录、键盘焦点、响应式、生产只读取证、低风险自动闭环和高风险双主体 quorum，并在关键状态运行 Axe WCAG 2 A/AA 检查。
+
+V3.2 的 3 Worker、真实 Qwen 与真实 Embedding 验证仍作为历史证据保留；V3.3 本轮重新验证的是 2 Worker Compose、PostgreSQL、fault lab、Prometheus、Nginx、59 项后端测试和 6 条浏览器流程，不把旧模型样本冒充新结果。PostgreSQL 使用 pgvector 0.8.6，并创建 cosine HNSW 索引。
 
 四类自研运行容器采用非 root 用户、只读根文件系统、`cap_drop: ALL`、`no-new-privileges` 和显式可写 `/tmp`；fault lab 只有 `/data` 持久卷可写。生产 Python 镜像不安装 pytest，测试依赖位于单独 stage；基础镜像固定 digest。Nginx 增加 CSP/COOP/CORP，React Job 数据按 `run_id` 隔离，防止异步旧响应把另一运行的 lease/fencing 信息渲染到当前页面。
 
@@ -357,7 +377,7 @@ V3.2 已在 Docker Desktop 29.6.1 / WSL 2.7.11 上实际启动 8 个容器。Pro
 - PostgreSQL 与独立 worker 已有本机集成测试；仍缺备份恢复、跨主机故障、多节点混沌和长时间 soak test；
 - 更大领域标注集、hard negatives、reranker、在线 A/B 和知识同步治理；当前只有 15+15 检索小集；
 - OpenTelemetry Collector、Grafana、告警、SLO/error budget；
-- GPU 推理、有界模型队列、模型路由、批处理和容量规划；当前 advisory lock 只保证单例 CPU 模型不被并发压垮；
+- GPU 推理、模型路由、批处理和容量规划；当前 advisory lock + 有界网关队列只能保护单例 CPU 模型，不能提高吞吐；
 - 自动化 SBOM/CVE 扫描和签名发布门禁；本机 Docker Scout 因未登录无法完成漏洞数据库扫描；
 - 生产数据的隐私评审、红队与发布门禁。
 

@@ -38,6 +38,7 @@ def test_http_lab_persists_idempotency_enforces_capability_and_hides_oracle(
             display_name="lead",
             roles=["observer", "operator", "on-call-lead"],
         )
+        job_id = "JOB-HTTP-LAB"
         grant = CapabilityService(capability_secret).issue(
             run_id="RUN-HTTP-LAB",
             plan_hash_value="a" * 64,
@@ -46,12 +47,16 @@ def test_http_lab_persists_idempotency_enforces_capability_and_hides_oracle(
             payload=payload,
             actor=actor,
             required_role="on-call-lead",
+            job_id=job_id,
+            fencing_token=1,
         )
         key = uuid4().hex + uuid4().hex
         headers = {
             "Authorization": f"Bearer {grant.token}",
             "X-Idempotency-Key": key,
             "X-Harbor-Control-Tenant": "xm-ops",
+            "X-Harbor-Job-Id": job_id,
+            "X-Harbor-Fencing-Token": "1",
             "X-Test-Drop-Response": "after-commit",
         }
         lost = client.post("/v1/tools/scale_workers", json=payload, headers=headers)
@@ -63,6 +68,8 @@ def test_http_lab_persists_idempotency_enforces_capability_and_hides_oracle(
                 "Authorization": f"Bearer {grant.token}",
                 "X-Idempotency-Key": key,
                 "X-Harbor-Control-Tenant": "xm-ops",
+                "X-Harbor-Job-Id": job_id,
+                "X-Harbor-Fencing-Token": "1",
             },
         )
         assert replay.status_code == 200
@@ -82,6 +89,8 @@ def test_http_lab_persists_idempotency_enforces_capability_and_hides_oracle(
                 "Authorization": f"Bearer {grant.token}",
                 "X-Idempotency-Key": uuid4().hex + uuid4().hex,
                 "X-Harbor-Control-Tenant": "xm-ops",
+                "X-Harbor-Job-Id": job_id,
+                "X-Harbor-Fencing-Token": "1",
             },
         )
         assert rejected.status_code == 403
@@ -93,9 +102,65 @@ def test_http_lab_persists_idempotency_enforces_capability_and_hides_oracle(
                 "Authorization": f"Bearer {grant.token}",
                 "X-Idempotency-Key": uuid4().hex + uuid4().hex,
                 "X-Harbor-Control-Tenant": "other-tenant",
+                "X-Harbor-Job-Id": job_id,
+                "X-Harbor-Fencing-Token": "1",
             },
         )
         assert wrong_tenant.status_code == 403
+
+        metrics_payload = {
+            "experiment_id": experiment_id,
+            "service": "invoice-worker",
+            "window_minutes": 5,
+        }
+        newer_grant = CapabilityService(capability_secret).issue(
+            run_id="RUN-HTTP-LAB",
+            plan_hash_value="b" * 64,
+            step_id="step-new-owner-observe",
+            tool_name="query_metrics",
+            payload=metrics_payload,
+            actor=actor,
+            required_role="observer",
+            job_id=job_id,
+            fencing_token=2,
+        )
+        newer = client.post(
+            "/v1/tools/query_metrics",
+            json=metrics_payload,
+            headers={
+                "Authorization": f"Bearer {newer_grant.token}",
+                "X-Idempotency-Key": uuid4().hex + uuid4().hex,
+                "X-Harbor-Control-Tenant": "xm-ops",
+                "X-Harbor-Job-Id": job_id,
+                "X-Harbor-Fencing-Token": "2",
+            },
+        )
+        assert newer.status_code == 200
+
+        stale_grant = CapabilityService(capability_secret).issue(
+            run_id="RUN-HTTP-LAB",
+            plan_hash_value="c" * 64,
+            step_id="step-stale-owner-observe",
+            tool_name="query_metrics",
+            payload=metrics_payload,
+            actor=actor,
+            required_role="observer",
+            job_id=job_id,
+            fencing_token=1,
+        )
+        stale = client.post(
+            "/v1/tools/query_metrics",
+            json=metrics_payload,
+            headers={
+                "Authorization": f"Bearer {stale_grant.token}",
+                "X-Idempotency-Key": uuid4().hex + uuid4().hex,
+                "X-Harbor-Control-Tenant": "xm-ops",
+                "X-Harbor-Job-Id": job_id,
+                "X-Harbor-Fencing-Token": "1",
+            },
+        )
+        assert stale.status_code == 409
+        assert "stale fencing token" in stale.json()["detail"]
 
         auth_token = AuthService(
             "test-auth-signing-secret-is-long-enough", "password-2026"

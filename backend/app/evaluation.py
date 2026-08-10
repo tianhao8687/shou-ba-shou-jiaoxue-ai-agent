@@ -86,6 +86,7 @@ class EvaluationService:
     def run(
         self,
         *,
+        tenant_id: str,
         live_model: bool = False,
         case_limit: int | None = None,
         case_offset: int = 0,
@@ -303,6 +304,7 @@ class EvaluationService:
         )
         return EvaluationReport(
             id=f"EVAL-{uuid4().hex[:10].upper()}",
+            tenant_id=tenant_id,
             score=score,
             task_success_rate=task_success,
             root_cause_accuracy=root_cause,

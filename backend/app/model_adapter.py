@@ -348,6 +348,8 @@ class HeuristicModelAdapter:
             "status": "fixture",
             "provider": "transparent-heuristic-fixture",
             "model": "observation-rules-v3",
+            "loaded": True,
+            "structured_output": "deterministic-typed-fixture",
             "detail": self.reason,
         }
 
@@ -390,7 +392,14 @@ class SafeDisabledModelAdapter:
         )
 
     def health(self) -> dict[str, Any]:
-        return {"status": "disabled", "provider": "disabled", "model": "none", "detail": self.reason}
+        return {
+            "status": "disabled",
+            "provider": "disabled",
+            "model": "none",
+            "loaded": False,
+            "structured_output": "unavailable",
+            "detail": self.reason,
+        }
 
 
 def _extract_json_object(text: str) -> dict[str, Any]:
@@ -440,6 +449,7 @@ class OpenAICompatibleModelAdapter:
         timeout_seconds: float,
         api_key: str = "",
         transport: httpx.BaseTransport | None = None,
+        supports_native_structured_output: bool | None = None,
     ) -> None:
         self.endpoint = endpoint.rstrip("/")
         self.model = model
@@ -447,6 +457,11 @@ class OpenAICompatibleModelAdapter:
         self.timeout_seconds = timeout_seconds
         self.api_key = api_key
         self.transport = transport
+        self.supports_native_structured_output = (
+            provider.lower() != "local-openvino"
+            if supports_native_structured_output is None
+            else supports_native_structured_output
+        )
 
     @staticmethod
     def _tools() -> list[dict[str, Any]]:
@@ -546,26 +561,28 @@ class OpenAICompatibleModelAdapter:
         )
 
     def _request(self, messages: list[dict[str, str]], max_tokens: int) -> str:
+        request_body: dict[str, Any] = {
+            "model": self.model,
+            "messages": messages,
+            "temperature": 0.1,
+            "max_tokens": max_tokens,
+        }
+        if self.supports_native_structured_output:
+            request_body["response_format"] = {
+                "type": "json_schema",
+                "json_schema": {
+                    "name": "evidence_bound_plan",
+                    "strict": True,
+                    "schema": CompactDraftProposal.model_json_schema(),
+                },
+            }
         with httpx.Client(
             timeout=httpx.Timeout(self.timeout_seconds, connect=2.0), transport=self.transport
         ) as client:
             response = client.post(
                 f"{self.endpoint}/chat/completions",
                 headers={"Authorization": f"Bearer {self.api_key}"} if self.api_key else {},
-                json={
-                    "model": self.model,
-                    "messages": messages,
-                    "temperature": 0.1,
-                    "max_tokens": max_tokens,
-                    "response_format": {
-                        "type": "json_schema",
-                        "json_schema": {
-                            "name": "evidence_bound_plan",
-                            "strict": True,
-                            "schema": CompactDraftProposal.model_json_schema(),
-                        },
-                    },
-                },
+                json=request_body,
             )
             response.raise_for_status()
             body = response.json()
@@ -794,11 +811,23 @@ class OpenAICompatibleModelAdapter:
                 response.raise_for_status()
                 payload = response.json()
             return {
-                "status": payload.get("status", "ready"),
+                "status": (
+                    "ready"
+                    if bool(payload.get("runtime_available", True))
+                    and bool(payload.get("loaded", False))
+                    else "warming"
+                    if bool(payload.get("runtime_available", True))
+                    else "unavailable"
+                ),
                 "provider": self.provider,
                 "model": self.model,
                 "loaded": bool(payload.get("loaded", False)),
                 "device": payload.get("device"),
+                "structured_output": (
+                    "native-json-schema"
+                    if self.supports_native_structured_output
+                    else "prompt-plus-pydantic-validation"
+                ),
                 "detail": payload.get("detail", "local model gateway reachable"),
             }
         except Exception as exc:

@@ -1,4 +1,4 @@
-# 手把手教学 AI Agent：Harbor AgentOps 3.2
+# 手把手教学 AI Agent：Harbor AgentOps 3.3
 
 这是一个从零基础教程逐步走到生产型 AI Agent 工程实践的完整求职项目。建议第一次访问先阅读 [由浅入深学习指南](./LEARNING_GUIDE.md)，再运行应用和查看架构。
 
@@ -8,6 +8,7 @@
 - [系统架构与设计原理](./docs/architecture.md)：状态机、RAG、工具治理、恢复、评测与可观测性。
 - [厦门 AI Agent 20K+ 岗位与项目报告](./career/厦门_AI_Agent_20K以上岗位与Harbor_AgentOps_3.2最终报告_2026-08-08.md)：26 家公司、28 个岗位和项目能力映射。
 - [交付与验收报告](./career/Harbor_AgentOps_交付与验收报告.md)：已实测内容、机器证据和未完成边界。
+- [v3.3 成熟度审计与整改报告](./docs/项目成熟度审计与v3.3整改报告_2026-08-10.md)：按源码、容器、数据库、故障和浏览器行为复评，不用 Markdown 代替证据。
 - [岗位明细 CSV](./career/厦门_AI_Agent_20K以上岗位明细_2026-08-08.csv)：逐条招聘来源和需求证据。
 
 第一次体验可以使用下方的可复现夹具模式，不要求安装本地大模型。完整模式再接入本机 OpenVINO Qwen。
@@ -27,6 +28,9 @@ Harbor AgentOps 是一个本地优先、证据约束、可恢复的 AIOps Agent 
 - 每一票都绑定同一个 SHA-256 计划哈希；参数变化会使旧审批失效。
 - capability 绑定 tenant、run、plan hash、step、tool、payload hash、角色、有效期和单次使用次数。
 - API 只入队；worker 使用数据库 lease、heartbeat 与 fencing token，崩溃后可以恢复。
+- Run 状态变化与 durable Job 入队在同一数据库事务提交；进程崩溃不会留下“显示排队但没有任务”的孤儿状态。
+- lease 动态失效会在节点、模型和工具边界主动中止；远程工具还会拒绝较旧 fencing token。
+- 普通 production 事件只用服务端固定 PromQL 模板读取 Prometheus；空数据、401 或超时均在模型和写动作前停止。
 - 工具副作用与幂等记录在同一事务提交；响应丢失后复用同一 key 只返回首次结果。
 - “工具返回成功”不等于事故恢复；系统独立重读指标逐条检查 success criteria。
 - 自动补偿也经过 Schema、角色、实验绑定、计划哈希、capability、幂等和独立复查。
@@ -42,6 +46,7 @@ flowchart TB
     RAG --> EMB["本机 OpenVINO Qwen3-Embedding 0.6B INT4"]
     WORKER --> MODEL["OpenAI-compatible Model Adapter"]
     MODEL --> QWEN["本机 OpenVINO Qwen3-VL-8B INT4"]
+    WORKER -->|"固定模板，只读"| PROM["Production Prometheus"]
     WORKER --> POLICY["Plan IR + Deterministic Policy Compiler"]
     POLICY --> GATE["Tenant-bound Four-eyes HITL"]
     GATE -->|"signed capability"| LAB["独立 Sealed Fault Lab"]
@@ -60,7 +65,7 @@ flowchart TB
 
 | 层 | 实现 |
 |---|---|
-| Web | React 19、TypeScript、Vite、Vitest、Testing Library |
+| Web | React 19、TypeScript、Vite、Vitest、Testing Library、Playwright、Axe |
 | API | Python 3.12、FastAPI、Pydantic v2、OpenAPI |
 | 模型 | 本机 Qwen3-VL-8B-Instruct INT4、OpenVINO GenAI、OpenAI-compatible sidecar |
 | Agent | 显式状态机、checkpoint、HITL、Plan IR、确定性策略编译 |
@@ -71,18 +76,18 @@ flowchart TB
 | 可观测 | Trace、Audit、Evidence Bundle、Prometheus |
 | 交付 | Docker Compose、Nginx、独立 API/worker、健康检查 |
 
-V3.2 已在本机真实运行 `OpenVINO/Qwen3-Embedding-0.6B-int4-cw-ov`：last-token pooling、L2 归一化、1024 维，OpenAI-compatible sidecar 只监听本地端口。默认配置仍保留可复现的 256 维 Feature Hashing fallback，且健康接口会如实区分 `semantic` 与 `lexical-feature-baseline`。
+V3.3 已在本机真实运行 `OpenVINO/Qwen3-Embedding-0.6B-int4-cw-ov`：last-token pooling、L2 归一化、1024 维，OpenAI-compatible sidecar 只监听本地端口。默认配置仍保留可复现的 256 维 Feature Hashing fallback，且健康接口会如实区分 `semantic` 与 `lexical-feature-baseline`。
 
-## 3.2 生产验证增量
+## 3.3 生产验证增量
 
-- Docker Desktop 29.6.1 + WSL 2.7.11 上实启 PostgreSQL/pgvector、持久 fault lab、API、3 个独立 worker、Nginx 和 Prometheus，不再把静态 Compose 校验冒充容器联调。
-- 3 个 worker 竞争真实 PostgreSQL job；数据库 claim 使用 `FOR UPDATE SKIP LOCKED`，模型侧用 PostgreSQL advisory lock 做跨进程 admission control。
-- 修复了并发模型调用造成的容量型假超时：修复前第 3 条任务在 180 秒超时并 handoff；修复后 3/3 完成，并把排队时间与推理时间分开记录。
-- Prometheus 通过 DNS service discovery 抓取每个 worker 的 `:9101/metrics`；实测 backend、模型、fault lab 与 3 个 worker 共 6/6 targets 为 up。
-- API、worker、fault lab 使用 UID 10001，Nginx 使用 UID 101；四类自研容器均为只读根文件系统、`cap_drop: ALL`、`no-new-privileges`，仅 `/tmp` 和明确数据卷可写。
-- 生产镜像不再安装 pytest；测试依赖进入独立 multi-stage test image。Python、Node、Nginx、pgvector 和 Prometheus 基础镜像均固定 digest。
-- 修复 React 异步竞态：Job 状态按 `run_id` 缓存，旧请求不能把上一运行的 lease/fencing 数据显示到新运行。
-- Nginx 增加 CSP、COOP、CORP 并隐藏版本；真实浏览器在 CSP 下 console 仍为 0 error / 0 warning。
+- Run + Job 原子提交、活动任务唯一约束和 orphan reconciler 已覆盖 SQLite 与真实 PostgreSQL 回归。
+- heartbeat 连续失败会主动取消当前 lease；节点、模型、工具前后检查动态租约，远端工具持久记录并拒绝旧 fencing token。
+- `/api/health` 只表示进程存活，`/api/ready` 检查数据库、检索、模型合同和工具边界。实测停止 Prometheus 时分别返回 200 / 503，恢复后 readiness 回到 200。
+- production / staging 自由事件通过固定 PromQL 模板读取请求率、错误率、P95 与 `up`，记录来源 URI；没有生产写连接器时只诊断并转人工。
+- 本地模型网关现在只有一个执行槽和有界等待队列；队列满返回 429，排队超时返回 503，并暴露 active、queued、reject 和 timeout 指标。
+- Evaluation 按 tenant 持久化和查询；Run 列表的 tenant filter 与 limit 下推到 SQLite / PostgreSQL，并建立表达式索引。
+- Playwright 在桌面 Chromium 与 Pixel 7 两种视口验证登录、键盘焦点、响应式、Prometheus 只读取证、低风险闭环和高风险 2/2 审批；Axe WCAG 2 A/AA 门禁同步执行。
+- 当前容器回归使用 2 个独立 Worker；两者都处理过真实 Job。CI 同样启动 2 Worker，并执行 HTTP smoke 与浏览器 E2E。
 
 ## 快速启动
 
@@ -251,7 +256,7 @@ Compose 包含 PostgreSQL/pgvector、持久 fault lab、API、独立 worker、�
 ## 测试与验证
 
 ```powershell
-# 后端测试镜像：38 项 + 覆盖率；生产镜像不携带 pytest
+# 后端测试镜像：60 项 + 分层覆盖率门禁；生产镜像不携带 pytest
 # 以下命令从仓库根目录执行
 docker build --target test -t harbor-agentops-backend-test -f backend/Dockerfile .
 docker run --rm --network harbor-agentops_default `
@@ -259,7 +264,8 @@ docker run --rm --network harbor-agentops_default `
   -e HARBOR_TEST_OPS_URL=http://ops-sandbox:8092 `
   -e HARBOR_TEST_OPS_ORACLE_TOKEN=harbor-local-oracle-token-change-me `
   -e HARBOR_TEST_CAPABILITY_SECRET=harbor-local-capability-secret-change-me `
-  harbor-agentops-backend-test pytest --cov=app --cov-report=term
+  harbor-agentops-backend-test sh -lc `
+  "pytest --cov=app --cov-report=json:/tmp/coverage.json --cov-fail-under=82 && python /app/scripts/check-coverage.py /tmp/coverage.json"
 
 # 或在本地开发环境运行
 cd backend
@@ -271,6 +277,8 @@ cd ../frontend
 pnpm test
 pnpm typecheck
 pnpm build
+pnpm exec playwright install chromium
+pnpm e2e
 
 # Compose 配置与 3 worker 实启
 cd ..
@@ -292,31 +300,25 @@ python scripts/benchmark-api.py --requests 2000 --concurrency 64
 python scripts/check-portability.py
 ```
 
-GitHub Actions 对每个 PR 和 `main` 提交执行四个稳定检查：`Quality gates`、`Backend tests`、`Frontend tests`、`Compose smoke`。最后一项调用同一个 `quickstart.py`，因此公开徽章和本地一键启动验证的是同一条交付路径。
+GitHub Actions 对每个 PR 和 `main` 提交执行四个稳定检查：`Quality gates`、`Backend tests`、`Frontend tests`、`Compose smoke and browser E2E`。最后一项调用同一个 `quickstart.py` 后再运行 Playwright，因此公开门禁和本地一键启动验证的是同一条交付路径。
 
-2026-08-08 最终验证：
+2026-08-10 v3.3 验证：
 
 | 证据 | 结果 |
 |---|---|
-| 后端 | 38/38；总语句覆盖率 81%；包含真实 PostgreSQL 和远程 fault lab 集成测试 |
-| 前端 | 16/16；类型检查、生产构建通过；新增跨运行异步竞态回归 |
-| 真实语义运行 | Qwen3 Embedding 1024d；完整 API 事故运行通过，健康状态 `semantic` |
-| RAG 留出集 | 15 条；Recall@1 0.9333、Recall@3 1.0、MRR 0.9667；相对词法基线不回归 |
-| 四眼与租户 | 自批/重复票/越权角色/跨租户/工具租户伪造均被拒绝；第二主体后才执行 |
-| 15 例密封夹具 | `EVAL-02E4B19199`，15/15，100 分，危险越权率 0，P95 35ms |
-| 真实 Qwen 密封抽样 | `EVAL-EA80AAEAF4`，3/3，100 分，P95 77,019ms；含 baseline、Prompt Injection、无关噪声 |
-| 浏览器真实运行 | `RUN-841A750FB147` 与 `RUN-E8C59C2EBDFB` 均完成；后者在停掉全部 worker 时先显示正确的 queued/unclaimed，新 worker 恢复后完成 |
-| 响应丢失 | 提交后 503；同 key 重放为 `skipped`，副作用计数仍为 1 |
-| worker 竞争 | PostgreSQL 下 16 个并发 claimant 同抢 1 个 job，仅 1 个成功；3 个真实容器 owner 唯一 |
-| 崩溃恢复 | 过期 lease 被 fencing #2 恢复，旧 owner 写入被拒绝 |
-| 补偿测试 | 扩容“伪成功”后验证失败；回滚至 2 副本并独立确认 |
-| HTTP 压测 | 2,000 请求 / 64 并发，100% 成功，214.93 RPS，P95 809.92ms |
-| 模型容量故障 | 修复前并发 3 条中第 3 条 180s timeout；advisory admission control 后 3/3 完成，排队 0/67/135s、推理约 67–70s |
-| 浏览器 | 390×844 适配通过；UTF-8 正常；CSP 下 console 0 warning / 0 error；证据泄漏扫描通过 |
-| Compose | 8 个容器健康运行：PostgreSQL、fault lab、API、3 worker、Nginx、Prometheus；6/6 scrape targets up |
-| 容器安全 | 自研运行容器全为非 root、只读根文件系统、capabilities 全丢弃；生产后端无 pytest |
+| 后端 | 60/60；总覆盖率 83.19%，Store 76.99%，Worker 90.20%；门槛分别为 82% / 75% / 75% |
+| 前端 | 16/16；TypeScript、生产构建通过 |
+| 浏览器 | 6/6；桌面 Chromium + Pixel 7；三条关键业务流均带 Axe WCAG 2 A/AA 检查 |
+| 完整启动入口 | 中文目录直接运行 `quickstart.py up --workers 2`，逐镜像构建、就绪等待和 HTTP smoke 全通过 |
+| 双 Worker | 两个当前容器分别处理 5 个和 4 个成功 Job；PostgreSQL 16 连接竞争单 Job 仍只领取一次 |
+| 生产观测 | 正常 Prometheus 模拟返回 4/4 指标后才调用模型；空数据、401、超时均无模型调用、无写动作并转人工 |
+| readiness | 停止 Prometheus：liveness 200、readiness 503；恢复后 readiness 200 |
+| 一致性与隔离 | Run + Job 故障回滚、orphan 修复、活动 Job 去重、租约主动失效、远程 stale fence 拒绝均有回归 |
+| 租户 | Run 查询和 Evaluation 均按 tenant 在数据库层隔离；API 跨租户仍返回 404 / 空结果 |
+| 模型背压 | 单执行槽 + 有界队列；队列满与排队超时测试通过，且 429 / 503 语义和指标已实现 |
+| 历史真实模型证据 | v3.2 的 3 条真实 Qwen 抽样仍保留；本轮未把旧样本伪装成新的生产准确率测试 |
 
-详细机器证据见 `docs/validation-evidence-v3.2-2026-08-08.json`。夹具 100 分只证明编排、安全和回归；真实 Qwen 仅抽样 3 个用例，不能外推成 15/15 或生产准确率。
+本轮详细证据、整改前后评分与未完成边界见 `docs/项目成熟度审计与v3.3整改报告_2026-08-10.md`；历史真实模型明细仍见 `docs/validation-evidence-v3.2-2026-08-08.json`。夹具成绩和 3 条真实 Qwen 抽样都不能外推成生产准确率。
 
 ## 目录
 
@@ -342,13 +344,15 @@ docs/               架构和机器可读证据
 ## 已知边界
 
 - fault lab 是可变、持久、隔离的真实测试边界，但不连接真实 Kubernetes、MES、云平台或数据库。
+- production connector 当前只有 Prometheus 固定模板只读适配器；没有 Kubernetes、云 API 或数据库写适配器，因此普通生产事件必然转人工。
 - 默认账户仍是演示 RBAC；已有租户 claims、职责分离和双人审批，但生产仍需要 OIDC/SSO、SCIM/JIT、离职回收和组织目录。
 - PostgreSQL/pgvector、3 个 worker 与 Prometheus 已完成本机容器联调；但尚未做跨主机集群、备份恢复演练和长时间 soak test。
+- API `/api/ready` 只判断能否安全接收入持久队列；外置 Worker 的在线状态由各容器健康检查与 Prometheus 单独监测，因此单个 API 200 不能冒充整套 Worker fleet SLO。
 - 真实 Qwen3 Embedding 已接入并完成 15+15 小型评测，但尚无大规模领域标注集、hard negatives、reranker 或在线 A/B。
 - 自动补偿目前仅白名单允许 `scale_workers`；重启、凭据和缓存回滚保持人工接管，避免假装存在安全的通用逆操作。
-- 本地 Qwen CPU 单次推理约 68–77 秒，不适合高并发在线决策；当前用数据库 advisory lock 防止容量型假失败，生产仍需 GPU、批处理、模型路由与容量 SLO。
+- 本地 Qwen CPU 单次推理历史样本约 68–77 秒，不适合高并发在线决策；数据库 advisory lock 与网关有界队列能保护容量，但不能提高吞吐，生产仍需 GPU、批处理、模型路由与容量 SLO。
 - 审计可查询但不是 WORM；生产还需不可篡改存储、集中 DLP、mTLS、Vault/KMS 与安全运营接入。
-- 81% 覆盖率不等于 81% 质量；未覆盖主要集中在异常分支、取消/重试和 worker 进程生命周期，应在 CI 容器矩阵继续补。
+- 83.19% 覆盖率不等于 83.19% 质量；真实生产 connector、长期 soak、跨主机故障、企业身份和大样本模型评测仍必须单独验证。
 - Docker Scout 因本机未登录 Docker ID 没有完成 CVE 数据库扫描；交付只声称镜像 digest 固定和运行权限加固，不声称漏洞扫描通过。
 
 完整原理见 [docs/architecture.md](docs/architecture.md)。

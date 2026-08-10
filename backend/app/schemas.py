@@ -89,6 +89,7 @@ class Observation(StrictModel):
     data: dict[str, Any] = Field(default_factory=dict)
     captured_at: datetime = Field(default_factory=utc_now)
     transport: str = "unknown"
+    source_uri: str | None = None
 
 
 class Check(StrictModel):
@@ -162,6 +163,8 @@ class ToolResult(StrictModel):
     attempt: int = 1
     transport: str = "unknown"
     capability_jti: str | None = None
+    job_id: str | None = None
+    fencing_token: int | None = Field(default=None, ge=1)
 
 
 class VerificationResult(StrictModel):
@@ -363,6 +366,10 @@ class EvaluationCaseResult(StrictModel):
 
 class EvaluationReport(StrictModel):
     id: str
+    tenant_id: str = Field(
+        default="xm-ops",
+        pattern=r"^[a-z0-9][a-z0-9-]{1,63}$",
+    )
     created_at: datetime = Field(default_factory=utc_now)
     score: float
     task_success_rate: float
@@ -401,10 +408,13 @@ class DashboardMetrics(StrictModel):
 
 class HealthResponse(StrictModel):
     status: str
+    ready: bool
+    purpose: Literal["runtime-status", "readiness"] = "runtime-status"
     app: str
     version: str
     mode: str
     database: str
+    database_status: dict[str, Any] = Field(default_factory=dict)
     vector_backend: str
     vector_quality: Literal["semantic", "lexical-feature-baseline", "unavailable"]
     knowledge_documents: int
@@ -412,6 +422,7 @@ class HealthResponse(StrictModel):
     model_runtime: dict[str, Any] = Field(default_factory=dict)
     tool_runtime: dict[str, Any] = Field(default_factory=dict)
     worker_runtime: dict[str, Any] = Field(default_factory=dict)
+    readiness_checks: dict[str, bool] = Field(default_factory=dict)
 
 
 class DrillRequest(StrictModel):

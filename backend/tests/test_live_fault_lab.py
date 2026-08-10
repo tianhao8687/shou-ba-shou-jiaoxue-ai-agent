@@ -49,6 +49,7 @@ def test_committed_write_is_not_repeated_after_response_loss() -> None:
         plan_hash = hashlib.sha256(
             json.dumps(payload, sort_keys=True).encode("utf-8")
         ).hexdigest()
+        job_id = f"JOB-LIVE-{uuid4().hex[:12].upper()}"
         grant = CapabilityService(capability_secret).issue(
             run_id=f"RUN-LIVE-{uuid4().hex[:12].upper()}",
             plan_hash_value=plan_hash,
@@ -57,12 +58,16 @@ def test_committed_write_is_not_repeated_after_response_loss() -> None:
             payload=payload,
             actor=actor,
             required_role="on-call-lead",
+            job_id=job_id,
+            fencing_token=1,
         )
         idempotency_key = uuid4().hex + uuid4().hex
         base_headers = {
             "Authorization": f"Bearer {grant.token}",
             "X-Idempotency-Key": idempotency_key,
             "X-Harbor-Control-Tenant": tenant_id,
+            "X-Harbor-Job-Id": job_id,
+            "X-Harbor-Fencing-Token": "1",
         }
 
         lost = client.post(

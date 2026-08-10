@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from fastapi.testclient import TestClient
 
+from app.schemas import EvaluationReport
 from app.tools import ToolCallResponse
 
 
@@ -48,15 +49,48 @@ def test_observer_cannot_start_or_cancel_operational_work(
 
 
 def test_health_exposes_truthful_vector_and_worker_contract(client: TestClient) -> None:
-    response = client.get("/api/health")
+    liveness = client.get("/api/health")
+    assert liveness.status_code == 200
+    assert liveness.json() == {
+        "status": "alive",
+        "app": "Harbor AgentOps",
+        "version": "3.3.0",
+    }
+
+    response = client.get("/api/status")
     assert response.status_code == 200
     payload = response.json()
-    assert payload["version"] == "3.2.0"
+    assert payload["version"] == "3.3.0"
+    assert payload["ready"] is True
     assert payload["vector_quality"] == "lexical-feature-baseline"
     assert "feature-hashing" in payload["vector_backend"]
     assert payload["worker_runtime"]["status"] == "external"
     assert payload["worker_runtime"]["mode"] == "standalone-process"
     assert payload["model_runtime"]["status"] == "fixture"
+    assert payload["model_runtime"]["production_capable"] is False
+    assert client.get("/api/ready").status_code == 200
+
+
+def test_readiness_returns_503_without_hiding_dependency_diagnostics(
+    client: TestClient, monkeypatch
+) -> None:
+    monkeypatch.setattr(
+        client.app.state.model_adapter,
+        "health",
+        lambda: {
+            "status": "unavailable",
+            "provider": "local-openvino",
+            "loaded": False,
+        },
+    )
+
+    response = client.get("/api/ready")
+
+    assert response.status_code == 503
+    payload = response.json()
+    assert payload["status"] == "not_ready"
+    assert payload["readiness_checks"]["model_contract"] is False
+    assert payload["model_runtime"]["loaded"] is False
 
 
 def test_high_risk_run_is_queued_gated_authorized_and_verified(
@@ -355,6 +389,35 @@ def test_sealed_evaluation_reports_real_cases_not_canned_scenario_scores(
     assert report["unsafe_action_rate"] == 0.0
     assert report["capability_enforcement"] == 100.0
     assert all("fault_kind" in case for case in report["cases"])
+
+
+def test_evaluation_reports_are_isolated_by_tenant(
+    client: TestClient,
+    admin_headers: dict[str, str],
+    other_tenant_headers: dict[str, str],
+) -> None:
+    response = client.post(
+        "/api/evaluations/run?case_limit=1", headers=admin_headers
+    )
+    assert response.status_code == 200, response.text
+    primary = EvaluationReport.model_validate(response.json())
+    assert primary.tenant_id == "xm-ops"
+
+    other = primary.model_copy(
+        update={"id": "EVAL-OTHER-TENANT", "tenant_id": "other-tenant"}
+    )
+    client.app.state.store.save_evaluation(other)
+
+    primary_latest = client.get(
+        "/api/evaluations/latest", headers=admin_headers
+    ).json()
+    other_latest = client.get(
+        "/api/evaluations/latest", headers=other_tenant_headers
+    ).json()
+    assert primary_latest["id"] == primary.id
+    assert primary_latest["tenant_id"] == "xm-ops"
+    assert other_latest["id"] == other.id
+    assert other_latest["tenant_id"] == "other-tenant"
 
 
 def test_prometheus_metrics_are_exposed(client: TestClient) -> None:

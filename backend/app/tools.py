@@ -4,9 +4,10 @@ from copy import deepcopy
 from dataclasses import dataclass
 import hashlib
 import json
+import math
 import threading
 import time
-from typing import Any, Protocol
+from typing import Any, Callable, Literal, Protocol
 from uuid import uuid4
 
 import httpx
@@ -14,6 +15,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from .schemas import Incident, PlanStep, RiskLevel, ToolResult, UserIdentity
 from .security import CapabilityService, canonical_json
+from .store import LeaseLostError
 
 
 class StrictToolInput(BaseModel):
@@ -26,6 +28,12 @@ class LabTargetInput(StrictToolInput):
 
 
 class QueryMetricsInput(LabTargetInput):
+    window_minutes: int = Field(ge=1, le=120)
+
+
+class PrometheusServiceInput(StrictToolInput):
+    service: str = Field(pattern=r"^[a-z0-9][a-z0-9-]{1,79}$")
+    environment: Literal["production", "staging"]
     window_minutes: int = Field(ge=1, le=120)
 
 
@@ -71,6 +79,15 @@ class ToolSpec:
 
 
 TOOL_REGISTRY: dict[str, ToolSpec] = {
+    "query_prometheus_slo": ToolSpec(
+        "query_prometheus_slo",
+        "通过 Prometheus HTTP API 读取生产服务 SLO 指标",
+        RiskLevel.LOW,
+        PrometheusServiceInput,
+        "observer",
+        True,
+        "生产或预发布事件的只读基础观测；PromQL 由服务端模板生成，调用方不能提交任意查询。",
+    ),
     "query_metrics": ToolSpec(
         "query_metrics", "读取实验服务的时序指标快照", RiskLevel.LOW, QueryMetricsInput, "observer", True,
         "所有已绑定实验的基础调查；只读。",
@@ -131,6 +148,8 @@ class ToolClient(Protocol):
         idempotency_key: str,
         capability_token: str,
         tenant_id: str,
+        job_id: str,
+        fencing_token: int,
     ) -> ToolCallResponse: ...
 
     def health(self) -> dict[str, Any]: ...
@@ -243,6 +262,7 @@ class InMemoryFaultLabClient:
     def __init__(self) -> None:
         self._experiments: dict[str, dict[str, Any]] = {}
         self._idempotency: dict[str, ToolCallResponse] = {}
+        self._fencing: dict[str, int] = {}
         self._lock = threading.RLock()
 
     def create_experiment(self, fault_kind: str) -> tuple[str, Incident]:
@@ -286,9 +306,17 @@ class InMemoryFaultLabClient:
         idempotency_key: str,
         capability_token: str,
         tenant_id: str,
+        job_id: str,
+        fencing_token: int,
     ) -> ToolCallResponse:
         del capability_token, tenant_id  # Fixture security is tested separately by CapabilityService and the HTTP lab.
         with self._lock:
+            latest_token = self._fencing.get(job_id, 0)
+            if fencing_token < latest_token:
+                raise RuntimeError(
+                    f"stale fencing token {fencing_token}; latest is {latest_token}"
+                )
+            self._fencing[job_id] = fencing_token
             prior = self._idempotency.get(idempotency_key)
             if prior is not None:
                 return ToolCallResponse("skipped", "持久幂等命中：返回首次调用结果。", prior.output, prior.error)
@@ -387,6 +415,8 @@ class RemoteToolClient:
         idempotency_key: str,
         capability_token: str,
         tenant_id: str,
+        job_id: str,
+        fencing_token: int,
     ) -> ToolCallResponse:
         with httpx.Client(timeout=self.timeout_seconds) as client:
             response = client.post(
@@ -396,6 +426,8 @@ class RemoteToolClient:
                     "Authorization": f"Bearer {capability_token}",
                     "X-Idempotency-Key": idempotency_key,
                     "X-Harbor-Control-Tenant": tenant_id,
+                    "X-Harbor-Job-Id": job_id,
+                    "X-Harbor-Fencing-Token": str(fencing_token),
                 },
             )
         try:
@@ -427,6 +459,193 @@ class RemoteToolClient:
             return {"status": "unavailable", "mode": self.name, "detail": f"{type(exc).__name__}: lab unreachable"}
 
 
+class PrometheusReadOnlyClient:
+    """Bounded, template-only Prometheus adapter for real read-only observations."""
+
+    name = "prometheus-http-read-only"
+    tool_names = frozenset({"query_prometheus_slo"})
+
+    def __init__(
+        self,
+        base_url: str,
+        bearer_token: str,
+        timeout_seconds: float,
+        capabilities: CapabilityService,
+        transport: httpx.BaseTransport | None = None,
+    ) -> None:
+        self.base_url = base_url.rstrip("/")
+        if not self.base_url.startswith(("http://", "https://")):
+            raise ValueError("Prometheus URL must be an absolute http(s) URL")
+        self.bearer_token = bearer_token
+        self.timeout_seconds = timeout_seconds
+        self.capabilities = capabilities
+        self.transport = transport
+
+    @staticmethod
+    def _queries(service: str, environment: str, window_minutes: int) -> dict[str, str]:
+        selector = f'service="{service}",environment="{environment}"'
+        window = f"{window_minutes}m"
+        total = f'sum(rate(http_requests_total{{{selector}}}[{window}]))'
+        errors = (
+            f'sum(rate(http_requests_total{{{selector},status=~"5.."}}[{window}]))'
+        )
+        return {
+            "request_rate_rps": total,
+            "error_rate_percent": f"100 * ({errors}) / clamp_min(({total}), 0.000000001)",
+            "p95_ms": (
+                "1000 * histogram_quantile(0.95, sum by (le) "
+                f'(rate(http_request_duration_seconds_bucket{{{selector}}}[{window}])))'
+            ),
+            "up": f'min(up{{{selector}}})',
+        }
+
+    @staticmethod
+    def _scalar(body: dict[str, Any]) -> float | None:
+        if body.get("status") != "success":
+            raise RuntimeError("Prometheus query did not return success")
+        data = body.get("data") or {}
+        result = data.get("result") or []
+        if not result:
+            return None
+        raw = (result[0].get("value") or [None, None])[-1]
+        try:
+            value = float(raw)
+        except (TypeError, ValueError):
+            return None
+        return value if math.isfinite(value) else None
+
+    def invoke(
+        self,
+        tool_name: str,
+        payload: dict[str, Any],
+        idempotency_key: str,
+        capability_token: str,
+        tenant_id: str,
+        job_id: str,
+        fencing_token: int,
+    ) -> ToolCallResponse:
+        del idempotency_key  # This endpoint is strictly read-only.
+        if tool_name not in self.tool_names:
+            raise RuntimeError(f"Prometheus adapter does not implement {tool_name}")
+        validated = PrometheusServiceInput.model_validate(payload).model_dump()
+        self.capabilities.verify(
+            capability_token,
+            tool_name=tool_name,
+            payload=validated,
+            tenant_id=tenant_id,
+            job_id=job_id,
+            fencing_token=fencing_token,
+        )
+        headers = (
+            {"Authorization": f"Bearer {self.bearer_token}"}
+            if self.bearer_token
+            else {}
+        )
+        values: dict[str, float | None] = {}
+        with httpx.Client(
+            timeout=httpx.Timeout(self.timeout_seconds, connect=2.0),
+            transport=self.transport,
+        ) as client:
+            for field, query in self._queries(
+                validated["service"],
+                validated["environment"],
+                validated["window_minutes"],
+            ).items():
+                response = client.get(
+                    f"{self.base_url}/api/v1/query",
+                    params={"query": query},
+                    headers=headers,
+                )
+                response.raise_for_status()
+                values[field] = self._scalar(response.json())
+        sample_count = sum(value is not None for value in values.values())
+        return ToolCallResponse(
+            "succeeded",
+            (
+                f"Prometheus 返回 {sample_count}/4 个可用 SLO 指标。"
+                if sample_count
+                else "Prometheus 查询成功，但目标标签没有匹配时序数据。"
+            ),
+            {
+                "provider": self.name,
+                "source_uri": f"{self.base_url}/api/v1/query",
+                "service": validated["service"],
+                "environment": validated["environment"],
+                "window_minutes": validated["window_minutes"],
+                "sample_count": sample_count,
+                **values,
+            },
+        )
+
+    def health(self) -> dict[str, Any]:
+        try:
+            headers = (
+                {"Authorization": f"Bearer {self.bearer_token}"}
+                if self.bearer_token
+                else {}
+            )
+            with httpx.Client(timeout=1.5, transport=self.transport) as client:
+                response = client.get(f"{self.base_url}/-/ready", headers=headers)
+                response.raise_for_status()
+            return {
+                "status": "ready",
+                "mode": self.name,
+                "query_policy": "server-side-templates-only",
+                "write_capability": False,
+            }
+        except Exception as exc:
+            return {
+                "status": "unavailable",
+                "mode": self.name,
+                "detail": f"{type(exc).__name__}: Prometheus is not ready",
+            }
+
+
+class RoutingToolClient:
+    """Route sealed-lab tools and production observers without widening either boundary."""
+
+    name = "routed-tool-boundary"
+
+    def __init__(self, lab: ToolClient, prometheus: PrometheusReadOnlyClient) -> None:
+        self.lab = lab
+        self.prometheus = prometheus
+
+    def invoke(
+        self,
+        tool_name: str,
+        payload: dict[str, Any],
+        idempotency_key: str,
+        capability_token: str,
+        tenant_id: str,
+        job_id: str,
+        fencing_token: int,
+    ) -> ToolCallResponse:
+        target = self.prometheus if tool_name in self.prometheus.tool_names else self.lab
+        return target.invoke(
+            tool_name,
+            payload,
+            idempotency_key,
+            capability_token,
+            tenant_id,
+            job_id,
+            fencing_token,
+        )
+
+    def health(self) -> dict[str, Any]:
+        lab_health = self.lab.health()
+        prometheus_health = self.prometheus.health()
+        ready = (
+            lab_health.get("status") == "ready"
+            and prometheus_health.get("status") == "ready"
+        )
+        return {
+            "status": "ready" if ready else "unavailable",
+            "mode": self.name,
+            "lab": lab_health,
+            "production_observer": prometheus_health,
+        }
+
+
 class ToolExecutor:
     def __init__(self, client: ToolClient, capabilities: CapabilityService) -> None:
         self.client = client
@@ -441,7 +660,11 @@ class ToolExecutor:
         actor: UserIdentity,
         attempt: int,
         previous_results: list[ToolResult],
+        job_id: str,
+        fencing_token: int,
+        lease_guard: Callable[[], None],
     ) -> ToolResult:
+        lease_guard()
         spec = TOOL_REGISTRY.get(step.tool_name)
         if spec is None:
             return self._failure(step, run_id, attempt, "工具未注册，已拒绝执行")
@@ -471,8 +694,11 @@ class ToolExecutor:
                 attempt=attempt,
                 transport=self.client.name,
                 capability_jti=prior_success.capability_jti,
+                job_id=job_id,
+                fencing_token=fencing_token,
             )
 
+        lease_guard()
         try:
             grant = self.capabilities.issue(
                 run_id=run_id,
@@ -482,11 +708,14 @@ class ToolExecutor:
                 payload=validated,
                 actor=actor,
                 required_role=spec.required_role,
+                job_id=job_id,
+                fencing_token=fencing_token,
             )
         except Exception as exc:
             return self._failure(step, run_id, attempt, f"能力授权失败：{exc}")
 
         started = time.perf_counter()
+        lease_guard()
         try:
             response = self.client.invoke(
                 step.tool_name,
@@ -494,21 +723,11 @@ class ToolExecutor:
                 idempotency_key,
                 grant.token,
                 actor.tenant_id,
+                job_id,
+                fencing_token,
             )
-            status = response.status if response.status in {"succeeded", "failed", "skipped", "unknown"} else "failed"
-            return ToolResult(
-                step_id=step.id,
-                tool_name=step.tool_name,
-                status=status,
-                summary=response.summary,
-                output=response.output,
-                idempotency_key=idempotency_key,
-                duration_ms=round((time.perf_counter() - started) * 1000),
-                error=response.error,
-                attempt=attempt,
-                transport=self.client.name,
-                capability_jti=grant.jti,
-            )
+        except LeaseLostError:
+            raise
         except Exception as exc:
             return ToolResult(
                 step_id=step.id,
@@ -522,7 +741,29 @@ class ToolExecutor:
                 attempt=attempt,
                 transport=self.client.name,
                 capability_jti=grant.jti,
+                job_id=job_id,
+                fencing_token=fencing_token,
             )
+        lease_guard()
+        try:
+            status = response.status if response.status in {"succeeded", "failed", "skipped", "unknown"} else "failed"
+            return ToolResult(
+                step_id=step.id,
+                tool_name=step.tool_name,
+                status=status,
+                summary=response.summary,
+                output=response.output,
+                idempotency_key=idempotency_key,
+                duration_ms=round((time.perf_counter() - started) * 1000),
+                error=response.error,
+                attempt=attempt,
+                transport=self.client.name,
+                capability_jti=grant.jti,
+                job_id=job_id,
+                fencing_token=fencing_token,
+            )
+        except LeaseLostError:
+            raise
 
     @staticmethod
     def _idempotency_key(
@@ -551,11 +792,37 @@ def create_tool_executor(
     health_token: str,
     timeout_seconds: float,
     capabilities: CapabilityService,
+    prometheus_url: str = "",
+    prometheus_bearer_token: str = "",
+    prometheus_timeout_seconds: float = 5.0,
 ) -> tuple[ToolExecutor, InMemoryFaultLabClient | None]:
     if mode == "remote":
         client: ToolClient = RemoteToolClient(base_url, health_token, timeout_seconds)
+        if prometheus_url:
+            client = RoutingToolClient(
+                client,
+                PrometheusReadOnlyClient(
+                    prometheus_url,
+                    prometheus_bearer_token,
+                    prometheus_timeout_seconds,
+                    capabilities,
+                ),
+            )
         return ToolExecutor(client, capabilities), None
     if mode != "inprocess":
         raise ValueError("TOOL_MODE must be 'remote' or 'inprocess'")
     lab = InMemoryFaultLabClient()
-    return ToolExecutor(lab, capabilities), lab
+    client = (
+        RoutingToolClient(
+            lab,
+            PrometheusReadOnlyClient(
+                prometheus_url,
+                prometheus_bearer_token,
+                prometheus_timeout_seconds,
+                capabilities,
+            ),
+        )
+        if prometheus_url
+        else lab
+    )
+    return ToolExecutor(client, capabilities), lab

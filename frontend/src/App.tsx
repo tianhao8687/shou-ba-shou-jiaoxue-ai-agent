@@ -292,7 +292,7 @@ export default function App() {
             {canOperate && <button className="button primary topbar-run" type="button" onClick={() => setComposerOpen(true)} disabled={busy}><FilePlus2 size={16} />新建事件</button>}
             <span className="identity-chip"><UserRound size={15} /><span><strong>{user.display_name}</strong><small>{user.tenant_id} · {user.roles.join(' · ')}</small></span></span>
             <button className="icon-button" type="button" onClick={() => logout()} aria-label="退出登录"><LogOut size={17} /></button>
-            <a className="icon-button" href="http://localhost:8000/docs" target="_blank" rel="noreferrer" aria-label="打开 API 文档"><CircleHelp size={18} /></a>
+            <a className="icon-button topbar-docs" href="http://localhost:8000/docs" target="_blank" rel="noreferrer" aria-label="打开 API 文档"><CircleHelp size={18} /></a>
           </div>
         </header>
         <div className="coordinate-ruler" aria-hidden="true"><span>118°00′E</span><span>JOB LEASE</span><span>PLAN HASH</span><span>118°15′E</span></div>
