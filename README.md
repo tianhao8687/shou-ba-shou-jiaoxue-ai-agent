@@ -387,7 +387,7 @@ GitHub Actions 对每个 PR 和 `main` 提交执行六个稳定检查：`Quality
 
 | 证据 | 结果 |
 |---|---|
-| 后端 | Linux 测试镜像连接独立 PostgreSQL/Fault Lab：91/91；控制面覆盖率 85.16%，`store.py` 78.77%、`worker.py` 84.44%；遥测验证器独立 9/9、覆盖率 62.53% |
+| 后端 | Linux CI 连接独立 PostgreSQL/Fault Lab：92/92；控制面覆盖率 85.24%，`store.py` 78.77%、`worker.py` 84.44%；遥测验证器独立 9/9、覆盖率 62.53% |
 | 前端 | 21/21 组件测试；TypeScript 与生产构建通过 |
 | 浏览器 | 桌面 Chromium + Pixel 7 共 6/6；包含新遥测页、24 行账本、Axe WCAG 2A/AA、整页无溢出、只读生产事件、低风险闭环和双主体审批 |
 | 完整启动入口 | 中文目录直接运行 `quickstart.py up --workers 2`，逐镜像构建、就绪等待和 HTTP smoke 全通过 |
