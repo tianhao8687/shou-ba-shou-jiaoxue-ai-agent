@@ -1,0 +1,192 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: harbor-sandbox
+  labels:
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: harbor-agentops-connector
+  namespace: harbor-sandbox
+automountServiceAccountToken: true
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: harbor-agentops-connector
+  namespace: harbor-sandbox
+rules:
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    resourceNames: ["demo-api"]
+    verbs: ["get"]
+  - apiGroups: ["apps"]
+    resources: ["deployments/scale"]
+    resourceNames: ["demo-api"]
+    verbs: ["get", "update", "patch"]
+  - apiGroups: [""]
+    resources: ["pods", "events"]
+    verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    resourceNames: ["demo-api-signals"]
+    verbs: ["get"]
+  - apiGroups: ["coordination.k8s.io"]
+    resources: ["leases"]
+    verbs: ["create", "get", "update"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: harbor-agentops-connector
+  namespace: harbor-sandbox
+subjects:
+  - kind: ServiceAccount
+    name: harbor-agentops-connector
+    namespace: harbor-sandbox
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: harbor-agentops-connector
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: demo-api-signals
+  namespace: harbor-sandbox
+data:
+  queue_depth: "1500"
+  produce_per_min: "600"
+  consume_per_replica: "200"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-api
+  namespace: harbor-sandbox
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: demo-api
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: demo-api
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: pause
+          # This exact image is bundled in the pinned kind node image, so the
+          # staging lab remains repeatable even when public registries throttle.
+          image: registry.k8s.io/pause:3.10
+          imagePullPolicy: IfNotPresent
+          imagePullPolicy: IfNotPresent
+          resources:
+            requests:
+              cpu: 5m
+              memory: 8Mi
+            limits:
+              cpu: 50m
+              memory: 32Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: harbor-kubernetes-connector
+  namespace: harbor-sandbox
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: harbor-kubernetes-connector
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: harbor-kubernetes-connector
+    spec:
+      serviceAccountName: harbor-agentops-connector
+      automountServiceAccountToken: true
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: connector
+          image: harbor-kubernetes-connector:dev
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8094
+          env:
+            - name: KUBERNETES_TARGET_NAMESPACE
+              value: harbor-sandbox
+            - name: KUBERNETES_ALLOWED_DEPLOYMENTS
+              value: demo-api
+            - name: KUBERNETES_CONNECTOR_HEALTH_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: harbor-kubernetes-connector-secrets
+                  key: health-token
+            - name: CAPABILITY_SIGNING_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: harbor-kubernetes-connector-secrets
+                  key: capability-secret
+          readinessProbe:
+            httpGet:
+              path: /live
+              port: http
+            periodSeconds: 2
+            timeoutSeconds: 1
+            failureThreshold: 15
+          livenessProbe:
+            httpGet:
+              path: /live
+              port: http
+            periodSeconds: 10
+            timeoutSeconds: 1
+          resources:
+            requests:
+              cpu: 25m
+              memory: 64Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: harbor-kubernetes-connector
+  namespace: harbor-sandbox
+spec:
+  type: NodePort
+  selector:
+    app.kubernetes.io/name: harbor-kubernetes-connector
+  ports:
+    - name: http
+      port: 8094
+      targetPort: http
+      nodePort: 30094

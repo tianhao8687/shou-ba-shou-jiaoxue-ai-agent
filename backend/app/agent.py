@@ -93,6 +93,8 @@ class AgentEngine:
         enforce_requester_separation: bool = True,
         run_mode: str = "live-model",
         production_observation_enabled: bool = False,
+        kubernetes_connector_enabled: bool = False,
+        kubernetes_staging_namespace: str = "harbor-sandbox",
     ) -> None:
         self.store = store
         self.retriever = retriever
@@ -108,6 +110,8 @@ class AgentEngine:
         self.enforce_requester_separation = enforce_requester_separation
         self.run_mode = run_mode
         self.production_observation_enabled = production_observation_enabled
+        self.kubernetes_connector_enabled = kubernetes_connector_enabled
+        self.kubernetes_staging_namespace = kubernetes_staging_namespace
 
     def start(
         self,
@@ -415,16 +419,17 @@ class AgentEngine:
 
     def _node_investigate(self, run: RunRecord, lease: LeaseContext) -> tuple[str, str]:
         del lease
-        if (
-            not run.incident.experiment_id
-            and (
-                run.incident.environment not in {"production", "staging"}
-                or not self.production_observation_enabled
-            )
-        ):
+        has_real_observer = (
+            run.incident.environment == "staging"
+            and self.kubernetes_connector_enabled
+        ) or (
+            run.incident.environment in {"production", "staging"}
+            and self.production_observation_enabled
+        )
+        if not run.incident.experiment_id and not has_real_observer:
             run.status = RunStatus.HANDED_OFF
             run.current_node = "handed_off"
-            run.resolution = "事件没有绑定受控实验，也没有配置生产只读观测源；已转人工接入真实遥测。"
+            run.resolution = "事件没有绑定受控实验，也没有配置匹配环境的真实观测源；已转人工接入遥测。"
             return run.resolution, "missing observation provider"
         proposal_plan = self._baseline_investigation_plan(run)
         allowed = {source.chunk_id for source in run.sources} | {"incident:input"}
@@ -445,11 +450,48 @@ class AgentEngine:
         run.current_node = "observe"
         return "确定性最小观测集已通过策略编译；LLM 不参与低熵、无副作用的基础取证。", decision.plan_hash or ""
 
-    @staticmethod
-    def _baseline_investigation_plan(run: RunRecord) -> list[PlanStep]:
+    def _baseline_investigation_plan(self, run: RunRecord) -> list[PlanStep]:
         """Always collect the minimum safe telemetry before asking an LLM to diagnose."""
 
         if not run.incident.experiment_id:
+            if (
+                run.incident.environment == "staging"
+                and self.kubernetes_connector_enabled
+            ):
+                return [
+                    PlanStep(
+                        id="step-inspect-kubernetes-workload",
+                        title="读取 Kubernetes 工作负载",
+                        objective="从隔离 namespace 读取 Deployment、Pod、事件与服务端容量信号。",
+                        tool_name="inspect_kubernetes_workload",
+                        tool_input={
+                            "namespace": self.kubernetes_staging_namespace,
+                            "deployment": run.incident.service,
+                            "include_events": True,
+                            "event_limit": 10,
+                            "wait_for_ready_replicas": None,
+                            "timeout_seconds": 0,
+                        },
+                        evidence_ids=[
+                            "incident:input",
+                            *[source.chunk_id for source in run.sources[:2]],
+                        ],
+                        success_criteria=[
+                            Check(
+                                field="__result_status__",
+                                operator="eq",
+                                value="succeeded",
+                                description="Kubernetes 只读取证必须明确成功",
+                            )
+                        ],
+                        rollback=RollbackPlan(
+                            mode="manual",
+                            rationale="只读调用没有业务副作用；失败时由值班人员检查 ServiceAccount、RBAC 与 API Server。",
+                        ),
+                        risk=RiskLevel.LOW,
+                        rationale="staging 事件先读取受 RBAC 和白名单约束的真实 Kubernetes 对象，不能使用管理员 kubeconfig。",
+                    )
+                ]
             return [
                 PlanStep(
                     id="step-observe-prometheus-slo",
@@ -609,7 +651,12 @@ class AgentEngine:
         run.plan = proposal.plan
         if invocation.status == "fallback":
             run.run_mode = "model-degraded"
-        if not run.incident.experiment_id:
+        staging_kubernetes = (
+            not run.incident.experiment_id
+            and run.incident.environment == "staging"
+            and self.kubernetes_connector_enabled
+        )
+        if not run.incident.experiment_id and not staging_kubernetes:
             run.plan = []
             run.status = RunStatus.HANDED_OFF
             run.current_node = "handed_off"
@@ -872,20 +919,33 @@ class AgentEngine:
         if rollback_result.status not in {"succeeded", "skipped"}:
             return False, rollback_result.error or rollback_result.summary
 
-        # The current automatic allowlist contains scale_workers. Its compensation is
-        # only considered successful after an independent service-status read confirms
-        # the pre-change replica count.
+        # A scale compensation is only successful after an independent read confirms
+        # the pre-change replica count. Lab and Kubernetes use different read boundaries.
         target_replicas = int(step.rollback.tool_input["target_replicas"])
+        kubernetes_scale = step.rollback.tool_name == "scale_kubernetes_deployment"
         verify_step = PlanStep(
             id=f"step-verify-rollback-{suffix}",
             title="复查回滚状态",
             objective="通过独立只读通道确认副本数已恢复到执行前状态。",
-            tool_name="get_service_status",
-            tool_input={
-                "experiment_id": run.incident.experiment_id,
-                "service": run.incident.service,
-                "include_instances": True,
-            },
+            tool_name=(
+                "inspect_kubernetes_workload" if kubernetes_scale else "get_service_status"
+            ),
+            tool_input=(
+                {
+                    "namespace": step.rollback.tool_input["namespace"],
+                    "deployment": step.rollback.tool_input["deployment"],
+                    "include_events": False,
+                    "event_limit": 0,
+                    "wait_for_ready_replicas": target_replicas,
+                    "timeout_seconds": 30,
+                }
+                if kubernetes_scale
+                else {
+                    "experiment_id": run.incident.experiment_id,
+                    "service": run.incident.service,
+                    "include_instances": True,
+                }
+            ),
             evidence_ids=step.evidence_ids,
             success_criteria=[
                 Check(
@@ -967,16 +1027,30 @@ class AgentEngine:
                 )
                 all_passed = False
                 continue
+            kubernetes_scale = step.tool_name == "scale_kubernetes_deployment"
             verify_step = PlanStep(
                 id=f"step-verify-{step.id.removeprefix('step-')}",
                 title="复查原始指标",
                 objective="重新读取原始指标，避免把工具返回的成功文本当成修复成功。",
-                tool_name="query_metrics",
-                tool_input={
-                    "experiment_id": run.incident.experiment_id,
-                    "service": run.incident.service,
-                    "window_minutes": 5,
-                },
+                tool_name=(
+                    "inspect_kubernetes_workload" if kubernetes_scale else "query_metrics"
+                ),
+                tool_input=(
+                    {
+                        "namespace": step.tool_input["namespace"],
+                        "deployment": step.tool_input["deployment"],
+                        "include_events": True,
+                        "event_limit": 10,
+                        "wait_for_ready_replicas": step.tool_input["target_replicas"],
+                        "timeout_seconds": 30,
+                    }
+                    if kubernetes_scale
+                    else {
+                        "experiment_id": run.incident.experiment_id,
+                        "service": run.incident.service,
+                        "window_minutes": 5,
+                    }
+                ),
                 evidence_ids=step.evidence_ids,
                 success_criteria=[
                     Check(field="__result_status__", operator="eq", value="succeeded", description="验证指标读取成功")

@@ -5,10 +5,18 @@ from abc import ABC, abstractmethod
 from contextlib import AbstractContextManager
 from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
+import json
 from pathlib import Path
 import threading
+from typing import Any
 from uuid import uuid4
 
+from .migrations import (
+    postgres_schema_status,
+    run_postgres_migrations,
+    run_sqlite_migrations,
+    sqlite_schema_status,
+)
 from .schemas import EvaluationReport, JobRecord, JobStatus, RunRecord, utc_now
 
 
@@ -28,6 +36,20 @@ class Store(ABC):
     def ping(self) -> None:
         """Raise when the durable store cannot serve a trivial query."""
         ...
+
+    @abstractmethod
+    def schema_status(self) -> dict[str, Any]: ...
+
+    @abstractmethod
+    def heartbeat_worker(
+        self, worker_id: str, metadata: dict[str, Any] | None = None
+    ) -> None: ...
+
+    @abstractmethod
+    def list_live_workers(self, max_age_seconds: float) -> list[dict[str, Any]]: ...
+
+    @abstractmethod
+    def remove_worker(self, worker_id: str) -> None: ...
 
     @abstractmethod
     def save_run(self, run: RunRecord) -> RunRecord: ...
@@ -206,61 +228,56 @@ class SQLiteStore(Store):
 
     def initialize(self) -> None:
         with self._connect() as connection:
-            connection.executescript(
-                """
-                CREATE TABLE IF NOT EXISTS agent_runs (
-                    id TEXT PRIMARY KEY,
-                    payload TEXT NOT NULL,
-                    updated_at TEXT NOT NULL,
-                    version INTEGER NOT NULL DEFAULT 0
-                );
-                CREATE INDEX IF NOT EXISTS idx_agent_runs_updated ON agent_runs(updated_at DESC);
-                CREATE INDEX IF NOT EXISTS idx_agent_runs_tenant_updated
-                    ON agent_runs(json_extract(payload, '$.tenant_id'), updated_at DESC);
-                CREATE TABLE IF NOT EXISTS agent_jobs (
-                    id TEXT PRIMARY KEY,
-                    run_id TEXT NOT NULL,
-                    stage TEXT NOT NULL,
-                    status TEXT NOT NULL,
-                    owner TEXT,
-                    lease_until TEXT,
-                    fencing_token INTEGER NOT NULL DEFAULT 0,
-                    attempts INTEGER NOT NULL DEFAULT 0,
-                    available_at TEXT NOT NULL,
-                    created_at TEXT NOT NULL,
-                    updated_at TEXT NOT NULL,
-                    last_error TEXT,
-                    FOREIGN KEY(run_id) REFERENCES agent_runs(id)
-                );
-                CREATE INDEX IF NOT EXISTS idx_agent_jobs_claim
-                    ON agent_jobs(status, available_at, lease_until, created_at);
-                CREATE INDEX IF NOT EXISTS idx_agent_jobs_run ON agent_jobs(run_id, created_at DESC);
-                CREATE UNIQUE INDEX IF NOT EXISTS idx_agent_jobs_active_stage
-                    ON agent_jobs(run_id, stage)
-                    WHERE status IN ('queued', 'claimed');
-                CREATE TABLE IF NOT EXISTS evaluation_reports (
-                    id TEXT PRIMARY KEY,
-                    tenant_id TEXT NOT NULL DEFAULT 'xm-ops',
-                    payload TEXT NOT NULL,
-                    created_at TEXT NOT NULL
-                );
-                """
-            )
-            columns = {
-                row[1] for row in connection.execute("PRAGMA table_info(evaluation_reports)")
-            }
-            if "tenant_id" not in columns:
-                connection.execute(
-                    "ALTER TABLE evaluation_reports ADD COLUMN tenant_id TEXT NOT NULL DEFAULT 'xm-ops'"
-                )
-            connection.execute(
-                "CREATE INDEX IF NOT EXISTS idx_evaluation_reports_tenant_created "
-                "ON evaluation_reports(tenant_id, created_at DESC)"
-            )
+            run_sqlite_migrations(connection)
 
     def ping(self) -> None:
         with self._connect() as connection:
             connection.execute("SELECT 1").fetchone()
+
+    def schema_status(self) -> dict[str, Any]:
+        with self._connect() as connection:
+            return sqlite_schema_status(connection)
+
+    def heartbeat_worker(
+        self, worker_id: str, metadata: dict[str, Any] | None = None
+    ) -> None:
+        now = utc_now().isoformat()
+        encoded = json.dumps(metadata or {}, ensure_ascii=False, sort_keys=True)
+        with self._connect() as connection:
+            connection.execute(
+                """
+                INSERT INTO worker_instances(worker_id, started_at, last_seen_at, metadata)
+                VALUES (?, ?, ?, ?)
+                ON CONFLICT(worker_id) DO UPDATE SET
+                    last_seen_at=excluded.last_seen_at,
+                    metadata=excluded.metadata
+                """,
+                (worker_id, now, now, encoded),
+            )
+
+    def list_live_workers(self, max_age_seconds: float) -> list[dict[str, Any]]:
+        cutoff = (utc_now() - timedelta(seconds=max(0.0, max_age_seconds))).isoformat()
+        with self._connect() as connection:
+            rows = connection.execute(
+                "SELECT worker_id, started_at, last_seen_at, metadata "
+                "FROM worker_instances WHERE last_seen_at >= ? ORDER BY worker_id",
+                (cutoff,),
+            ).fetchall()
+        return [
+            {
+                "worker_id": str(row["worker_id"]),
+                "started_at": _parse_datetime(row["started_at"]),
+                "last_seen_at": _parse_datetime(row["last_seen_at"]),
+                "metadata": json.loads(row["metadata"]),
+            }
+            for row in rows
+        ]
+
+    def remove_worker(self, worker_id: str) -> None:
+        with self._connect() as connection:
+            connection.execute(
+                "DELETE FROM worker_instances WHERE worker_id = ?", (worker_id,)
+            )
 
     @staticmethod
     def _save_run_in_transaction(
@@ -681,55 +698,60 @@ class PostgresStore(Store):
                 cursor.execute(f"SELECT pg_advisory_unlock({lock_sql})")
 
     def initialize(self) -> None:
-        with self._connect() as connection, connection.cursor() as cursor:
-            cursor.execute(
-                """
-                CREATE TABLE IF NOT EXISTS agent_runs (
-                    id TEXT PRIMARY KEY,
-                    payload JSONB NOT NULL,
-                    updated_at TIMESTAMPTZ NOT NULL,
-                    version INTEGER NOT NULL DEFAULT 0
-                );
-                CREATE INDEX IF NOT EXISTS idx_agent_runs_updated ON agent_runs(updated_at DESC);
-                CREATE INDEX IF NOT EXISTS idx_agent_runs_tenant_updated
-                    ON agent_runs((payload->>'tenant_id'), updated_at DESC);
-                CREATE TABLE IF NOT EXISTS agent_jobs (
-                    id TEXT PRIMARY KEY,
-                    run_id TEXT NOT NULL REFERENCES agent_runs(id),
-                    stage TEXT NOT NULL,
-                    status TEXT NOT NULL,
-                    owner TEXT,
-                    lease_until TIMESTAMPTZ,
-                    fencing_token INTEGER NOT NULL DEFAULT 0,
-                    attempts INTEGER NOT NULL DEFAULT 0,
-                    available_at TIMESTAMPTZ NOT NULL,
-                    created_at TIMESTAMPTZ NOT NULL,
-                    updated_at TIMESTAMPTZ NOT NULL,
-                    last_error TEXT
-                );
-                CREATE INDEX IF NOT EXISTS idx_agent_jobs_claim
-                    ON agent_jobs(status, available_at, lease_until, created_at);
-                CREATE INDEX IF NOT EXISTS idx_agent_jobs_run ON agent_jobs(run_id, created_at DESC);
-                CREATE UNIQUE INDEX IF NOT EXISTS idx_agent_jobs_active_stage
-                    ON agent_jobs(run_id, stage)
-                    WHERE status IN ('queued', 'claimed');
-                CREATE TABLE IF NOT EXISTS evaluation_reports (
-                    id TEXT PRIMARY KEY,
-                    tenant_id TEXT NOT NULL DEFAULT 'xm-ops',
-                    payload JSONB NOT NULL,
-                    created_at TIMESTAMPTZ NOT NULL
-                );
-                ALTER TABLE evaluation_reports
-                    ADD COLUMN IF NOT EXISTS tenant_id TEXT NOT NULL DEFAULT 'xm-ops';
-                CREATE INDEX IF NOT EXISTS idx_evaluation_reports_tenant_created
-                    ON evaluation_reports(tenant_id, created_at DESC);
-                """
-            )
+        with self._connect() as connection:
+            run_postgres_migrations(connection)
 
     def ping(self) -> None:
         with self._connect() as connection, connection.cursor() as cursor:
             cursor.execute("SELECT 1")
             cursor.fetchone()
+
+    def schema_status(self) -> dict[str, Any]:
+        with self._connect() as connection:
+            return postgres_schema_status(connection)
+
+    def heartbeat_worker(
+        self, worker_id: str, metadata: dict[str, Any] | None = None
+    ) -> None:
+        from psycopg.types.json import Jsonb
+
+        now = utc_now()
+        with self._connect() as connection, connection.cursor() as cursor:
+            cursor.execute(
+                """
+                INSERT INTO worker_instances(worker_id, started_at, last_seen_at, metadata)
+                VALUES (%s, %s, %s, %s)
+                ON CONFLICT(worker_id) DO UPDATE SET
+                    last_seen_at=EXCLUDED.last_seen_at,
+                    metadata=EXCLUDED.metadata
+                """,
+                (worker_id, now, now, Jsonb(metadata or {})),
+            )
+
+    def list_live_workers(self, max_age_seconds: float) -> list[dict[str, Any]]:
+        cutoff = utc_now() - timedelta(seconds=max(0.0, max_age_seconds))
+        with self._connect() as connection, connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT worker_id, started_at, last_seen_at, metadata "
+                "FROM worker_instances WHERE last_seen_at >= %s ORDER BY worker_id",
+                (cutoff,),
+            )
+            rows = cursor.fetchall()
+        return [
+            {
+                "worker_id": str(row[0]),
+                "started_at": _parse_datetime(row[1]),
+                "last_seen_at": _parse_datetime(row[2]),
+                "metadata": dict(row[3] or {}),
+            }
+            for row in rows
+        ]
+
+    def remove_worker(self, worker_id: str) -> None:
+        with self._connect() as connection, connection.cursor() as cursor:
+            cursor.execute(
+                "DELETE FROM worker_instances WHERE worker_id = %s", (worker_id,)
+            )
 
     @staticmethod
     def _save_run_in_transaction(cursor, run: RunRecord) -> tuple[int, datetime]:

@@ -219,6 +219,7 @@ class HeuristicModelAdapter:
         metrics: dict[str, Any] = {}
         log_text = ""
         instances: dict[str, str] = {}
+        kubernetes: dict[str, Any] = {}
         for observation in observations:
             if observation.tool_name == "query_metrics":
                 metrics.update(observation.data)
@@ -226,6 +227,9 @@ class HeuristicModelAdapter:
                 log_text += " " + " ".join(str(item) for item in observation.data.get("samples", []))
             elif observation.tool_name == "get_service_status":
                 instances.update(observation.data.get("instances", {}))
+            elif observation.tool_name == "inspect_kubernetes_workload":
+                kubernetes.update(observation.data)
+                metrics.update(observation.data)
         common = {"experiment_id": incident.experiment_id, "service": incident.service}
         plan: list[PlanStep] = []
         diagnosis = "观测不足，无法形成可验证的修复动作。"
@@ -233,7 +237,69 @@ class HeuristicModelAdapter:
         needs_handoff = False
         handoff_reason: str | None = None
 
-        if float(metrics.get("pool_waiters", 0)) >= 10 and "pool timeout" in log_text.lower():
+        current_replicas = int(kubernetes.get("replicas", 0) or 0)
+        recommended_replicas = int(kubernetes.get("recommended_replicas", 0) or 0)
+        if (
+            kubernetes
+            and float(kubernetes.get("queue_depth", 0)) >= 1000
+            and recommended_replicas > current_replicas
+        ):
+            target = min(5, recommended_replicas)
+            kube_target = {
+                "namespace": kubernetes["namespace"],
+                "deployment": kubernetes["deployment"],
+            }
+            diagnosis = "Kubernetes 工作负载健康，但可信容量信号显示生产速率超过当前副本消费能力，积压仍在扩大。"
+            confidence = 0.93
+            plan = [
+                PlanStep(
+                    id="step-scale-kubernetes-deployment",
+                    title="扩容 Kubernetes Deployment",
+                    objective="只通过 deployments/scale 子资源增加白名单工作负载副本，并等待新副本 Ready。",
+                    tool_name="scale_kubernetes_deployment",
+                    tool_input={
+                        **kube_target,
+                        "target_replicas": target,
+                        "change_ticket": "CHG-4001",
+                    },
+                    evidence_ids=evidence,
+                    preconditions=[
+                        Check(
+                            field="queue_depth",
+                            operator="gte",
+                            value=1000,
+                            description="Kubernetes 容量信号仍显示显著积压",
+                        )
+                    ],
+                    success_criteria=[
+                        Check(
+                            field="replicas",
+                            operator="eq",
+                            value=target,
+                            description="Deployment 目标副本达到计划值",
+                        ),
+                        Check(
+                            field="ready_replicas",
+                            operator="gte",
+                            value=target,
+                            description="新增副本通过 Kubernetes Ready 检查",
+                        ),
+                    ],
+                    rollback=RollbackPlan(
+                        mode="tool",
+                        tool_name="scale_kubernetes_deployment",
+                        tool_input={
+                            **kube_target,
+                            "target_replicas": current_replicas,
+                            "change_ticket": "CHG-4001",
+                        },
+                        rationale=f"若 Ready 验证失败，把副本恢复到执行前的 {current_replicas}。",
+                    ),
+                    risk=RiskLevel.MEDIUM,
+                    rationale="目标值由集群内只读容量信号计算，写权限只覆盖 scale 子资源且上限为 5。",
+                )
+            ]
+        elif float(metrics.get("pool_waiters", 0)) >= 10 and "pool timeout" in log_text.lower():
             degraded = next((name for name, status in instances.items() if status == "degraded"), f"{incident.service}-1")
             diagnosis = "连接池等待、超时日志和单实例降级同时出现，最可能是异常实例导致连接池耗尽。"
             confidence = 0.9
@@ -655,6 +721,7 @@ class OpenAICompatibleModelAdapter:
             "scale_workers": ["queue_depth", "oldest_age_s"],
             "rotate_credential": ["http_401_rate"],
             "refresh_cache": ["stale_sample_rate"],
+            "scale_kubernetes_deployment": ["queue_depth"],
         }
         for field in field_map.get(tool_name, []):
             value = baseline.get(field)
@@ -667,14 +734,15 @@ class OpenAICompatibleModelAdapter:
                         description=f"执行前 {field} 仍处于观测到的异常量级",
                     )
                 )
-                success.append(
-                    Check(
-                        field=field,
-                        operator="lt",
-                        value=value,
-                        description=f"独立复查确认 {field} 低于执行前基线 {value}",
+                if tool_name != "scale_kubernetes_deployment":
+                    success.append(
+                        Check(
+                            field=field,
+                            operator="lt",
+                            value=value,
+                            description=f"独立复查确认 {field} 低于执行前基线 {value}",
+                        )
                     )
-                )
 
         if tool_name == "scale_workers":
             success.append(
@@ -692,6 +760,38 @@ class OpenAICompatibleModelAdapter:
                         "change_ticket": tool_input.get("change_ticket"),
                     },
                     rationale=f"验证失败时把 worker 副本恢复为观测值 {previous}。",
+                )
+        elif tool_name == "scale_kubernetes_deployment":
+            target = tool_input.get("target_replicas")
+            if isinstance(target, int):
+                success.extend(
+                    [
+                        Check(
+                            field="replicas",
+                            operator="eq",
+                            value=target,
+                            description="Deployment 目标副本达到计划值",
+                        ),
+                        Check(
+                            field="ready_replicas",
+                            operator="gte",
+                            value=target,
+                            description="新增副本通过 Kubernetes Ready 检查",
+                        ),
+                    ]
+                )
+            previous = baseline.get("replicas")
+            if isinstance(previous, int):
+                rollback = RollbackPlan(
+                    mode="tool",
+                    tool_name="scale_kubernetes_deployment",
+                    tool_input={
+                        "namespace": tool_input.get("namespace"),
+                        "deployment": tool_input.get("deployment"),
+                        "target_replicas": previous,
+                        "change_ticket": tool_input.get("change_ticket"),
+                    },
+                    rationale=f"验证失败时把 Deployment 恢复为观测值 {previous}。",
                 )
         elif tool_name == "rotate_credential" and tool_input.get("target_version"):
             success.append(

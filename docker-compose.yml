@@ -28,6 +28,8 @@ x-agent-environment: &agent-environment
   DEMO_PASSWORD: "${DEMO_PASSWORD:-harbor-demo-2026}"
   WORKER_LEASE_SECONDS: "30"
   WORKER_HEARTBEAT_SECONDS: "8"
+  WORKER_REGISTRY_HEARTBEAT_SECONDS: "5"
+  WORKER_REGISTRY_TTL_SECONDS: "20"
   FRONTEND_ORIGIN: http://localhost:8080
 
 services:

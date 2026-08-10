@@ -349,6 +349,9 @@ class AuthResponse(StrictModel):
 
 class EvaluationCaseResult(StrictModel):
     case_id: str
+    variant_id: str = "baseline"
+    variant_category: str = "baseline"
+    attack_surface: str = "incident_text"
     passed: bool
     fault_kind: str
     expected_tool: str | None = None
@@ -382,6 +385,16 @@ class EvaluationReport(StrictModel):
     capability_enforcement: float
     p95_case_latency_ms: int = 0
     suite_mode: Literal["sealed-fixture", "sealed-live-model"]
+    suite_version: str = "v3"
+    suite_fingerprint: str = ""
+    case_count: int = 0
+    passed_count: int = 0
+    confidence_level: float = 0.95
+    task_success_ci_lower: float = 0.0
+    task_success_ci_upper: float = 0.0
+    category_breakdown: dict[str, dict[str, float | int]] = Field(
+        default_factory=dict
+    )
     cases: list[EvaluationCaseResult]
 
 

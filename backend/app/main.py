@@ -40,7 +40,7 @@ from .store import ConcurrencyError, Store
 from .tools import FAULT_DEFINITIONS, TOOL_REGISTRY
 
 
-APP_VERSION = "3.3.0"
+APP_VERSION = "3.4.0"
 
 
 def _token(authorization: str | None) -> str:
@@ -95,7 +95,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         engine = runtime.engine
         worker = runtime.worker
         evaluator = EvaluationService(
-            resolved.data_dir / "eval_cases_v3.json",
+            resolved.data_dir / "eval_cases_v4.json",
             retriever,
             resolved.capability_signing_secret,
             model_adapter,
@@ -156,8 +156,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         store_name = "postgresql" if resolved.database_url.startswith("postgres") else "sqlite"
         try:
             request.app.state.store.ping()
-            database_status = {"status": "ready"}
-            database_ready = True
+            schema_status = request.app.state.store.schema_status()
+            database_status = {"status": "ready", "schema": schema_status}
+            database_ready = schema_status.get("status") == "current"
         except Exception as exc:
             database_status = {
                 "status": "unavailable",
@@ -188,6 +189,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         worker_ready = worker_runtime.get("status") == "running"
         if not resolved.embedded_worker:
             jobs = request.app.state.store.list_jobs() if database_ready else []
+            live_workers = (
+                request.app.state.store.list_live_workers(
+                    resolved.worker_registry_ttl_seconds
+                )
+                if database_ready
+                else []
+            )
             now = datetime.now(timezone.utc)
             active_leases = sum(
                 1
@@ -198,12 +206,23 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 "status": "external",
                 "mode": "standalone-process",
                 "required_for_api_readiness": False,
-                "verified": False,
+                "verified": bool(live_workers),
+                "delivery_status": "ready" if live_workers else "unavailable",
+                "registered_workers": [
+                    {
+                        **worker,
+                        "started_at": worker["started_at"].isoformat(),
+                        "last_seen_at": worker["last_seen_at"].isoformat(),
+                    }
+                    for worker in live_workers
+                ],
+                "registered_worker_count": len(live_workers),
+                "registry_ttl_seconds": resolved.worker_registry_ttl_seconds,
                 "active_leases": active_leases,
                 "queued_jobs": sum(1 for job in jobs if job.status == "queued"),
                 "detail": (
-                    "API reports durable queue/lease state; each worker exports process "
-                    "liveness on :9101 and Prometheus discovers all replicas through DNS SD."
+                    "Durable database heartbeats verify idle and busy worker processes; "
+                    "job leases and fencing still govern execution ownership."
                 ),
             }
             # The API only accepts into a durable queue; a standalone worker is a
@@ -477,8 +496,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         request: Request,
         user: Annotated[UserIdentity, Depends(current_user)],
         live_model: bool = Query(default=False),
-        case_limit: int | None = Query(default=None, ge=1, le=30),
-        case_offset: int = Query(default=0, ge=0, le=29),
+        case_limit: int | None = Query(default=None, ge=1, le=120),
+        case_offset: int = Query(default=0, ge=0, le=109),
     ) -> EvaluationReport:
         _authorize(user, ["admin"])
         report = request.app.state.evaluator.run(

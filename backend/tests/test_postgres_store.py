@@ -11,10 +11,36 @@ import pytest
 
 from app.schemas import Incident, RunRecord
 from app.store import PostgresStore
+from app.migrations import LATEST_SCHEMA_VERSION
 import app.store as store_module
 
 
 POSTGRES_URL = os.getenv("HARBOR_TEST_POSTGRES_URL")
+
+
+@pytest.mark.skipif(
+    not POSTGRES_URL,
+    reason="set HARBOR_TEST_POSTGRES_URL to a dedicated PostgreSQL test database",
+)
+def test_postgres_schema_migrations_and_worker_registry() -> None:
+    assert POSTGRES_URL is not None
+    store = PostgresStore(POSTGRES_URL)
+    store.initialize()
+    suffix = uuid4().hex[:12]
+    worker_id = f"pg-registry-{suffix}"
+    try:
+        assert store.schema_status() == {
+            "status": "current",
+            "current_version": LATEST_SCHEMA_VERSION,
+            "latest_version": LATEST_SCHEMA_VERSION,
+        }
+        store.heartbeat_worker(worker_id, {"replica": suffix})
+        workers = store.list_live_workers(30)
+        selected = [worker for worker in workers if worker["worker_id"] == worker_id]
+        assert len(selected) == 1
+        assert selected[0]["metadata"] == {"replica": suffix}
+    finally:
+        store.remove_worker(worker_id)
 
 
 def _postgres_incident() -> Incident:

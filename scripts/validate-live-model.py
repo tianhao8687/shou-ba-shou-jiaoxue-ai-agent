@@ -43,7 +43,7 @@ def main() -> None:
         api_key=args.api_key,
     )
     evaluator = EvaluationService(
-        PROJECT_ROOT / "data" / "eval_cases_v3.json",
+        PROJECT_ROOT / "data" / "eval_cases_v4.json",
         retriever,
         "harbor-live-validation-capability-secret",
         adapter,
