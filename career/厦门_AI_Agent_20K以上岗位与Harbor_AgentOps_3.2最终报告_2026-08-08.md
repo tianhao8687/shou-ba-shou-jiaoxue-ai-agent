@@ -72,49 +72,51 @@ V3.0 已把 V2 最关键的“闭卷答案泄漏”和“看起来像生产”�
 | B | 招聘平台聚合页近 0–7 天仍展示公司、薪资、地点和摘要 |
 | C | 8–21 天抓取或有效期内镜像；投递当天必须再核验 |
 
-局限：招聘页随时可能下架；聚合页职责会截断；宁德岗位经验字段和谦鹭主体映射存在来源冲突；所以投递前仍应打开原链接并向招聘方确认 HC。
+局限：招聘页随时可能下架；聚合页职责会截断；个别样本的经验字段和主体映射存在来源冲突；公开版不提供直达链接，投递时应在招聘平台重新检索并向招聘方确认 HC。
 
 ---
 
 ## 三、26 家公司、28 个岗位
 
+> 隐私说明：公开版使用稳定编号 C01–C26，同一公司的不同岗位共用编号。公司名称、招聘直达链接和可能直接映射主体的备注不公开；统计口径、薪资区间、经验门槛和技术要求保持不变。
+
 ### A. Agent / 智能体 / 工作流直接相关
 
 | # | 公司与岗位 | 月薪 | 经验/学历 | 核心公开要求 | 活跃证据 |
 |---:|---|---:|---|---|---|
-| 1 | [普为光电｜AI Agent（智能体）开发工程师](https://www.zhaopin.com/jobdetail/CC393470020J40864086714.htm) | 20–40K·13薪 | 3–5年/本科 | Python、Agent 编排、LangChain、AutoGPT | 8月8日可访问；招聘方今日回复 |
-| 2 | [浪潮集团｜AI 智能体开发工程师](https://www.zhaopin.com/jobdetail/CC120143600J40955934915.htm) | 15–24K | 3–5年/本科 | Dify、HiAgent、模型部署、Linux、GPUStack | 独立页；招聘方当前在线 |
-| 3 | [宁德时代｜智能体设计工程师](https://www.zhaopin.com/jobdetail/CC271988630J41019582404.htm) | 17–30K·16薪 | 5–10年/本科 | Agent 编排、工具市场、可观测、评测、B 端交互 | 独立页可投递；近3周抓取 |
-| 4 | [厦门新能安｜智能体开发工程师](https://bebee.com/cn/jobs/job--techmap_cn_CCL1409591300J40850076807) | 15–28K·18薪 | 3–5年/本科 | LangGraph、混合 RAG、FastAPI、Docker、SQL、HITL、RBAC、MES | 截止 2026-08-12 |
-| 5 | [垒知集团｜AI 应用开发工程师](https://www.zhaopin.com/jobdetail/CC199972210J41021946704.htm) | 20–30K | 5–10年/本科 | RAG、Agent、Function Calling、Workflow、评测、成本 | 独立页近2周抓取 |
-| 6 | [厦门德捷｜AI Agent 工程师](https://www.zhaopin.com/jobdetail/CC263302730J40756947606.htm) | 15–30K | 3–5年/本科 | 状态机、任务拆解、API/数据库工具、RAG、失败恢复 | 近期公开岗位 URL |
-| 7 | [厦门德捷｜AIOps 工程师](https://www.zhaopin.com/jobdetail/CC263302730J40756917506.htm) | 15–30K | 1–3年/本科 | Log/Metric/Trace、异步队列、Eval、CI/CD、权限、性能 | 前一日抓取；公司在招 |
-| 8 | [厦门钨业/谦鹭团队｜AI 应用高级工程师](https://m.zhaopin.com/jobs/CC133096640J40865509908.htm) | 15–25K·13薪 | 3–5年/本科 | LLM Agent、知识图谱、知识库、微调、企业接口 | 页面可访问；主体映射有歧义 |
-| 9 | [快商通｜NLP/Agent 算法工程师](https://m.zhipin.com/zhaopin/82a8a6397e2b620e0nR-29W7GQ~~/) | 20–30K | 1–3年/硕士 | RAG、思维链、强化学习、Agent | 聚合页近3周抓取 |
-| 10 | [厦门美亚亿安｜AI 算法工程师](https://www.zhipin.com/zhaopin/d800c01ed6cb52fb031z39W4FA~~/) | 20–40K | 1–3年/本科 | 大模型安全应用、业务方案、实施迭代 | 前一日抓取 |
-| 11 | [万物智联｜AI 模型开发工程师](https://www.zhipin.com/zhaopin/5dc1a4fbb178537903dy2d65EQ~~/) | 18–30K | 3–5年/本科 | 垂直模型、部署、RAG、Agent | 近3周抓取 |
-| 12 | [渊亭科技｜强化学习算法工程师](https://www.zhipin.com/zhaopin/5dc1a4fbb178537903dy2d65EQ~~/) | 30–40K | 3–5年/硕士 | 多智能体强化学习、架构、性能、稳定性 | 近3周抓取 |
-| 13 | [若鹏｜AI 工程师](https://m.zhipin.com/zhaopin/a90213fde377843903Z72ti-FA~~/) | 16–22K | 1–3年/本科 | Agent 系统、工作流、结构化输出 | 当天抓取 |
-| 14 | [海创星智｜大模型应用工程师](https://m.zhipin.com/zhaopin/a90213fde377843903Z72ti-FA~~/) | 22–30K·14薪 | 5–10年/本科 | 业务需求、API 集成、Agent 设计、项目交付 | 当天抓取 |
-| 15 | [飞飞鱼｜AI 工程师](https://www.zhipin.com/zhaopin/b2b3850041567b0503Jz2t-9EQ~~/) | 15–30K·13薪 | 3–5年/本科 | Agent 系统、LLM 工作流、自主任务执行 | 近5日抓取 |
-| 16 | [云从科技｜AI 大模型开发工程师](https://m.zhipin.com/zhaopin/82a8a6397e2b620e0nR-29W7GQ~~/) | 20–21K | 5–10年/本科 | 模型训练、优化、Agent 构建 | 近3周抓取 |
+| 1 | C01｜AI Agent（智能体）开发工程师 | 20–40K·13薪 | 3–5年/本科 | Python、Agent 编排、LangChain、AutoGPT | 8月8日可访问；招聘方今日回复 |
+| 2 | C02｜AI 智能体开发工程师 | 15–24K | 3–5年/本科 | Dify、HiAgent、模型部署、Linux、GPUStack | 独立页；招聘方当前在线 |
+| 3 | C03｜智能体设计工程师 | 17–30K·16薪 | 5–10年/本科 | Agent 编排、工具市场、可观测、评测、B 端交互 | 独立页可投递；近3周抓取 |
+| 4 | C04｜智能体开发工程师 | 15–28K·18薪 | 3–5年/本科 | LangGraph、混合 RAG、FastAPI、Docker、SQL、HITL、RBAC、MES | 核验时仍在有效期 |
+| 5 | C05｜AI 应用开发工程师 | 20–30K | 5–10年/本科 | RAG、Agent、Function Calling、Workflow、评测、成本 | 独立页近2周抓取 |
+| 6 | C06｜AI Agent 工程师 | 15–30K | 3–5年/本科 | 状态机、任务拆解、API/数据库工具、RAG、失败恢复 | 近期公开岗位已核验 |
+| 7 | C06｜AIOps 工程师 | 15–30K | 1–3年/本科 | Log/Metric/Trace、异步队列、Eval、CI/CD、权限、性能 | 前一日抓取；同公司第二岗位 |
+| 8 | C10｜AI 应用高级工程师 | 15–25K·13薪 | 3–5年/本科 | LLM Agent、知识图谱、知识库、微调、企业接口 | 页面可访问；主体映射不公开 |
+| 9 | C13｜NLP/Agent 算法工程师 | 20–30K | 1–3年/硕士 | RAG、思维链、强化学习、Agent | 聚合页近3周抓取 |
+| 10 | C15｜AI 算法工程师 | 20–40K | 1–3年/本科 | 大模型安全应用、业务方案、实施迭代 | 前一日抓取 |
+| 11 | C20｜AI 模型开发工程师 | 18–30K | 3–5年/本科 | 垂直模型、部署、RAG、Agent | 近3周抓取 |
+| 12 | C22｜强化学习算法工程师 | 30–40K | 3–5年/硕士 | 多智能体强化学习、架构、性能、稳定性 | 近3周抓取 |
+| 13 | C23｜AI 工程师 | 16–22K | 1–3年/本科 | Agent 系统、工作流、结构化输出 | 当天抓取 |
+| 14 | C24｜大模型应用工程师 | 22–30K·14薪 | 5–10年/本科 | 业务需求、API 集成、Agent 设计、项目交付 | 当天抓取 |
+| 15 | C25｜AI 工程师 | 15–30K·13薪 | 3–5年/本科 | Agent 系统、LLM 工作流、自主任务执行 | 近5日抓取 |
+| 16 | C26｜AI 大模型开发工程师 | 20–21K | 5–10年/本科 | 模型训练、优化、Agent 构建 | 近3周抓取 |
 
 ### B. Agent 交付相邻层：平台、模型、推理与工程化
 
 | # | 公司与岗位 | 月薪 | 经验/学历 | 核心公开要求 | 活跃证据 |
 |---:|---|---:|---|---|---|
-| 17 | [畅拓科技｜高级 AI 工程师](https://www.zhipin.com/zhaopin/b2b3850041567b0503Jz2t-9EQ~~/) | 20–40K·14薪 | 5–10年/本科 | AI 工程化、架构、业务落地 | 近5日抓取 |
-| 18 | [点触科技｜高级 AI 工程师](https://www.zhipin.com/zhaopin/b2b3850041567b0503Jz2t-9EQ~~/) | 18–25K | 3–5年/本科 | AI 辅助研发流程、工程规范 | 近5日抓取 |
-| 19 | [厦门明日丰｜高级 AI 工程师](https://www.zhipin.com/zhaopin/b2b3850041567b0503Jz2t-9EQ~~/) | 30–50K | 3–5年/本科 | 大模型、多模态、图像算法、工程化 | 近5日抓取 |
-| 20 | [中达集团｜高级开发工程师（中台/AI）](https://www.zhipin.com/zhaopin/b2b3850041567b0503Jz2t-9EQ~~/) | 17–30K·13薪 | 5–10年/本科 | AI 应用平台、LLM、生成式 AI、中台 | 近5日抓取 |
-| 21 | [紫金智信智控｜高级 AI 算法/大模型专家](https://www.zhipin.com/zhaopin/d800c01ed6cb52fb031z39W4FA~~/) | 35–65K | 5–10年/本科 | SFT、RLHF、对齐、数据清洗、隐私 | 前一日抓取 |
-| 22 | [快商通｜AI 高级算法工程师](https://www.zhipin.com/zhaopin/d800c01ed6cb52fb031z39W4FA~~/) | 30–35K | 1–3年/硕士 | SFT、DPO、GRPO、DAPO | 前一日抓取 |
-| 23 | [睿云联｜AI 算法工程师](https://www.zhipin.com/zhaopin/d800c01ed6cb52fb031z39W4FA~~/) | 20–35K·13薪 | 不限/本科 | CV、语音、LLM、NLP、工程部署 | 前一日抓取 |
-| 24 | [微徒科技｜高级 AI 算法工程师](https://www.zhipin.com/zhaopin/d800c01ed6cb52fb031z39W4FA~~/) | 25–50K | 5–10年/本科 | 架构设计、业务赋能、系统落地 | 前一日抓取 |
-| 25 | [网宿科技｜边缘 AI 算法工程师](https://www.zhipin.com/zhaopin/d800c01ed6cb52fb031z39W4FA~~/) | 25–40K | 3–5年/硕士 | LLM 推理引擎、低延迟、高吞吐、CUDA | 前一日抓取 |
-| 26 | [云天畅想｜AI 算法开发工程师](https://www.zhipin.com/zhaopin/d800c01ed6cb52fb031z39W4FA~~/) | 12–24K | 3–5年/本科 | AI 场景、算法工程化 | 前一日抓取 |
-| 27 | [松霖科技｜机器人 AI 算法工程师](https://www.zhipin.com/zhaopin/d800c01ed6cb52fb031z39W4FA~~/) | 20–40K | 3–5年/硕士 | 机器学习、强化学习、LLM 微调、机器人 | 前一日抓取 |
-| 28 | [亿联网络｜大模型算法工程师](https://m.zhipin.com/zhaopin/a90213fde377843903Z72ti-FA~~/) | 20–40K·15薪 | 3–5年/硕士 | LLM、多模态、预训练、微调、压缩 | 当天抓取 |
+| 17 | C07｜高级 AI 工程师 | 20–40K·14薪 | 5–10年/本科 | AI 工程化、架构、业务落地 | 近5日抓取 |
+| 18 | C08｜高级 AI 工程师 | 18–25K | 3–5年/本科 | AI 辅助研发流程、工程规范 | 近5日抓取 |
+| 19 | C09｜高级 AI 工程师 | 30–50K | 3–5年/本科 | 大模型、多模态、图像算法、工程化 | 近5日抓取 |
+| 20 | C11｜高级开发工程师（中台/AI） | 17–30K·13薪 | 5–10年/本科 | AI 应用平台、LLM、生成式 AI、中台 | 近5日抓取 |
+| 21 | C12｜高级 AI 算法/大模型专家 | 35–65K | 5–10年/本科 | SFT、RLHF、对齐、数据清洗、隐私 | 前一日抓取 |
+| 22 | C13｜AI 高级算法工程师 | 30–35K | 1–3年/硕士 | SFT、DPO、GRPO、DAPO | 前一日抓取；同公司另一岗位 |
+| 23 | C14｜AI 算法工程师 | 20–35K·13薪 | 不限/本科 | CV、语音、LLM、NLP、工程部署 | 前一日抓取 |
+| 24 | C16｜高级 AI 算法工程师 | 25–50K | 5–10年/本科 | 架构设计、业务赋能、系统落地 | 前一日抓取 |
+| 25 | C17｜边缘 AI 算法工程师 | 25–40K | 3–5年/硕士 | LLM 推理引擎、低延迟、高吞吐、CUDA | 前一日抓取 |
+| 26 | C18｜AI 算法开发工程师 | 12–24K | 3–5年/本科 | AI 场景、算法工程化 | 前一日抓取 |
+| 27 | C19｜机器人 AI 算法工程师 | 20–40K | 3–5年/硕士 | 机器学习、强化学习、LLM 微调、机器人 | 前一日抓取 |
+| 28 | C21｜大模型算法工程师 | 20–40K·15薪 | 3–5年/硕士 | LLM、多模态、预训练、微调、压缩 | 当天抓取 |
 
 原始筛选数据见同目录 `厦门_AI_Agent_20K以上岗位明细_2026-08-08.csv`。
 
@@ -340,17 +342,17 @@ fault lab 自己验签和计数，并核对 `X-Harbor-Control-Tenant` 与签名 
 
 | 招聘要求 | Harbor 3.2 证据 | 代表岗位 |
 |---|---|---|
-| Agent 编排/状态机 | 11 阶段显式图、checkpoint、HITL、暂停恢复 | 普为、宁德、新能安、德捷、飞飞鱼 |
-| Python/FastAPI | 严格 API、Pydantic v2、Auth、OpenAPI、worker | 普为、浪潮、新能安、德捷 |
-| RAG/知识库 | Qwen3 Embedding 1024d、BM25、adaptive RRF、route、pgvector HNSW、15+15 检索评测 | 新能安、垒知、德捷、谦鹭、万物智联 |
-| 本地模型部署 | Qwen3-VL-8B INT4、OpenVINO sidecar、结构化协议、熔断 | 浪潮、万物智联、云从 |
-| Function Calling/API | 工具注册表、Schema、远程 fault lab、capability | 垒知、德捷、海创星智 |
-| HITL/RBAC/安全 | tenant isolation、requester separation、双人 quorum、hash-bound votes、短效 JTI | 新能安、德捷、美亚亿安 |
-| 异步队列/恢复 | PostgreSQL durable Job、3 worker、lease、heartbeat、fencing、真实容器崩溃接管 | 德捷 AIOps、畅拓 |
-| 幂等/重试 | 持久幂等、commit 后丢响应、同 key 重放 | 德捷、企业平台岗 |
-| Eval/可观测 | Trace、Audit、15 例 fixture、3 例 live、Prometheus DNS SD 6/6 targets | 宁德、垒知、德捷 AIOps |
-| 性能/稳定性 | 2,000 请求压测、模型 queue/inference 分离、advisory admission、circuit breaker | 德捷、网宿、平台岗 |
-| Docker/交付 | 8 容器实启、digest pin、非 root/只读根文件系统、Nginx CSP、生产/测试镜像分层 | 浪潮、新能安、睿云联 |
+| Agent 编排/状态机 | 11 阶段显式图、checkpoint、HITL、暂停恢复 | C01、C03、C04、C06、C25 |
+| Python/FastAPI | 严格 API、Pydantic v2、Auth、OpenAPI、worker | C01、C02、C04、C06 |
+| RAG/知识库 | Qwen3 Embedding 1024d、BM25、adaptive RRF、route、pgvector HNSW、15+15 检索评测 | C04、C05、C06、C10、C20 |
+| 本地模型部署 | Qwen3-VL-8B INT4、OpenVINO sidecar、结构化协议、熔断 | C02、C20、C26 |
+| Function Calling/API | 工具注册表、Schema、远程 fault lab、capability | C05、C06、C24 |
+| HITL/RBAC/安全 | tenant isolation、requester separation、双人 quorum、hash-bound votes、短效 JTI | C04、C06、C15 |
+| 异步队列/恢复 | PostgreSQL durable Job、3 worker、lease、heartbeat、fencing、真实容器崩溃接管 | C06、C07 |
+| 幂等/重试 | 持久幂等、commit 后丢响应、同 key 重放 | C06、企业平台类岗位 |
+| Eval/可观测 | Trace、Audit、15 例 fixture、3 例 live、Prometheus DNS SD 6/6 targets | C03、C05、C06 |
+| 性能/稳定性 | 2,000 请求压测、模型 queue/inference 分离、advisory admission、circuit breaker | C06、C17、平台类岗位 |
+| Docker/交付 | 8 容器实启、digest pin、非 root/只读根文件系统、Nginx CSP、生产/测试镜像分层 | C02、C04、C14 |
 
 ---
 
@@ -445,7 +447,7 @@ fault lab 自己验签和计数，并核对 `X-Harbor-Control-Tenant` 与签名 
 - 企业 AI 应用平台
 - RAG / LLM 应用工程
 
-优先对应：普为、垒知、德捷、新能安、浪潮、宁德、海创星智、畅拓等应用/平台方向。
+优先对应：C01、C02、C03、C04、C05、C06、C07、C24 等应用/平台方向。
 
 ### 第二优先
 
