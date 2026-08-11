@@ -30,6 +30,7 @@ jobs:
       - name: Check personal paths and Python syntax
         run: |
           python scripts/check-portability.py
+          python scripts/check-public-privacy.py
           python -m compileall -q backend/app ops_sandbox kubernetes_connector local_model_service local_embedding_service scripts
 
       - name: Validate Compose configuration
