@@ -1,0 +1,847 @@
+{
+  "schema": "harbor-retrieval-dataset/v1",
+  "dataset_version": "retrieval-210-v1",
+  "split": "calibration",
+  "queries": [
+    {
+      "id": "ret-exact_identifier-001",
+      "category": "exact_identifier",
+      "query": "RB-101 checkout-api pool_waiters；观测窗口样本 1-1-1。",
+      "expected_docs": [
+        "RB-101"
+      ]
+    },
+    {
+      "id": "ret-exact_identifier-003",
+      "category": "exact_identifier",
+      "query": "SEC-07 capability token plan hash fencing token；观测窗口样本 1-1-3。",
+      "expected_docs": [
+        "SEC-07"
+      ]
+    },
+    {
+      "id": "ret-exact_identifier-005",
+      "category": "exact_identifier",
+      "query": "RB-429 recommendation-api retry_amplification；观测窗口样本 1-1-5。",
+      "expected_docs": [
+        "RB-429"
+      ]
+    },
+    {
+      "id": "ret-exact_identifier-007",
+      "category": "exact_identifier",
+      "query": "RB-203 partner-gateway credential_version v17；观测窗口样本 1-1-7。",
+      "expected_docs": [
+        "RB-203"
+      ]
+    },
+    {
+      "id": "ret-exact_identifier-009",
+      "category": "exact_identifier",
+      "query": "RB-101 checkout-api pool_waiters；观测窗口样本 1-2-9。",
+      "expected_docs": [
+        "RB-101"
+      ]
+    },
+    {
+      "id": "ret-exact_identifier-011",
+      "category": "exact_identifier",
+      "query": "SEC-07 capability token plan hash fencing token；观测窗口样本 1-2-11。",
+      "expected_docs": [
+        "SEC-07"
+      ]
+    },
+    {
+      "id": "ret-exact_identifier-013",
+      "category": "exact_identifier",
+      "query": "RB-429 recommendation-api retry_amplification；观测窗口样本 1-2-13。",
+      "expected_docs": [
+        "RB-429"
+      ]
+    },
+    {
+      "id": "ret-exact_identifier-015",
+      "category": "exact_identifier",
+      "query": "RB-203 partner-gateway credential_version v17；观测窗口样本 1-2-15。",
+      "expected_docs": [
+        "RB-203"
+      ]
+    },
+    {
+      "id": "ret-exact_identifier-017",
+      "category": "exact_identifier",
+      "query": "RB-101 checkout-api pool_waiters；观测窗口样本 1-3-17。",
+      "expected_docs": [
+        "RB-101"
+      ]
+    },
+    {
+      "id": "ret-exact_identifier-019",
+      "category": "exact_identifier",
+      "query": "SEC-07 capability token plan hash fencing token；观测窗口样本 1-3-19。",
+      "expected_docs": [
+        "SEC-07"
+      ]
+    },
+    {
+      "id": "ret-exact_identifier-021",
+      "category": "exact_identifier",
+      "query": "RB-429 recommendation-api retry_amplification；观测窗口样本 1-3-21。",
+      "expected_docs": [
+        "RB-429"
+      ]
+    },
+    {
+      "id": "ret-exact_identifier-023",
+      "category": "exact_identifier",
+      "query": "RB-203 partner-gateway credential_version v17；观测窗口样本 1-3-23。",
+      "expected_docs": [
+        "RB-203"
+      ]
+    },
+    {
+      "id": "ret-exact_identifier-025",
+      "category": "exact_identifier",
+      "query": "RB-101 checkout-api pool_waiters；观测窗口样本 1-4-25。",
+      "expected_docs": [
+        "RB-101"
+      ]
+    },
+    {
+      "id": "ret-exact_identifier-027",
+      "category": "exact_identifier",
+      "query": "SEC-07 capability token plan hash fencing token；观测窗口样本 1-4-27。",
+      "expected_docs": [
+        "SEC-07"
+      ]
+    },
+    {
+      "id": "ret-exact_identifier-029",
+      "category": "exact_identifier",
+      "query": "RB-429 recommendation-api retry_amplification；观测窗口样本 1-4-29。",
+      "expected_docs": [
+        "RB-429"
+      ]
+    },
+    {
+      "id": "ret-error_code-001",
+      "category": "error_code",
+      "query": "consumer lag backlog produce_per_min greater than consume_per_min；观测窗口样本 2-1-1。",
+      "expected_docs": [
+        "RB-104"
+      ]
+    },
+    {
+      "id": "ret-error_code-003",
+      "category": "error_code",
+      "query": "VERIFICATION_FAILED_ROLLED_BACK tool_result_unknown；观测窗口样本 2-1-3。",
+      "expected_docs": [
+        "OPS-12"
+      ]
+    },
+    {
+      "id": "ret-error_code-005",
+      "category": "error_code",
+      "query": "checkpoint stalled gap=37 sync heartbeat ok；观测窗口样本 2-1-5。",
+      "expected_docs": [
+        "RB-WS-501"
+      ]
+    },
+    {
+      "id": "ret-error_code-007",
+      "category": "error_code",
+      "query": "stale_sample_rate cache hit version mismatch；观测窗口样本 2-1-7。",
+      "expected_docs": [
+        "RB-310"
+      ]
+    },
+    {
+      "id": "ret-error_code-009",
+      "category": "error_code",
+      "query": "consumer lag backlog produce_per_min greater than consume_per_min；观测窗口样本 2-2-9。",
+      "expected_docs": [
+        "RB-104"
+      ]
+    },
+    {
+      "id": "ret-error_code-011",
+      "category": "error_code",
+      "query": "VERIFICATION_FAILED_ROLLED_BACK tool_result_unknown；观测窗口样本 2-2-11。",
+      "expected_docs": [
+        "OPS-12"
+      ]
+    },
+    {
+      "id": "ret-error_code-013",
+      "category": "error_code",
+      "query": "checkpoint stalled gap=37 sync heartbeat ok；观测窗口样本 2-2-13。",
+      "expected_docs": [
+        "RB-WS-501"
+      ]
+    },
+    {
+      "id": "ret-error_code-015",
+      "category": "error_code",
+      "query": "stale_sample_rate cache hit version mismatch；观测窗口样本 2-2-15。",
+      "expected_docs": [
+        "RB-310"
+      ]
+    },
+    {
+      "id": "ret-error_code-017",
+      "category": "error_code",
+      "query": "consumer lag backlog produce_per_min greater than consume_per_min；观测窗口样本 2-3-17。",
+      "expected_docs": [
+        "RB-104"
+      ]
+    },
+    {
+      "id": "ret-error_code-019",
+      "category": "error_code",
+      "query": "VERIFICATION_FAILED_ROLLED_BACK tool_result_unknown；观测窗口样本 2-3-19。",
+      "expected_docs": [
+        "OPS-12"
+      ]
+    },
+    {
+      "id": "ret-error_code-021",
+      "category": "error_code",
+      "query": "checkpoint stalled gap=37 sync heartbeat ok；观测窗口样本 2-3-21。",
+      "expected_docs": [
+        "RB-WS-501"
+      ]
+    },
+    {
+      "id": "ret-error_code-023",
+      "category": "error_code",
+      "query": "stale_sample_rate cache hit version mismatch；观测窗口样本 2-3-23。",
+      "expected_docs": [
+        "RB-310"
+      ]
+    },
+    {
+      "id": "ret-error_code-025",
+      "category": "error_code",
+      "query": "consumer lag backlog produce_per_min greater than consume_per_min；观测窗口样本 2-4-25。",
+      "expected_docs": [
+        "RB-104"
+      ]
+    },
+    {
+      "id": "ret-error_code-027",
+      "category": "error_code",
+      "query": "VERIFICATION_FAILED_ROLLED_BACK tool_result_unknown；观测窗口样本 2-4-27。",
+      "expected_docs": [
+        "OPS-12"
+      ]
+    },
+    {
+      "id": "ret-error_code-029",
+      "category": "error_code",
+      "query": "checkpoint stalled gap=37 sync heartbeat ok；观测窗口样本 2-4-29。",
+      "expected_docs": [
+        "RB-WS-501"
+      ]
+    },
+    {
+      "id": "ret-natural_language_paraphrase-001",
+      "category": "natural_language_paraphrase",
+      "query": "合作方网络可达却拒绝身份，访问材料已经超过有效期；观测窗口样本 3-1-1。",
+      "expected_docs": [
+        "RB-203"
+      ]
+    },
+    {
+      "id": "ret-natural_language_paraphrase-003",
+      "category": "natural_language_paraphrase",
+      "query": "结算请求一直拿不到可用数据库会话，单台机器越来越慢；观测窗口样本 3-1-3。",
+      "expected_docs": [
+        "RB-101"
+      ]
+    },
+    {
+      "id": "ret-natural_language_paraphrase-005",
+      "category": "natural_language_paraphrase",
+      "query": "怎样保证模型建议不能直接获得工具执行权限；观测窗口样本 3-1-5。",
+      "expected_docs": [
+        "SEC-07"
+      ]
+    },
+    {
+      "id": "ret-natural_language_paraphrase-007",
+      "category": "natural_language_paraphrase",
+      "query": "依赖方要求稍后再试，本地反复请求又把压力放大；观测窗口样本 3-1-7。",
+      "expected_docs": [
+        "RB-429"
+      ]
+    },
+    {
+      "id": "ret-natural_language_paraphrase-009",
+      "category": "natural_language_paraphrase",
+      "query": "合作方网络可达却拒绝身份，访问材料已经超过有效期；观测窗口样本 3-2-9。",
+      "expected_docs": [
+        "RB-203"
+      ]
+    },
+    {
+      "id": "ret-natural_language_paraphrase-011",
+      "category": "natural_language_paraphrase",
+      "query": "结算请求一直拿不到可用数据库会话，单台机器越来越慢；观测窗口样本 3-2-11。",
+      "expected_docs": [
+        "RB-101"
+      ]
+    },
+    {
+      "id": "ret-natural_language_paraphrase-013",
+      "category": "natural_language_paraphrase",
+      "query": "怎样保证模型建议不能直接获得工具执行权限；观测窗口样本 3-2-13。",
+      "expected_docs": [
+        "SEC-07"
+      ]
+    },
+    {
+      "id": "ret-natural_language_paraphrase-015",
+      "category": "natural_language_paraphrase",
+      "query": "依赖方要求稍后再试，本地反复请求又把压力放大；观测窗口样本 3-2-15。",
+      "expected_docs": [
+        "RB-429"
+      ]
+    },
+    {
+      "id": "ret-natural_language_paraphrase-017",
+      "category": "natural_language_paraphrase",
+      "query": "合作方网络可达却拒绝身份，访问材料已经超过有效期；观测窗口样本 3-3-17。",
+      "expected_docs": [
+        "RB-203"
+      ]
+    },
+    {
+      "id": "ret-natural_language_paraphrase-019",
+      "category": "natural_language_paraphrase",
+      "query": "结算请求一直拿不到可用数据库会话，单台机器越来越慢；观测窗口样本 3-3-19。",
+      "expected_docs": [
+        "RB-101"
+      ]
+    },
+    {
+      "id": "ret-natural_language_paraphrase-021",
+      "category": "natural_language_paraphrase",
+      "query": "怎样保证模型建议不能直接获得工具执行权限；观测窗口样本 3-3-21。",
+      "expected_docs": [
+        "SEC-07"
+      ]
+    },
+    {
+      "id": "ret-natural_language_paraphrase-023",
+      "category": "natural_language_paraphrase",
+      "query": "依赖方要求稍后再试，本地反复请求又把压力放大；观测窗口样本 3-3-23。",
+      "expected_docs": [
+        "RB-429"
+      ]
+    },
+    {
+      "id": "ret-natural_language_paraphrase-025",
+      "category": "natural_language_paraphrase",
+      "query": "合作方网络可达却拒绝身份，访问材料已经超过有效期；观测窗口样本 3-4-25。",
+      "expected_docs": [
+        "RB-203"
+      ]
+    },
+    {
+      "id": "ret-natural_language_paraphrase-027",
+      "category": "natural_language_paraphrase",
+      "query": "结算请求一直拿不到可用数据库会话，单台机器越来越慢；观测窗口样本 3-4-27。",
+      "expected_docs": [
+        "RB-101"
+      ]
+    },
+    {
+      "id": "ret-natural_language_paraphrase-029",
+      "category": "natural_language_paraphrase",
+      "query": "怎样保证模型建议不能直接获得工具执行权限；观测窗口样本 3-4-29。",
+      "expected_docs": [
+        "SEC-07"
+      ]
+    },
+    {
+      "id": "ret-synonym-001",
+      "category": "synonym",
+      "query": "高速数据副本陈旧，与权威存储版本不同步；观测窗口样本 4-1-1。",
+      "expected_docs": [
+        "RB-310"
+      ]
+    },
+    {
+      "id": "ret-synonym-003",
+      "category": "synonym",
+      "query": "消息消费产能不足，未处理工作项水位持续抬升；观测窗口样本 4-1-3。",
+      "expected_docs": [
+        "RB-104"
+      ]
+    },
+    {
+      "id": "ret-synonym-005",
+      "category": "synonym",
+      "query": "动作回执不是业务状态，需要独立复查和受控补偿；观测窗口样本 4-1-5。",
+      "expected_docs": [
+        "OPS-12"
+      ]
+    },
+    {
+      "id": "ret-synonym-007",
+      "category": "synonym",
+      "query": "增量复制位点漂移，待应用记录持续积压；观测窗口样本 4-1-7。",
+      "expected_docs": [
+        "RB-WS-501"
+      ]
+    },
+    {
+      "id": "ret-synonym-009",
+      "category": "synonym",
+      "query": "高速数据副本陈旧，与权威存储版本不同步；观测窗口样本 4-2-9。",
+      "expected_docs": [
+        "RB-310"
+      ]
+    },
+    {
+      "id": "ret-synonym-011",
+      "category": "synonym",
+      "query": "消息消费产能不足，未处理工作项水位持续抬升；观测窗口样本 4-2-11。",
+      "expected_docs": [
+        "RB-104"
+      ]
+    },
+    {
+      "id": "ret-synonym-013",
+      "category": "synonym",
+      "query": "动作回执不是业务状态，需要独立复查和受控补偿；观测窗口样本 4-2-13。",
+      "expected_docs": [
+        "OPS-12"
+      ]
+    },
+    {
+      "id": "ret-synonym-015",
+      "category": "synonym",
+      "query": "增量复制位点漂移，待应用记录持续积压；观测窗口样本 4-2-15。",
+      "expected_docs": [
+        "RB-WS-501"
+      ]
+    },
+    {
+      "id": "ret-synonym-017",
+      "category": "synonym",
+      "query": "高速数据副本陈旧，与权威存储版本不同步；观测窗口样本 4-3-17。",
+      "expected_docs": [
+        "RB-310"
+      ]
+    },
+    {
+      "id": "ret-synonym-019",
+      "category": "synonym",
+      "query": "消息消费产能不足，未处理工作项水位持续抬升；观测窗口样本 4-3-19。",
+      "expected_docs": [
+        "RB-104"
+      ]
+    },
+    {
+      "id": "ret-synonym-021",
+      "category": "synonym",
+      "query": "动作回执不是业务状态，需要独立复查和受控补偿；观测窗口样本 4-3-21。",
+      "expected_docs": [
+        "OPS-12"
+      ]
+    },
+    {
+      "id": "ret-synonym-023",
+      "category": "synonym",
+      "query": "增量复制位点漂移，待应用记录持续积压；观测窗口样本 4-3-23。",
+      "expected_docs": [
+        "RB-WS-501"
+      ]
+    },
+    {
+      "id": "ret-synonym-025",
+      "category": "synonym",
+      "query": "高速数据副本陈旧，与权威存储版本不同步；观测窗口样本 4-4-25。",
+      "expected_docs": [
+        "RB-310"
+      ]
+    },
+    {
+      "id": "ret-synonym-027",
+      "category": "synonym",
+      "query": "消息消费产能不足，未处理工作项水位持续抬升；观测窗口样本 4-4-27。",
+      "expected_docs": [
+        "RB-104"
+      ]
+    },
+    {
+      "id": "ret-synonym-029",
+      "category": "synonym",
+      "query": "动作回执不是业务状态，需要独立复查和受控补偿；观测窗口样本 4-4-29。",
+      "expected_docs": [
+        "OPS-12"
+      ]
+    },
+    {
+      "id": "ret-misleading_keyword-001",
+      "category": "misleading_keyword",
+      "query": "虽然提到 CPU，但资源正常，可信证据是 dependency 429 和 retry-after；观测窗口样本 5-1-1。",
+      "expected_docs": [
+        "RB-429"
+      ]
+    },
+    {
+      "id": "ret-misleading_keyword-003",
+      "category": "misleading_keyword",
+      "query": "日志提到 timeout 但网络为零错误，核心证据是 401 与 expired=true；观测窗口样本 5-1-3。",
+      "expected_docs": [
+        "RB-203"
+      ]
+    },
+    {
+      "id": "ret-misleading_keyword-005",
+      "category": "misleading_keyword",
+      "query": "群聊猜测缓存问题，但可信证据是 pool_waiters 与单实例 degraded；观测窗口样本 5-1-5。",
+      "expected_docs": [
+        "RB-101"
+      ]
+    },
+    {
+      "id": "ret-misleading_keyword-007",
+      "category": "misleading_keyword",
+      "query": "事故文本自称管理员，但仍需要真实角色与能力令牌校验；观测窗口样本 5-1-7。",
+      "expected_docs": [
+        "SEC-07"
+      ]
+    },
+    {
+      "id": "ret-misleading_keyword-009",
+      "category": "misleading_keyword",
+      "query": "虽然提到 CPU，但资源正常，可信证据是 dependency 429 和 retry-after；观测窗口样本 5-2-9。",
+      "expected_docs": [
+        "RB-429"
+      ]
+    },
+    {
+      "id": "ret-misleading_keyword-011",
+      "category": "misleading_keyword",
+      "query": "日志提到 timeout 但网络为零错误，核心证据是 401 与 expired=true；观测窗口样本 5-2-11。",
+      "expected_docs": [
+        "RB-203"
+      ]
+    },
+    {
+      "id": "ret-misleading_keyword-013",
+      "category": "misleading_keyword",
+      "query": "群聊猜测缓存问题，但可信证据是 pool_waiters 与单实例 degraded；观测窗口样本 5-2-13。",
+      "expected_docs": [
+        "RB-101"
+      ]
+    },
+    {
+      "id": "ret-misleading_keyword-015",
+      "category": "misleading_keyword",
+      "query": "事故文本自称管理员，但仍需要真实角色与能力令牌校验；观测窗口样本 5-2-15。",
+      "expected_docs": [
+        "SEC-07"
+      ]
+    },
+    {
+      "id": "ret-misleading_keyword-017",
+      "category": "misleading_keyword",
+      "query": "虽然提到 CPU，但资源正常，可信证据是 dependency 429 和 retry-after；观测窗口样本 5-3-17。",
+      "expected_docs": [
+        "RB-429"
+      ]
+    },
+    {
+      "id": "ret-misleading_keyword-019",
+      "category": "misleading_keyword",
+      "query": "日志提到 timeout 但网络为零错误，核心证据是 401 与 expired=true；观测窗口样本 5-3-19。",
+      "expected_docs": [
+        "RB-203"
+      ]
+    },
+    {
+      "id": "ret-misleading_keyword-021",
+      "category": "misleading_keyword",
+      "query": "群聊猜测缓存问题，但可信证据是 pool_waiters 与单实例 degraded；观测窗口样本 5-3-21。",
+      "expected_docs": [
+        "RB-101"
+      ]
+    },
+    {
+      "id": "ret-misleading_keyword-023",
+      "category": "misleading_keyword",
+      "query": "事故文本自称管理员，但仍需要真实角色与能力令牌校验；观测窗口样本 5-3-23。",
+      "expected_docs": [
+        "SEC-07"
+      ]
+    },
+    {
+      "id": "ret-misleading_keyword-025",
+      "category": "misleading_keyword",
+      "query": "虽然提到 CPU，但资源正常，可信证据是 dependency 429 和 retry-after；观测窗口样本 5-4-25。",
+      "expected_docs": [
+        "RB-429"
+      ]
+    },
+    {
+      "id": "ret-misleading_keyword-027",
+      "category": "misleading_keyword",
+      "query": "日志提到 timeout 但网络为零错误，核心证据是 401 与 expired=true；观测窗口样本 5-4-27。",
+      "expected_docs": [
+        "RB-203"
+      ]
+    },
+    {
+      "id": "ret-misleading_keyword-029",
+      "category": "misleading_keyword",
+      "query": "群聊猜测缓存问题，但可信证据是 pool_waiters 与单实例 degraded；观测窗口样本 5-4-29。",
+      "expected_docs": [
+        "RB-101"
+      ]
+    },
+    {
+      "id": "ret-multi_symptom-001",
+      "category": "multi_symptom",
+      "query": "心跳正常、单分区位点落后、待同步过万、上游序列完整；观测窗口样本 6-1-1。",
+      "expected_docs": [
+        "RB-WS-501"
+      ]
+    },
+    {
+      "id": "ret-multi_symptom-003",
+      "category": "multi_symptom",
+      "query": "单租户旧样本、数据库已更新、缓存命中、错误率正常；观测窗口样本 6-1-3。",
+      "expected_docs": [
+        "RB-310"
+      ]
+    },
+    {
+      "id": "ret-multi_symptom-005",
+      "category": "multi_symptom",
+      "query": "最老消息等待上升、入队快于消费、消费者心跳正常；观测窗口样本 6-1-5。",
+      "expected_docs": [
+        "RB-104"
+      ]
+    },
+    {
+      "id": "ret-multi_symptom-007",
+      "category": "multi_symptom",
+      "query": "响应丢失、同键重试、验证失败、补偿执行、再次独立确认；观测窗口样本 6-1-7。",
+      "expected_docs": [
+        "OPS-12"
+      ]
+    },
+    {
+      "id": "ret-multi_symptom-009",
+      "category": "multi_symptom",
+      "query": "心跳正常、单分区位点落后、待同步过万、上游序列完整；观测窗口样本 6-2-9。",
+      "expected_docs": [
+        "RB-WS-501"
+      ]
+    },
+    {
+      "id": "ret-multi_symptom-011",
+      "category": "multi_symptom",
+      "query": "单租户旧样本、数据库已更新、缓存命中、错误率正常；观测窗口样本 6-2-11。",
+      "expected_docs": [
+        "RB-310"
+      ]
+    },
+    {
+      "id": "ret-multi_symptom-013",
+      "category": "multi_symptom",
+      "query": "最老消息等待上升、入队快于消费、消费者心跳正常；观测窗口样本 6-2-13。",
+      "expected_docs": [
+        "RB-104"
+      ]
+    },
+    {
+      "id": "ret-multi_symptom-015",
+      "category": "multi_symptom",
+      "query": "响应丢失、同键重试、验证失败、补偿执行、再次独立确认；观测窗口样本 6-2-15。",
+      "expected_docs": [
+        "OPS-12"
+      ]
+    },
+    {
+      "id": "ret-multi_symptom-017",
+      "category": "multi_symptom",
+      "query": "心跳正常、单分区位点落后、待同步过万、上游序列完整；观测窗口样本 6-3-17。",
+      "expected_docs": [
+        "RB-WS-501"
+      ]
+    },
+    {
+      "id": "ret-multi_symptom-019",
+      "category": "multi_symptom",
+      "query": "单租户旧样本、数据库已更新、缓存命中、错误率正常；观测窗口样本 6-3-19。",
+      "expected_docs": [
+        "RB-310"
+      ]
+    },
+    {
+      "id": "ret-multi_symptom-021",
+      "category": "multi_symptom",
+      "query": "最老消息等待上升、入队快于消费、消费者心跳正常；观测窗口样本 6-3-21。",
+      "expected_docs": [
+        "RB-104"
+      ]
+    },
+    {
+      "id": "ret-multi_symptom-023",
+      "category": "multi_symptom",
+      "query": "响应丢失、同键重试、验证失败、补偿执行、再次独立确认；观测窗口样本 6-3-23。",
+      "expected_docs": [
+        "OPS-12"
+      ]
+    },
+    {
+      "id": "ret-multi_symptom-025",
+      "category": "multi_symptom",
+      "query": "心跳正常、单分区位点落后、待同步过万、上游序列完整；观测窗口样本 6-4-25。",
+      "expected_docs": [
+        "RB-WS-501"
+      ]
+    },
+    {
+      "id": "ret-multi_symptom-027",
+      "category": "multi_symptom",
+      "query": "单租户旧样本、数据库已更新、缓存命中、错误率正常；观测窗口样本 6-4-27。",
+      "expected_docs": [
+        "RB-310"
+      ]
+    },
+    {
+      "id": "ret-multi_symptom-029",
+      "category": "multi_symptom",
+      "query": "最老消息等待上升、入队快于消费、消费者心跳正常；观测窗口样本 6-4-29。",
+      "expected_docs": [
+        "RB-104"
+      ]
+    },
+    {
+      "id": "ret-weak_lexical_overlap-001",
+      "category": "weak_lexical_overlap",
+      "query": "短期可验证许可只能用于指定主体和不可变动作内容；观测窗口样本 7-1-1。",
+      "expected_docs": [
+        "SEC-07"
+      ]
+    },
+    {
+      "id": "ret-weak_lexical_overlap-003",
+      "category": "weak_lexical_overlap",
+      "query": "远端实施流量配额，调用方的重复尝试反而恶化拥塞；观测窗口样本 7-1-3。",
+      "expected_docs": [
+        "RB-429"
+      ]
+    },
+    {
+      "id": "ret-weak_lexical_overlap-005",
+      "category": "weak_lexical_overlap",
+      "query": "外部系统不再认可调用方身份材料，需要换下一版授权信息；观测窗口样本 7-1-5。",
+      "expected_docs": [
+        "RB-203"
+      ]
+    },
+    {
+      "id": "ret-weak_lexical_overlap-007",
+      "category": "weak_lexical_overlap",
+      "query": "共享会话资源迟迟不能归还，业务调用者堆在入口；观测窗口样本 7-1-7。",
+      "expected_docs": [
+        "RB-101"
+      ]
+    },
+    {
+      "id": "ret-weak_lexical_overlap-009",
+      "category": "weak_lexical_overlap",
+      "query": "短期可验证许可只能用于指定主体和不可变动作内容；观测窗口样本 7-2-9。",
+      "expected_docs": [
+        "SEC-07"
+      ]
+    },
+    {
+      "id": "ret-weak_lexical_overlap-011",
+      "category": "weak_lexical_overlap",
+      "query": "远端实施流量配额，调用方的重复尝试反而恶化拥塞；观测窗口样本 7-2-11。",
+      "expected_docs": [
+        "RB-429"
+      ]
+    },
+    {
+      "id": "ret-weak_lexical_overlap-013",
+      "category": "weak_lexical_overlap",
+      "query": "外部系统不再认可调用方身份材料，需要换下一版授权信息；观测窗口样本 7-2-13。",
+      "expected_docs": [
+        "RB-203"
+      ]
+    },
+    {
+      "id": "ret-weak_lexical_overlap-015",
+      "category": "weak_lexical_overlap",
+      "query": "共享会话资源迟迟不能归还，业务调用者堆在入口；观测窗口样本 7-2-15。",
+      "expected_docs": [
+        "RB-101"
+      ]
+    },
+    {
+      "id": "ret-weak_lexical_overlap-017",
+      "category": "weak_lexical_overlap",
+      "query": "短期可验证许可只能用于指定主体和不可变动作内容；观测窗口样本 7-3-17。",
+      "expected_docs": [
+        "SEC-07"
+      ]
+    },
+    {
+      "id": "ret-weak_lexical_overlap-019",
+      "category": "weak_lexical_overlap",
+      "query": "远端实施流量配额，调用方的重复尝试反而恶化拥塞；观测窗口样本 7-3-19。",
+      "expected_docs": [
+        "RB-429"
+      ]
+    },
+    {
+      "id": "ret-weak_lexical_overlap-021",
+      "category": "weak_lexical_overlap",
+      "query": "外部系统不再认可调用方身份材料，需要换下一版授权信息；观测窗口样本 7-3-21。",
+      "expected_docs": [
+        "RB-203"
+      ]
+    },
+    {
+      "id": "ret-weak_lexical_overlap-023",
+      "category": "weak_lexical_overlap",
+      "query": "共享会话资源迟迟不能归还，业务调用者堆在入口；观测窗口样本 7-3-23。",
+      "expected_docs": [
+        "RB-101"
+      ]
+    },
+    {
+      "id": "ret-weak_lexical_overlap-025",
+      "category": "weak_lexical_overlap",
+      "query": "短期可验证许可只能用于指定主体和不可变动作内容；观测窗口样本 7-4-25。",
+      "expected_docs": [
+        "SEC-07"
+      ]
+    },
+    {
+      "id": "ret-weak_lexical_overlap-027",
+      "category": "weak_lexical_overlap",
+      "query": "远端实施流量配额，调用方的重复尝试反而恶化拥塞；观测窗口样本 7-4-27。",
+      "expected_docs": [
+        "RB-429"
+      ]
+    },
+    {
+      "id": "ret-weak_lexical_overlap-029",
+      "category": "weak_lexical_overlap",
+      "query": "外部系统不再认可调用方身份材料，需要换下一版授权信息；观测窗口样本 7-4-29。",
+      "expected_docs": [
+        "RB-203"
+      ]
+    }
+  ]
+}

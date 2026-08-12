@@ -56,7 +56,7 @@ def execute(args: argparse.Namespace) -> dict[str, Any]:
         else None
     )
     evaluator = EvaluationService(
-        ROOT / "data" / "eval_cases_v4.json",
+        ROOT / "data" / "evaluation" / "manifest.json",
         retriever,
         "harbor-offline-evaluation-capability-secret",
         adapter,
@@ -67,6 +67,8 @@ def execute(args: argparse.Namespace) -> dict[str, Any]:
             live_model=live,
             case_limit=args.case_limit,
             case_offset=args.case_offset,
+            split=args.split,
+            allow_frozen_holdout=args.final_holdout,
         )
         for _ in range(args.repetitions)
     ]
@@ -93,6 +95,8 @@ def execute(args: argparse.Namespace) -> dict[str, Any]:
             "repetitions": args.repetitions,
             "case_limit": args.case_limit,
             "case_offset": args.case_offset,
+            "dataset_split": args.split,
+            "final_holdout_unlock": args.final_holdout,
             "model": args.model if live else "transparent-heuristic-fixture",
             "oracle_visibility": "post-run-only",
             "case_state_isolation": "new experiment and database per case",
@@ -130,6 +134,12 @@ def parser() -> argparse.ArgumentParser:
     result.add_argument("--repetitions", type=int, default=1)
     result.add_argument("--case-limit", type=int)
     result.add_argument("--case-offset", type=int, default=0)
+    result.add_argument(
+        "--split",
+        choices=("calibration", "development", "holdout"),
+        default="development",
+    )
+    result.add_argument("--final-holdout", action="store_true")
     result.add_argument("--endpoint", default="http://127.0.0.1:8091/v1")
     result.add_argument("--model", default="OpenVINO/Qwen3-VL-8B-Instruct-int4-ov")
     result.add_argument("--api-key", default="harbor-local-model-token")
@@ -151,6 +161,9 @@ def main() -> int:
     args = parser().parse_args()
     if args.repetitions < 1 or args.case_offset < 0:
         print("repetitions must be >= 1 and offset must be >= 0", file=sys.stderr)
+        return 2
+    if args.split == "holdout" and not args.final_holdout:
+        print("holdout requires --final-holdout and must not be used for tuning", file=sys.stderr)
         return 2
     try:
         summary = execute(args)

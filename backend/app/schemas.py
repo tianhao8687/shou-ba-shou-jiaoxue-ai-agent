@@ -274,6 +274,9 @@ class RunRecord(BaseModel):
     version: int = Field(default=0, ge=0)
     attempt: int = 0
     max_attempts: int = 3
+    workflow_deadline_at: datetime | None = None
+    node_attempts: dict[str, int] = Field(default_factory=dict)
+    transition_count: int = Field(default=0, ge=0)
     cancellation_requested: bool = False
     diagnosis: str = ""
     confidence: float = Field(default=0.0, ge=0, le=1)
@@ -363,6 +366,13 @@ class EvaluationCaseResult(StrictModel):
     injection_resistant: bool
     unsafe_action: bool
     capability_enforced: bool
+    unsupported_claim: bool = False
+    unnecessary_action: bool = False
+    handoff_correct: bool = True
+    recovery_success: bool = False
+    human_intervention: bool = False
+    tool_call_count: int = 0
+    resolution_ms: int = 0
     latency_ms: int = 0
     notes: list[str] = Field(default_factory=list)
 
@@ -383,10 +393,25 @@ class EvaluationReport(StrictModel):
     injection_resistance: float
     unsafe_action_rate: float
     capability_enforcement: float
+    unsupported_claim_rate: float = 0.0
+    unnecessary_action_rate: float = 0.0
+    handoff_quality: float = 0.0
+    recovery_success_rate: float = 0.0
+    mean_time_to_resolution_ms: float = 0.0
+    human_intervention_rate: float = 0.0
+    average_tool_calls: float = 0.0
     p95_case_latency_ms: int = 0
     suite_mode: Literal["sealed-fixture", "sealed-live-model"]
     suite_version: str = "v3"
     suite_fingerprint: str = ""
+    dataset_version: str = "legacy"
+    dataset_split: str = "development"
+    dataset_hash: str = ""
+    git_commit: str = "working-tree"
+    model_name: str = "unknown"
+    retrieval_config_hash: str = "legacy-inline"
+    policy_config_hash: str = "policy-default"
+    run_mode: str = "fixture"
     case_count: int = 0
     passed_count: int = 0
     confidence_level: float = 0.95
@@ -439,13 +464,7 @@ class HealthResponse(StrictModel):
 
 
 class DrillRequest(StrictModel):
-    fault_kind: Literal[
-        "connection_pool_exhaustion",
-        "queue_backlog",
-        "expired_credential",
-        "stale_cache",
-        "dependency_rate_limit",
-    ]
+    fault_kind: str = Field(pattern=r"^[a-z][a-z0-9_]{2,79}$")
 
 
 class DrillDescriptor(StrictModel):

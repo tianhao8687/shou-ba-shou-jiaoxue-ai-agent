@@ -14,7 +14,7 @@ from app.schemas import Incident, RunRecord
 from app.store import PostgresStore
 from app.migrations import LATEST_SCHEMA_VERSION
 from app.retrieval import create_retriever
-import app.store as store_module
+import app.store.jobs as store_jobs
 
 
 POSTGRES_URL = os.getenv("HARBOR_TEST_POSTGRES_URL")
@@ -248,6 +248,55 @@ def test_postgres_model_slot_serializes_worker_replicas() -> None:
     not POSTGRES_URL,
     reason="set HARBOR_TEST_POSTGRES_URL to a dedicated PostgreSQL test database",
 )
+def test_case_5_postgres_claimed_run_survives_database_connection_loss() -> None:
+    """Critical CI subset for the claim -> first-node PostgreSQL crash window."""
+    assert POSTGRES_URL is not None
+    store = PostgresStore(POSTGRES_URL)
+    store.initialize()
+    suffix = uuid4().hex[:12].upper()
+    run = RunRecord(
+        id=f"RUN-PG-RESTART-{suffix}",
+        incident=Incident(
+            title="PostgreSQL 领取后连接中断",
+            summary="任务已领取但业务节点尚未执行时终止数据库连接并验证持久记录恢复。",
+            severity="P1",
+            service="postgres-restart-test",
+            environment="lab",
+            symptoms=["claim 后连接被终止"],
+        ),
+    )
+    try:
+        _, job = store.save_run_and_enqueue(run, "start")
+        first = store.claim_job("worker-before-db-loss", 0)
+        assert first is not None
+
+        connection = psycopg.connect(POSTGRES_URL)
+        try:
+            with connection.cursor() as cursor:
+                with pytest.raises(psycopg.Error):
+                    cursor.execute("SELECT pg_terminate_backend(pg_backend_pid())")
+        finally:
+            connection.close()
+
+        recovered_store = PostgresStore(POSTGRES_URL)
+        persisted = recovered_store.get_run(run.id)
+        recovered = recovered_store.claim_job("worker-after-db-loss", 30)
+
+        assert persisted is not None
+        assert persisted.id == run.id
+        assert recovered is not None
+        assert recovered.id == job.id
+        assert recovered.fencing_token == first.fencing_token + 1
+    finally:
+        with psycopg.connect(POSTGRES_URL) as connection, connection.cursor() as cursor:
+            cursor.execute("DELETE FROM agent_jobs WHERE run_id=%s", (run.id,))
+            cursor.execute("DELETE FROM agent_runs WHERE id=%s", (run.id,))
+
+
+@pytest.mark.skipif(
+    not POSTGRES_URL,
+    reason="set HARBOR_TEST_POSTGRES_URL to a dedicated PostgreSQL test database",
+)
 def test_postgres_atomic_run_job_rollback_and_active_job_dedupe(monkeypatch) -> None:
     assert POSTGRES_URL is not None
     store = PostgresStore(POSTGRES_URL)
@@ -275,7 +324,7 @@ def test_postgres_atomic_run_job_rollback_and_active_job_dedupe(monkeypatch) -> 
     try:
         store.save_run(blocker)
         monkeypatch.setattr(
-            store_module, "uuid4", lambda: SimpleNamespace(hex=collision_hex)
+            store_jobs, "uuid4", lambda: SimpleNamespace(hex=collision_hex)
         )
         store.enqueue_job(blocker.id, "start")
 

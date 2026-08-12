@@ -23,7 +23,7 @@ import { KnowledgeView } from './views/KnowledgeView'
 import { LoginView } from './views/LoginView'
 import { OverviewView } from './views/OverviewView'
 import { PolicyView } from './views/PolicyView'
-import { RunView } from './views/RunView'
+import { RunView } from './views/run/RunView'
 
 const pageTitles: Record<ViewName, string> = {
   overview: '运行总览',

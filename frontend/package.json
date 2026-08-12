@@ -10,6 +10,7 @@
     "typecheck": "tsc -b --pretty false",
     "test": "vitest run",
     "e2e": "playwright test",
+    "e2e:critical": "playwright test --project=desktop-chromium --grep @critical",
     "e2e:install": "playwright install chromium",
     "preview": "vite preview --host 0.0.0.0"
   },

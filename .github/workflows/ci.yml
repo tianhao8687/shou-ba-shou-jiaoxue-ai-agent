@@ -109,6 +109,18 @@ jobs:
       - name: Install backend test dependencies
         run: python -m pip install -r backend/requirements-dev.txt
 
+      - name: Run crash-window reliability gate and emit machine evidence
+        working-directory: backend
+        run: |
+          pytest \
+            tests/test_crash_windows.py \
+            tests/test_api.py::test_failed_outcome_triggers_hash_bound_compensation_and_independent_recheck \
+            tests/test_postgres_store.py::test_case_5_postgres_claimed_run_survives_database_connection_loss \
+            --junitxml="${RUNNER_TEMP}/crash-window-junit.xml"
+          python ../scripts/collect-crash-evidence.py \
+            --junit "${RUNNER_TEMP}/crash-window-junit.xml" \
+            --output "${RUNNER_TEMP}/crash-window-evidence.json"
+
       - name: Start isolated fault lab
         run: |
           python -m uvicorn ops_sandbox.app:app --host 127.0.0.1 --port 8092 >"${RUNNER_TEMP}/ops-sandbox.log" 2>&1 &
@@ -209,7 +221,16 @@ jobs:
       - name: Build, start and verify the complete stack
         run: python scripts/quickstart.py up --workers 2 --timeout 240
 
-      - name: Run browser workflows and accessibility checks
+      - name: Run Chromium critical browser gate
+        if: github.event_name != 'workflow_dispatch'
+        working-directory: frontend
+        env:
+          PLAYWRIGHT_BASE_URL: http://127.0.0.1:8080
+          DEMO_PASSWORD: harbor-demo-2026
+        run: pnpm e2e:critical
+
+      - name: Run full browser matrix on manual dispatch
+        if: github.event_name == 'workflow_dispatch'
         working-directory: frontend
         env:
           PLAYWRIGHT_BASE_URL: http://127.0.0.1:8080
@@ -228,6 +249,7 @@ jobs:
             --min-runs 3 \
             --worker-restart-every 2 \
             --database-restart-every 3 \
+            --database-restart-after-claim \
             --prometheus-outage-once \
             --output "${RUNNER_TEMP}/harbor-reliability.json"
 

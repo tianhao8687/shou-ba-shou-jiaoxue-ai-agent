@@ -12,11 +12,10 @@ from typing import Protocol
 import httpx
 
 from .schemas import SourceHit
+from .retrieval_config import RetrievalConfig, load_retrieval_config
 
 
 EMBEDDING_DIMENSIONS = 256
-CHUNK_TARGET_CHARACTERS = 720
-CHUNK_OVERLAP_CHARACTERS = 120
 
 
 @dataclass(frozen=True)
@@ -73,6 +72,8 @@ class EmbeddingProvider(Protocol):
 
     def embed_query(self, text: str) -> list[float]: ...
 
+    def embed_queries(self, texts: list[str]) -> list[list[float]]: ...
+
 
 class FeatureHashingProvider:
     """Deterministic lexical-feature baseline. It is deliberately not called semantic."""
@@ -85,6 +86,9 @@ class FeatureHashingProvider:
 
     def embed_query(self, text: str) -> list[float]:
         return hashing_embedding(text)
+
+    def embed_queries(self, texts: list[str]) -> list[list[float]]:
+        return [hashing_embedding(text) for text in texts]
 
 
 class OpenAIEmbeddingProvider:
@@ -177,26 +181,38 @@ class OpenAIEmbeddingProvider:
     def embed_query(self, text: str) -> list[float]:
         return self._embed_cached([f"{self.query_instruction}{text}"])[0]
 
+    def embed_queries(self, texts: list[str]) -> list[list[float]]:
+        prepared = [f"{self.query_instruction}{text}" for text in texts]
+        vectors: list[list[float]] = []
+        for start in range(0, len(prepared), 64):
+            vectors.extend(self._embed_cached(prepared[start : start + 64]))
+        return vectors
 
-def _split_long_text(text: str) -> list[str]:
-    if len(text) <= CHUNK_TARGET_CHARACTERS:
+
+def _split_long_text(text: str, config: RetrievalConfig) -> list[str]:
+    target = config.chunk.target_characters
+    overlap = config.chunk.overlap_characters
+    if len(text) <= target:
         return [text]
     chunks: list[str] = []
     start = 0
     while start < len(text):
-        end = min(len(text), start + CHUNK_TARGET_CHARACTERS)
+        end = min(len(text), start + target)
         if end < len(text):
             break_at = max(text.rfind("。", start, end), text.rfind("\n", start, end))
-            if break_at > start + CHUNK_TARGET_CHARACTERS // 2:
+            if break_at > start + target // 2:
                 end = break_at + 1
         chunks.append(text[start:end].strip())
         if end >= len(text):
             break
-        start = max(start + 1, end - CHUNK_OVERLAP_CHARACTERS)
+        start = max(start + 1, end - overlap)
     return [item for item in chunks if item]
 
 
-def chunk_document(document: KnowledgeDocument) -> list[KnowledgeChunk]:
+def chunk_document(
+    document: KnowledgeDocument, config: RetrievalConfig | None = None
+) -> list[KnowledgeChunk]:
+    resolved = config or load_retrieval_config()
     sections: list[tuple[str, list[str]]] = []
     current_heading = document.section
     current_lines: list[str] = []
@@ -217,7 +233,7 @@ def chunk_document(document: KnowledgeDocument) -> list[KnowledgeChunk]:
     chunks: list[KnowledgeChunk] = []
     for section, lines in sections:
         text = "\n".join(lines)
-        for fragment in _split_long_text(text):
+        for fragment in _split_long_text(text, resolved):
             chunk_id = f"{document.doc_id}#C{len(chunks) + 1:02d}"
             chunks.append(
                 KnowledgeChunk(
@@ -237,8 +253,12 @@ def load_documents(directory: Path) -> list[KnowledgeDocument]:
     for path in sorted(directory.glob("*.md")):
         content = path.read_text(encoding="utf-8")
         heading = next((line.removeprefix("# ").strip() for line in content.splitlines() if line.startswith("# ")), path.stem)
-        doc_id = path.stem.split("-", 2)
-        stable_id = "-".join(doc_id[:2]) if len(doc_id) >= 2 else path.stem
+        declared_id = heading.split(maxsplit=1)[0]
+        stable_id = (
+            declared_id
+            if re.fullmatch(r"[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+", declared_id)
+            else path.stem
+        )
         documents.append(KnowledgeDocument(stable_id, heading, "运行手册", content, f"knowledge://{path.name}"))
     if not documents:
         raise RuntimeError(f"知识库目录为空：{directory}")
@@ -247,9 +267,15 @@ def load_documents(directory: Path) -> list[KnowledgeDocument]:
 
 class HybridMemoryIndex:
 
-    def __init__(self, chunks: list[KnowledgeChunk], embedding_provider: EmbeddingProvider | None = None) -> None:
+    def __init__(
+        self,
+        chunks: list[KnowledgeChunk],
+        embedding_provider: EmbeddingProvider | None = None,
+        config: RetrievalConfig | None = None,
+    ) -> None:
         self.chunks = chunks
         self.embedding_provider = embedding_provider or FeatureHashingProvider()
+        self.config = config or load_retrieval_config()
         self.name = f"memory-bm25-{self.embedding_provider.name}-rrf"
         self.vector_quality = self.embedding_provider.quality
         self.by_id = {chunk.chunk_id: chunk for chunk in chunks}
@@ -326,28 +352,40 @@ class HybridMemoryIndex:
         scored.sort(key=lambda item: (-item[0], item[1]))
         return [chunk_id for _, chunk_id in scored]
 
-    @staticmethod
     def _rrf(
+        self,
         dense: list[str],
         lexical: list[str],
-        pool: int = 48,
-        dense_weight: float = 0.52,
+        dense_weight: float,
     ) -> list[tuple[float, str]]:
+        pool = self.config.rrf.pool
+        constant = self.config.rrf.constant
         scores: dict[str, float] = {}
         for weight, ranking in (
             (dense_weight, dense),
             (1.0 - dense_weight, lexical),
         ):
+            # A disabled channel must not create zero-score candidates. When
+            # lexical fallback finds nothing and dense weight is intentionally
+            # zero, return no hit instead of normalizing by zero.
+            if weight <= 0:
+                continue
             for rank, chunk_id in enumerate(ranking[:pool], start=1):
-                scores[chunk_id] = scores.get(chunk_id, 0.0) + weight / (60 + rank)
+                scores[chunk_id] = scores.get(chunk_id, 0.0) + weight / (constant + rank)
         ordered = sorted(((score, chunk_id) for chunk_id, score in scores.items()), key=lambda item: (-item[0], item[1]))
-        maximum = ordered[0][0] if ordered else 1.0
+        if not ordered:
+            return []
+        maximum = ordered[0][0]
+        if maximum <= 0:
+            return []
         return [(score / maximum, chunk_id) for score, chunk_id in ordered]
 
     def search(self, query: str, limit: int) -> list[SourceHit]:
         dense = self._dense(query)
         lexical = self._bm25(query)
-        dense_weight = 0.52
+        # Feature hashing is a lexical fallback, not a semantic retriever.  Do
+        # not fuse the same lexical signal twice or expose an uncalibrated weight.
+        dense_weight = 0.0
         if self.embedding_provider.quality == "semantic":
             lexical_strength = self._lexical_strength(
                 query,
@@ -356,7 +394,11 @@ class HybridMemoryIndex:
             # Calibrated on retrieval_eval_v3_1 calibration split. Exact AIOps
             # terms retain deterministic BM25 dominance; oblique paraphrases
             # receive enough dense weight to recover latent intent.
-            dense_weight = 0.25 if lexical_strength < 0.50 else 0.10
+            dense_weight = (
+                self.config.semantic.low_lexical_dense_weight
+                if lexical_strength < self.config.semantic.lexical_threshold
+                else self.config.semantic.high_lexical_dense_weight
+            )
         fused = self._rrf(dense, lexical, dense_weight=dense_weight)
         return [self._to_hit(self.by_id[chunk_id], score) for score, chunk_id in fused[:limit]]
 
@@ -384,8 +426,9 @@ class PgVectorHybridIndex(HybridMemoryIndex):
         database_url: str,
         chunks: list[KnowledgeChunk],
         embedding_provider: EmbeddingProvider | None = None,
+        config: RetrievalConfig | None = None,
     ) -> None:
-        super().__init__(chunks, embedding_provider)
+        super().__init__(chunks, embedding_provider, config)
         self.database_url = database_url
         self.dimensions = len(next(iter(self.embeddings.values())))
         # Embedding dimensions are part of pgvector's column type. A
@@ -475,10 +518,21 @@ class PgVectorHybridIndex(HybridMemoryIndex):
 
 
 class Retriever:
-    def __init__(self, documents: list[KnowledgeDocument], chunks: list[KnowledgeChunk], index: HybridMemoryIndex) -> None:
+    def __init__(
+        self,
+        documents: list[KnowledgeDocument],
+        chunks: list[KnowledgeChunk],
+        index: HybridMemoryIndex,
+        config: RetrievalConfig,
+    ) -> None:
         self.documents = documents
         self.chunks = chunks
         self.index = index
+        self.config = config
+
+    @property
+    def config_hash(self) -> str:
+        return self.config.config_hash
 
     @property
     def backend_name(self) -> str:
@@ -545,9 +599,16 @@ def create_retriever(
     embedding_endpoint: str = "",
     embedding_model: str = "",
     embedding_api_key: str = "",
+    retrieval_config: RetrievalConfig | None = None,
+    retrieval_config_path: Path | None = None,
 ) -> Retriever:
+    config = retrieval_config or load_retrieval_config(retrieval_config_path)
     documents = load_documents(data_dir / "knowledge")
-    chunks = [chunk for document in documents for chunk in chunk_document(document)]
+    chunks = [
+        chunk
+        for document in documents
+        for chunk in chunk_document(document, config)
+    ]
     if embedding_backend == "openai-compatible":
         if not embedding_endpoint or not embedding_model:
             raise ValueError("semantic embedding requires EMBEDDING_ENDPOINT and EMBEDDING_MODEL")
@@ -561,9 +622,14 @@ def create_retriever(
             "EMBEDDING_BACKEND must be 'openai-compatible' or 'lexical-feature-baseline'"
         )
     if vector_backend == "pgvector":
-        index = PgVectorHybridIndex(database_url, chunks, embedding_provider)
+        index = PgVectorHybridIndex(database_url, chunks, embedding_provider, config)
         index.initialize()
-        return Retriever(documents, chunks, index)
+        return Retriever(documents, chunks, index, config)
     if vector_backend != "memory":
         raise ValueError("VECTOR_BACKEND must be 'memory' or 'pgvector'")
-    return Retriever(documents, chunks, HybridMemoryIndex(chunks, embedding_provider))
+    return Retriever(
+        documents,
+        chunks,
+        HybridMemoryIndex(chunks, embedding_provider, config),
+        config,
+    )

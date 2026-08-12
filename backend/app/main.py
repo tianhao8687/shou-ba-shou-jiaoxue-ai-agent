@@ -97,7 +97,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         engine = runtime.engine
         worker = runtime.worker
         evaluator = EvaluationService(
-            resolved.data_dir / "eval_cases_v4.json",
+            resolved.data_dir / "evaluation" / "manifest.json",
             retriever,
             resolved.capability_signing_secret,
             model_adapter,
@@ -305,7 +305,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         _authorize(user, ["admin"])
         lab = request.app.state.inprocess_lab
         if lab is not None:
-            experiment_id, incident = lab.create_experiment(payload.fault_kind)
+            try:
+                experiment_id, incident = lab.create_experiment(payload.fault_kind)
+            except KeyError as exc:
+                raise HTTPException(status_code=404, detail="fault kind is not registered") from exc
             return DrillDescriptor(experiment_id=experiment_id, incident=incident)
         try:
             with httpx.Client(timeout=5.0) as client:
@@ -531,7 +534,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         user: Annotated[UserIdentity, Depends(current_user)],
         live_model: bool = Query(default=False),
         case_limit: int | None = Query(default=None, ge=1, le=120),
-        case_offset: int = Query(default=0, ge=0, le=109),
+        case_offset: int = Query(default=0, ge=0, le=119),
+        split: str = Query(default="development", pattern="^(calibration|development|holdout)$"),
+        final_holdout: bool = Query(default=False),
     ) -> EvaluationReport:
         _authorize(user, ["admin"])
         report = request.app.state.evaluator.run(
@@ -539,6 +544,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             live_model=live_model,
             case_limit=case_limit,
             case_offset=case_offset,
+            split=split,
+            allow_frozen_holdout=final_holdout,
         )
         return request.app.state.store.save_evaluation(report)
 

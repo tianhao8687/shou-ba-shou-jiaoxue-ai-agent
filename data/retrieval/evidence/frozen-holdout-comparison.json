@@ -1,0 +1,5880 @@
+{
+  "schema": "harbor-retrieval-evidence/v1",
+  "generated_at": "2026-08-12T08:32:02.574760+00:00",
+  "git_commit": "e3959c7ea63d3b2a40448b3d2031133838dd83da",
+  "dataset_version": "retrieval-210-v1",
+  "dataset_split": "holdout",
+  "dataset_hash": "57c558a4c1825dcf4acf722d5b72d15faa72657d476d939b73f5b473b693ba84",
+  "query_count": 105,
+  "model": "OpenVINO/Qwen3-Embedding-0.6B-int4-cw-ov",
+  "embedding_provider": "openai-compatible-embedding",
+  "embedding_dimensions": 1024,
+  "retrieval_config": {
+    "schema": "harbor-retrieval-config/v1",
+    "chunk": {
+      "target_characters": 960,
+      "overlap_characters": 0
+    },
+    "rrf": {
+      "pool": 16,
+      "constant": 30
+    },
+    "semantic": {
+      "lexical_threshold": 0.5,
+      "low_lexical_dense_weight": 1.0,
+      "high_lexical_dense_weight": 0.9
+    }
+  },
+  "retrieval_config_hash": "baf4d50eb8bffecd22030dd43bf579b417f3ac5d05b8b6092f81417834e7f731",
+  "metrics": {
+    "bm25": {
+      "mode": "bm25",
+      "query_count": 105,
+      "recall_at_3": 0.9333,
+      "recall_at_5": 0.9714,
+      "mrr": 0.7508,
+      "ndcg": 0.8065,
+      "latency_ms": {
+        "mean": 0.134,
+        "p50": 0.127,
+        "p95": 0.204,
+        "max": 0.256
+      },
+      "category_breakdown": {
+        "error_code": {
+          "query_count": 15,
+          "recall_at_3": 0.8,
+          "recall_at_5": 0.8
+        },
+        "exact_identifier": {
+          "query_count": 15,
+          "recall_at_3": 0.7333,
+          "recall_at_5": 1.0
+        },
+        "misleading_keyword": {
+          "query_count": 15,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        "multi_symptom": {
+          "query_count": 15,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        "natural_language_paraphrase": {
+          "query_count": 15,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        "synonym": {
+          "query_count": 15,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        "weak_lexical_overlap": {
+          "query_count": 15,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        }
+      },
+      "results": [
+        {
+          "id": "ret-exact_identifier-002",
+          "category": "exact_identifier",
+          "expected_docs": [
+            "RB-310"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-WS-501",
+            "RB-203",
+            "RB-101",
+            "RB-104"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.171
+        },
+        {
+          "id": "ret-exact_identifier-004",
+          "category": "exact_identifier",
+          "expected_docs": [
+            "RB-104"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-WS-501",
+            "RB-104",
+            "RB-203",
+            "RB-101"
+          ],
+          "first_relevant_rank": 3,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.084
+        },
+        {
+          "id": "ret-exact_identifier-006",
+          "category": "exact_identifier",
+          "expected_docs": [
+            "OPS-12"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-WS-501",
+            "RB-203",
+            "OPS-12",
+            "RB-101"
+          ],
+          "first_relevant_rank": 4,
+          "recall_at_3": 0.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.085
+        },
+        {
+          "id": "ret-exact_identifier-008",
+          "category": "exact_identifier",
+          "expected_docs": [
+            "RB-WS-501"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "RB-310",
+            "RB-203",
+            "RB-101",
+            "RB-104"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.084
+        },
+        {
+          "id": "ret-exact_identifier-010",
+          "category": "exact_identifier",
+          "expected_docs": [
+            "RB-310"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-WS-501",
+            "RB-203",
+            "RB-101",
+            "RB-104"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.077
+        },
+        {
+          "id": "ret-exact_identifier-012",
+          "category": "exact_identifier",
+          "expected_docs": [
+            "RB-104"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-WS-501",
+            "RB-104",
+            "RB-203",
+            "RB-101"
+          ],
+          "first_relevant_rank": 3,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.07
+        },
+        {
+          "id": "ret-exact_identifier-014",
+          "category": "exact_identifier",
+          "expected_docs": [
+            "OPS-12"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-WS-501",
+            "RB-203",
+            "OPS-12",
+            "RB-101"
+          ],
+          "first_relevant_rank": 4,
+          "recall_at_3": 0.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.074
+        },
+        {
+          "id": "ret-exact_identifier-016",
+          "category": "exact_identifier",
+          "expected_docs": [
+            "RB-WS-501"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "RB-310",
+            "RB-203",
+            "RB-101",
+            "RB-104"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.072
+        },
+        {
+          "id": "ret-exact_identifier-018",
+          "category": "exact_identifier",
+          "expected_docs": [
+            "RB-310"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-WS-501",
+            "RB-203",
+            "RB-101",
+            "RB-104"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.076
+        },
+        {
+          "id": "ret-exact_identifier-020",
+          "category": "exact_identifier",
+          "expected_docs": [
+            "RB-104"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-WS-501",
+            "RB-104",
+            "RB-203",
+            "RB-101"
+          ],
+          "first_relevant_rank": 3,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.069
+        },
+        {
+          "id": "ret-exact_identifier-022",
+          "category": "exact_identifier",
+          "expected_docs": [
+            "OPS-12"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-WS-501",
+            "RB-203",
+            "OPS-12",
+            "RB-101"
+          ],
+          "first_relevant_rank": 4,
+          "recall_at_3": 0.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.073
+        },
+        {
+          "id": "ret-exact_identifier-024",
+          "category": "exact_identifier",
+          "expected_docs": [
+            "RB-WS-501"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "RB-310",
+            "RB-203",
+            "RB-101",
+            "RB-104"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.071
+        },
+        {
+          "id": "ret-exact_identifier-026",
+          "category": "exact_identifier",
+          "expected_docs": [
+            "RB-310"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-WS-501",
+            "RB-203",
+            "RB-101",
+            "RB-104"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.073
+        },
+        {
+          "id": "ret-exact_identifier-028",
+          "category": "exact_identifier",
+          "expected_docs": [
+            "RB-104"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-WS-501",
+            "RB-104",
+            "RB-203",
+            "RB-101"
+          ],
+          "first_relevant_rank": 3,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.069
+        },
+        {
+          "id": "ret-exact_identifier-030",
+          "category": "exact_identifier",
+          "expected_docs": [
+            "OPS-12"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-WS-501",
+            "RB-203",
+            "OPS-12",
+            "RB-101"
+          ],
+          "first_relevant_rank": 4,
+          "recall_at_3": 0.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.071
+        },
+        {
+          "id": "ret-error_code-002",
+          "category": "error_code",
+          "expected_docs": [
+            "RB-429"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-429",
+            "RB-WS-501",
+            "RB-203",
+            "RB-101"
+          ],
+          "first_relevant_rank": 2,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.086
+        },
+        {
+          "id": "ret-error_code-004",
+          "category": "error_code",
+          "expected_docs": [
+            "RB-203"
+          ],
+          "top5": [
+            "RB-203",
+            "RB-310",
+            "RB-WS-501",
+            "RB-429",
+            "RB-101"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.102
+        },
+        {
+          "id": "ret-error_code-006",
+          "category": "error_code",
+          "expected_docs": [
+            "RB-101"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-WS-501",
+            "RB-101",
+            "RB-203",
+            "RB-104"
+          ],
+          "first_relevant_rank": 3,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.088
+        },
+        {
+          "id": "ret-error_code-008",
+          "category": "error_code",
+          "expected_docs": [
+            "SEC-07"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-WS-501",
+            "RB-203",
+            "RB-101",
+            "RB-104"
+          ],
+          "first_relevant_rank": null,
+          "recall_at_3": 0.0,
+          "recall_at_5": 0.0,
+          "latency_ms": 0.068
+        },
+        {
+          "id": "ret-error_code-010",
+          "category": "error_code",
+          "expected_docs": [
+            "RB-429"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-429",
+            "RB-WS-501",
+            "RB-203",
+            "RB-101"
+          ],
+          "first_relevant_rank": 2,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.078
+        },
+        {
+          "id": "ret-error_code-012",
+          "category": "error_code",
+          "expected_docs": [
+            "RB-203"
+          ],
+          "top5": [
+            "RB-203",
+            "RB-310",
+            "RB-WS-501",
+            "RB-429",
+            "RB-101"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.077
+        },
+        {
+          "id": "ret-error_code-014",
+          "category": "error_code",
+          "expected_docs": [
+            "RB-101"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-WS-501",
+            "RB-101",
+            "RB-203",
+            "RB-104"
+          ],
+          "first_relevant_rank": 3,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.078
+        },
+        {
+          "id": "ret-error_code-016",
+          "category": "error_code",
+          "expected_docs": [
+            "SEC-07"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-WS-501",
+            "RB-203",
+            "RB-101",
+            "RB-104"
+          ],
+          "first_relevant_rank": null,
+          "recall_at_3": 0.0,
+          "recall_at_5": 0.0,
+          "latency_ms": 0.066
+        },
+        {
+          "id": "ret-error_code-018",
+          "category": "error_code",
+          "expected_docs": [
+            "RB-429"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-429",
+            "RB-WS-501",
+            "RB-203",
+            "RB-101"
+          ],
+          "first_relevant_rank": 2,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.088
+        },
+        {
+          "id": "ret-error_code-020",
+          "category": "error_code",
+          "expected_docs": [
+            "RB-203"
+          ],
+          "top5": [
+            "RB-203",
+            "RB-310",
+            "RB-WS-501",
+            "RB-429",
+            "RB-101"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.077
+        },
+        {
+          "id": "ret-error_code-022",
+          "category": "error_code",
+          "expected_docs": [
+            "RB-101"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-WS-501",
+            "RB-101",
+            "RB-203",
+            "RB-104"
+          ],
+          "first_relevant_rank": 3,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.077
+        },
+        {
+          "id": "ret-error_code-024",
+          "category": "error_code",
+          "expected_docs": [
+            "SEC-07"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-WS-501",
+            "RB-203",
+            "RB-101",
+            "RB-104"
+          ],
+          "first_relevant_rank": null,
+          "recall_at_3": 0.0,
+          "recall_at_5": 0.0,
+          "latency_ms": 0.065
+        },
+        {
+          "id": "ret-error_code-026",
+          "category": "error_code",
+          "expected_docs": [
+            "RB-429"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-429",
+            "RB-WS-501",
+            "RB-203",
+            "RB-101"
+          ],
+          "first_relevant_rank": 2,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.077
+        },
+        {
+          "id": "ret-error_code-028",
+          "category": "error_code",
+          "expected_docs": [
+            "RB-203"
+          ],
+          "top5": [
+            "RB-203",
+            "RB-310",
+            "RB-WS-501",
+            "RB-429",
+            "RB-101"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.081
+        },
+        {
+          "id": "ret-error_code-030",
+          "category": "error_code",
+          "expected_docs": [
+            "RB-101"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-WS-501",
+            "RB-101",
+            "RB-203",
+            "RB-104"
+          ],
+          "first_relevant_rank": 3,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.079
+        },
+        {
+          "id": "ret-natural_language_paraphrase-002",
+          "category": "natural_language_paraphrase",
+          "expected_docs": [
+            "RB-WS-501"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "RB-310",
+            "RB-101",
+            "RB-104",
+            "RB-203"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.216
+        },
+        {
+          "id": "ret-natural_language_paraphrase-004",
+          "category": "natural_language_paraphrase",
+          "expected_docs": [
+            "RB-310"
+          ],
+          "top5": [
+            "RB-310",
+            "SEC-07",
+            "RB-104",
+            "OPS-12",
+            "RB-WS-501"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.192
+        },
+        {
+          "id": "ret-natural_language_paraphrase-006",
+          "category": "natural_language_paraphrase",
+          "expected_docs": [
+            "RB-104"
+          ],
+          "top5": [
+            "RB-104",
+            "RB-203",
+            "RB-310",
+            "RB-WS-501",
+            "RB-101"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.213
+        },
+        {
+          "id": "ret-natural_language_paraphrase-008",
+          "category": "natural_language_paraphrase",
+          "expected_docs": [
+            "OPS-12"
+          ],
+          "top5": [
+            "RB-429",
+            "OPS-12",
+            "RB-WS-501",
+            "SEC-07",
+            "RB-310"
+          ],
+          "first_relevant_rank": 2,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.197
+        },
+        {
+          "id": "ret-natural_language_paraphrase-010",
+          "category": "natural_language_paraphrase",
+          "expected_docs": [
+            "RB-WS-501"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "RB-310",
+            "RB-101",
+            "RB-104",
+            "RB-203"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.201
+        },
+        {
+          "id": "ret-natural_language_paraphrase-012",
+          "category": "natural_language_paraphrase",
+          "expected_docs": [
+            "RB-310"
+          ],
+          "top5": [
+            "RB-310",
+            "SEC-07",
+            "RB-104",
+            "OPS-12",
+            "RB-WS-501"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.175
+        },
+        {
+          "id": "ret-natural_language_paraphrase-014",
+          "category": "natural_language_paraphrase",
+          "expected_docs": [
+            "RB-104"
+          ],
+          "top5": [
+            "RB-104",
+            "RB-203",
+            "RB-310",
+            "RB-WS-501",
+            "RB-101"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.197
+        },
+        {
+          "id": "ret-natural_language_paraphrase-016",
+          "category": "natural_language_paraphrase",
+          "expected_docs": [
+            "OPS-12"
+          ],
+          "top5": [
+            "RB-429",
+            "OPS-12",
+            "RB-WS-501",
+            "SEC-07",
+            "RB-310"
+          ],
+          "first_relevant_rank": 2,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.189
+        },
+        {
+          "id": "ret-natural_language_paraphrase-018",
+          "category": "natural_language_paraphrase",
+          "expected_docs": [
+            "RB-WS-501"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "RB-310",
+            "RB-101",
+            "RB-104",
+            "RB-203"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.191
+        },
+        {
+          "id": "ret-natural_language_paraphrase-020",
+          "category": "natural_language_paraphrase",
+          "expected_docs": [
+            "RB-310"
+          ],
+          "top5": [
+            "RB-310",
+            "SEC-07",
+            "RB-104",
+            "OPS-12",
+            "RB-WS-501"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.176
+        },
+        {
+          "id": "ret-natural_language_paraphrase-022",
+          "category": "natural_language_paraphrase",
+          "expected_docs": [
+            "RB-104"
+          ],
+          "top5": [
+            "RB-104",
+            "RB-203",
+            "RB-310",
+            "RB-WS-501",
+            "RB-101"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.198
+        },
+        {
+          "id": "ret-natural_language_paraphrase-024",
+          "category": "natural_language_paraphrase",
+          "expected_docs": [
+            "OPS-12"
+          ],
+          "top5": [
+            "RB-429",
+            "OPS-12",
+            "RB-WS-501",
+            "SEC-07",
+            "RB-310"
+          ],
+          "first_relevant_rank": 2,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.191
+        },
+        {
+          "id": "ret-natural_language_paraphrase-026",
+          "category": "natural_language_paraphrase",
+          "expected_docs": [
+            "RB-WS-501"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "RB-310",
+            "RB-101",
+            "RB-104",
+            "RB-203"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.192
+        },
+        {
+          "id": "ret-natural_language_paraphrase-028",
+          "category": "natural_language_paraphrase",
+          "expected_docs": [
+            "RB-310"
+          ],
+          "top5": [
+            "RB-310",
+            "SEC-07",
+            "RB-104",
+            "OPS-12",
+            "RB-WS-501"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.175
+        },
+        {
+          "id": "ret-natural_language_paraphrase-030",
+          "category": "natural_language_paraphrase",
+          "expected_docs": [
+            "RB-104"
+          ],
+          "top5": [
+            "RB-104",
+            "RB-203",
+            "RB-310",
+            "RB-WS-501",
+            "RB-101"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.194
+        },
+        {
+          "id": "ret-synonym-002",
+          "category": "synonym",
+          "expected_docs": [
+            "SEC-07"
+          ],
+          "top5": [
+            "RB-104",
+            "SEC-07",
+            "RB-310",
+            "RB-203",
+            "RB-WS-501"
+          ],
+          "first_relevant_rank": 2,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.133
+        },
+        {
+          "id": "ret-synonym-004",
+          "category": "synonym",
+          "expected_docs": [
+            "RB-429"
+          ],
+          "top5": [
+            "RB-429",
+            "RB-WS-501",
+            "RB-104",
+            "RB-310",
+            "OPS-12"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.126
+        },
+        {
+          "id": "ret-synonym-006",
+          "category": "synonym",
+          "expected_docs": [
+            "RB-203"
+          ],
+          "top5": [
+            "RB-203",
+            "RB-WS-501",
+            "RB-310",
+            "RB-101",
+            "RB-104"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.116
+        },
+        {
+          "id": "ret-synonym-008",
+          "category": "synonym",
+          "expected_docs": [
+            "RB-101"
+          ],
+          "top5": [
+            "RB-101",
+            "RB-310",
+            "RB-WS-501",
+            "RB-203",
+            "RB-429"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.111
+        },
+        {
+          "id": "ret-synonym-010",
+          "category": "synonym",
+          "expected_docs": [
+            "SEC-07"
+          ],
+          "top5": [
+            "RB-104",
+            "SEC-07",
+            "RB-310",
+            "RB-203",
+            "RB-WS-501"
+          ],
+          "first_relevant_rank": 2,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.125
+        },
+        {
+          "id": "ret-synonym-012",
+          "category": "synonym",
+          "expected_docs": [
+            "RB-429"
+          ],
+          "top5": [
+            "RB-429",
+            "RB-WS-501",
+            "RB-104",
+            "RB-310",
+            "OPS-12"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.123
+        },
+        {
+          "id": "ret-synonym-014",
+          "category": "synonym",
+          "expected_docs": [
+            "RB-203"
+          ],
+          "top5": [
+            "RB-203",
+            "RB-WS-501",
+            "RB-310",
+            "RB-101",
+            "RB-104"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.112
+        },
+        {
+          "id": "ret-synonym-016",
+          "category": "synonym",
+          "expected_docs": [
+            "RB-101"
+          ],
+          "top5": [
+            "RB-101",
+            "RB-310",
+            "RB-WS-501",
+            "RB-203",
+            "RB-429"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.113
+        },
+        {
+          "id": "ret-synonym-018",
+          "category": "synonym",
+          "expected_docs": [
+            "SEC-07"
+          ],
+          "top5": [
+            "RB-104",
+            "SEC-07",
+            "RB-310",
+            "RB-203",
+            "RB-WS-501"
+          ],
+          "first_relevant_rank": 2,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.125
+        },
+        {
+          "id": "ret-synonym-020",
+          "category": "synonym",
+          "expected_docs": [
+            "RB-429"
+          ],
+          "top5": [
+            "RB-429",
+            "RB-WS-501",
+            "RB-104",
+            "RB-310",
+            "OPS-12"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.142
+        },
+        {
+          "id": "ret-synonym-022",
+          "category": "synonym",
+          "expected_docs": [
+            "RB-203"
+          ],
+          "top5": [
+            "RB-203",
+            "RB-WS-501",
+            "RB-310",
+            "RB-101",
+            "RB-104"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.145
+        },
+        {
+          "id": "ret-synonym-024",
+          "category": "synonym",
+          "expected_docs": [
+            "RB-101"
+          ],
+          "top5": [
+            "RB-101",
+            "RB-310",
+            "RB-WS-501",
+            "RB-203",
+            "RB-429"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.137
+        },
+        {
+          "id": "ret-synonym-026",
+          "category": "synonym",
+          "expected_docs": [
+            "SEC-07"
+          ],
+          "top5": [
+            "RB-104",
+            "SEC-07",
+            "RB-310",
+            "RB-203",
+            "RB-WS-501"
+          ],
+          "first_relevant_rank": 2,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.127
+        },
+        {
+          "id": "ret-synonym-028",
+          "category": "synonym",
+          "expected_docs": [
+            "RB-429"
+          ],
+          "top5": [
+            "RB-429",
+            "RB-WS-501",
+            "RB-104",
+            "RB-310",
+            "OPS-12"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.19
+        },
+        {
+          "id": "ret-synonym-030",
+          "category": "synonym",
+          "expected_docs": [
+            "RB-203"
+          ],
+          "top5": [
+            "RB-203",
+            "RB-WS-501",
+            "RB-310",
+            "RB-101",
+            "RB-104"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.189
+        },
+        {
+          "id": "ret-misleading_keyword-002",
+          "category": "misleading_keyword",
+          "expected_docs": [
+            "OPS-12"
+          ],
+          "top5": [
+            "OPS-12",
+            "RB-429",
+            "RB-310",
+            "RB-WS-501",
+            "RB-101"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.217
+        },
+        {
+          "id": "ret-misleading_keyword-004",
+          "category": "misleading_keyword",
+          "expected_docs": [
+            "RB-WS-501"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "RB-104",
+            "RB-429",
+            "RB-310",
+            "RB-101"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.186
+        },
+        {
+          "id": "ret-misleading_keyword-006",
+          "category": "misleading_keyword",
+          "expected_docs": [
+            "RB-310"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-203",
+            "RB-101",
+            "RB-WS-501",
+            "RB-429"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.183
+        },
+        {
+          "id": "ret-misleading_keyword-008",
+          "category": "misleading_keyword",
+          "expected_docs": [
+            "RB-104"
+          ],
+          "top5": [
+            "RB-429",
+            "RB-WS-501",
+            "RB-104",
+            "RB-101",
+            "RB-310"
+          ],
+          "first_relevant_rank": 3,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.126
+        },
+        {
+          "id": "ret-misleading_keyword-010",
+          "category": "misleading_keyword",
+          "expected_docs": [
+            "OPS-12"
+          ],
+          "top5": [
+            "OPS-12",
+            "RB-429",
+            "RB-310",
+            "RB-WS-501",
+            "RB-101"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.155
+        },
+        {
+          "id": "ret-misleading_keyword-012",
+          "category": "misleading_keyword",
+          "expected_docs": [
+            "RB-WS-501"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "RB-104",
+            "RB-429",
+            "RB-310",
+            "RB-101"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.117
+        },
+        {
+          "id": "ret-misleading_keyword-014",
+          "category": "misleading_keyword",
+          "expected_docs": [
+            "RB-310"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-203",
+            "RB-101",
+            "RB-WS-501",
+            "RB-429"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.158
+        },
+        {
+          "id": "ret-misleading_keyword-016",
+          "category": "misleading_keyword",
+          "expected_docs": [
+            "RB-104"
+          ],
+          "top5": [
+            "RB-429",
+            "RB-WS-501",
+            "RB-104",
+            "RB-101",
+            "RB-310"
+          ],
+          "first_relevant_rank": 3,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.121
+        },
+        {
+          "id": "ret-misleading_keyword-018",
+          "category": "misleading_keyword",
+          "expected_docs": [
+            "OPS-12"
+          ],
+          "top5": [
+            "OPS-12",
+            "RB-429",
+            "RB-310",
+            "RB-WS-501",
+            "RB-101"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.138
+        },
+        {
+          "id": "ret-misleading_keyword-020",
+          "category": "misleading_keyword",
+          "expected_docs": [
+            "RB-WS-501"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "RB-104",
+            "RB-429",
+            "RB-310",
+            "RB-101"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.11
+        },
+        {
+          "id": "ret-misleading_keyword-022",
+          "category": "misleading_keyword",
+          "expected_docs": [
+            "RB-310"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-203",
+            "RB-101",
+            "RB-WS-501",
+            "RB-429"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.141
+        },
+        {
+          "id": "ret-misleading_keyword-024",
+          "category": "misleading_keyword",
+          "expected_docs": [
+            "RB-104"
+          ],
+          "top5": [
+            "RB-429",
+            "RB-WS-501",
+            "RB-104",
+            "RB-101",
+            "RB-310"
+          ],
+          "first_relevant_rank": 3,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.145
+        },
+        {
+          "id": "ret-misleading_keyword-026",
+          "category": "misleading_keyword",
+          "expected_docs": [
+            "OPS-12"
+          ],
+          "top5": [
+            "OPS-12",
+            "RB-429",
+            "RB-310",
+            "RB-WS-501",
+            "RB-101"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.217
+        },
+        {
+          "id": "ret-misleading_keyword-028",
+          "category": "misleading_keyword",
+          "expected_docs": [
+            "RB-WS-501"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "RB-104",
+            "RB-429",
+            "RB-310",
+            "RB-101"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.127
+        },
+        {
+          "id": "ret-misleading_keyword-030",
+          "category": "misleading_keyword",
+          "expected_docs": [
+            "RB-310"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-203",
+            "RB-101",
+            "RB-WS-501",
+            "RB-429"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.139
+        },
+        {
+          "id": "ret-multi_symptom-002",
+          "category": "multi_symptom",
+          "expected_docs": [
+            "RB-101"
+          ],
+          "top5": [
+            "RB-101",
+            "RB-429",
+            "RB-310",
+            "RB-WS-501",
+            "RB-104"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.139
+        },
+        {
+          "id": "ret-multi_symptom-004",
+          "category": "multi_symptom",
+          "expected_docs": [
+            "SEC-07"
+          ],
+          "top5": [
+            "RB-310",
+            "SEC-07",
+            "RB-104",
+            "RB-429",
+            "RB-WS-501"
+          ],
+          "first_relevant_rank": 2,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.119
+        },
+        {
+          "id": "ret-multi_symptom-006",
+          "category": "multi_symptom",
+          "expected_docs": [
+            "RB-429"
+          ],
+          "top5": [
+            "RB-429",
+            "RB-101",
+            "RB-104",
+            "OPS-12",
+            "SEC-07"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.131
+        },
+        {
+          "id": "ret-multi_symptom-008",
+          "category": "multi_symptom",
+          "expected_docs": [
+            "RB-203"
+          ],
+          "top5": [
+            "RB-203",
+            "RB-429",
+            "RB-101",
+            "RB-310",
+            "RB-WS-501"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.114
+        },
+        {
+          "id": "ret-multi_symptom-010",
+          "category": "multi_symptom",
+          "expected_docs": [
+            "RB-101"
+          ],
+          "top5": [
+            "RB-101",
+            "RB-429",
+            "RB-310",
+            "RB-WS-501",
+            "RB-104"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.11
+        },
+        {
+          "id": "ret-multi_symptom-012",
+          "category": "multi_symptom",
+          "expected_docs": [
+            "SEC-07"
+          ],
+          "top5": [
+            "RB-310",
+            "SEC-07",
+            "RB-104",
+            "RB-429",
+            "RB-WS-501"
+          ],
+          "first_relevant_rank": 2,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.121
+        },
+        {
+          "id": "ret-multi_symptom-014",
+          "category": "multi_symptom",
+          "expected_docs": [
+            "RB-429"
+          ],
+          "top5": [
+            "RB-429",
+            "RB-101",
+            "RB-104",
+            "OPS-12",
+            "SEC-07"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.127
+        },
+        {
+          "id": "ret-multi_symptom-016",
+          "category": "multi_symptom",
+          "expected_docs": [
+            "RB-203"
+          ],
+          "top5": [
+            "RB-203",
+            "RB-429",
+            "RB-101",
+            "RB-310",
+            "RB-WS-501"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.108
+        },
+        {
+          "id": "ret-multi_symptom-018",
+          "category": "multi_symptom",
+          "expected_docs": [
+            "RB-101"
+          ],
+          "top5": [
+            "RB-101",
+            "RB-429",
+            "RB-310",
+            "RB-WS-501",
+            "RB-104"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.128
+        },
+        {
+          "id": "ret-multi_symptom-020",
+          "category": "multi_symptom",
+          "expected_docs": [
+            "SEC-07"
+          ],
+          "top5": [
+            "RB-310",
+            "SEC-07",
+            "RB-104",
+            "RB-429",
+            "RB-WS-501"
+          ],
+          "first_relevant_rank": 2,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.175
+        },
+        {
+          "id": "ret-multi_symptom-022",
+          "category": "multi_symptom",
+          "expected_docs": [
+            "RB-429"
+          ],
+          "top5": [
+            "RB-429",
+            "RB-101",
+            "RB-104",
+            "OPS-12",
+            "SEC-07"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.167
+        },
+        {
+          "id": "ret-multi_symptom-024",
+          "category": "multi_symptom",
+          "expected_docs": [
+            "RB-203"
+          ],
+          "top5": [
+            "RB-203",
+            "RB-429",
+            "RB-101",
+            "RB-310",
+            "RB-WS-501"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.132
+        },
+        {
+          "id": "ret-multi_symptom-026",
+          "category": "multi_symptom",
+          "expected_docs": [
+            "RB-101"
+          ],
+          "top5": [
+            "RB-101",
+            "RB-429",
+            "RB-310",
+            "RB-WS-501",
+            "RB-104"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.155
+        },
+        {
+          "id": "ret-multi_symptom-028",
+          "category": "multi_symptom",
+          "expected_docs": [
+            "SEC-07"
+          ],
+          "top5": [
+            "RB-310",
+            "SEC-07",
+            "RB-104",
+            "RB-429",
+            "RB-WS-501"
+          ],
+          "first_relevant_rank": 2,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.115
+        },
+        {
+          "id": "ret-multi_symptom-030",
+          "category": "multi_symptom",
+          "expected_docs": [
+            "RB-429"
+          ],
+          "top5": [
+            "RB-429",
+            "RB-101",
+            "RB-104",
+            "OPS-12",
+            "SEC-07"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.127
+        },
+        {
+          "id": "ret-weak_lexical_overlap-002",
+          "category": "weak_lexical_overlap",
+          "expected_docs": [
+            "RB-104"
+          ],
+          "top5": [
+            "RB-104",
+            "RB-101",
+            "RB-WS-501",
+            "RB-310",
+            "SEC-07"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.169
+        },
+        {
+          "id": "ret-weak_lexical_overlap-004",
+          "category": "weak_lexical_overlap",
+          "expected_docs": [
+            "OPS-12"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "RB-104",
+            "OPS-12",
+            "RB-310",
+            "RB-203"
+          ],
+          "first_relevant_rank": 3,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.204
+        },
+        {
+          "id": "ret-weak_lexical_overlap-006",
+          "category": "weak_lexical_overlap",
+          "expected_docs": [
+            "RB-WS-501"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-104",
+            "RB-WS-501",
+            "RB-429",
+            "RB-101"
+          ],
+          "first_relevant_rank": 3,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.149
+        },
+        {
+          "id": "ret-weak_lexical_overlap-008",
+          "category": "weak_lexical_overlap",
+          "expected_docs": [
+            "RB-310"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-203",
+            "SEC-07",
+            "RB-WS-501",
+            "RB-429"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.185
+        },
+        {
+          "id": "ret-weak_lexical_overlap-010",
+          "category": "weak_lexical_overlap",
+          "expected_docs": [
+            "RB-104"
+          ],
+          "top5": [
+            "RB-104",
+            "RB-101",
+            "RB-WS-501",
+            "RB-310",
+            "SEC-07"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.174
+        },
+        {
+          "id": "ret-weak_lexical_overlap-012",
+          "category": "weak_lexical_overlap",
+          "expected_docs": [
+            "OPS-12"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "RB-104",
+            "OPS-12",
+            "RB-310",
+            "RB-203"
+          ],
+          "first_relevant_rank": 3,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.176
+        },
+        {
+          "id": "ret-weak_lexical_overlap-014",
+          "category": "weak_lexical_overlap",
+          "expected_docs": [
+            "RB-WS-501"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-104",
+            "RB-WS-501",
+            "RB-429",
+            "RB-101"
+          ],
+          "first_relevant_rank": 3,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.123
+        },
+        {
+          "id": "ret-weak_lexical_overlap-016",
+          "category": "weak_lexical_overlap",
+          "expected_docs": [
+            "RB-310"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-203",
+            "SEC-07",
+            "RB-WS-501",
+            "RB-429"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.112
+        },
+        {
+          "id": "ret-weak_lexical_overlap-018",
+          "category": "weak_lexical_overlap",
+          "expected_docs": [
+            "RB-104"
+          ],
+          "top5": [
+            "RB-104",
+            "RB-101",
+            "RB-WS-501",
+            "RB-310",
+            "SEC-07"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.113
+        },
+        {
+          "id": "ret-weak_lexical_overlap-020",
+          "category": "weak_lexical_overlap",
+          "expected_docs": [
+            "OPS-12"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "RB-104",
+            "OPS-12",
+            "RB-310",
+            "RB-203"
+          ],
+          "first_relevant_rank": 3,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.129
+        },
+        {
+          "id": "ret-weak_lexical_overlap-022",
+          "category": "weak_lexical_overlap",
+          "expected_docs": [
+            "RB-WS-501"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-104",
+            "RB-WS-501",
+            "RB-429",
+            "RB-101"
+          ],
+          "first_relevant_rank": 3,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.256
+        },
+        {
+          "id": "ret-weak_lexical_overlap-024",
+          "category": "weak_lexical_overlap",
+          "expected_docs": [
+            "RB-310"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-203",
+            "SEC-07",
+            "RB-WS-501",
+            "RB-429"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.176
+        },
+        {
+          "id": "ret-weak_lexical_overlap-026",
+          "category": "weak_lexical_overlap",
+          "expected_docs": [
+            "RB-104"
+          ],
+          "top5": [
+            "RB-104",
+            "RB-101",
+            "RB-WS-501",
+            "RB-310",
+            "SEC-07"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.15
+        },
+        {
+          "id": "ret-weak_lexical_overlap-028",
+          "category": "weak_lexical_overlap",
+          "expected_docs": [
+            "OPS-12"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "RB-104",
+            "OPS-12",
+            "RB-310",
+            "RB-203"
+          ],
+          "first_relevant_rank": 3,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.159
+        },
+        {
+          "id": "ret-weak_lexical_overlap-030",
+          "category": "weak_lexical_overlap",
+          "expected_docs": [
+            "RB-WS-501"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-104",
+            "RB-WS-501",
+            "RB-429",
+            "RB-101"
+          ],
+          "first_relevant_rank": 3,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 0.189
+        }
+      ]
+    },
+    "embedding": {
+      "mode": "embedding",
+      "query_count": 105,
+      "recall_at_3": 0.9714,
+      "recall_at_5": 1.0,
+      "mrr": 0.8865,
+      "ndcg": 0.9157,
+      "latency_ms": {
+        "mean": 1.595,
+        "p50": 1.439,
+        "p95": 2.052,
+        "max": 6.919
+      },
+      "category_breakdown": {
+        "error_code": {
+          "query_count": 15,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        "exact_identifier": {
+          "query_count": 15,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        "misleading_keyword": {
+          "query_count": 15,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        "multi_symptom": {
+          "query_count": 15,
+          "recall_at_3": 0.8,
+          "recall_at_5": 1.0
+        },
+        "natural_language_paraphrase": {
+          "query_count": 15,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        "synonym": {
+          "query_count": 15,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        "weak_lexical_overlap": {
+          "query_count": 15,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        }
+      },
+      "results": [
+        {
+          "id": "ret-exact_identifier-002",
+          "category": "exact_identifier",
+          "expected_docs": [
+            "RB-310"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-101",
+            "RB-WS-501",
+            "RB-203",
+            "RB-429"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 2.027
+        },
+        {
+          "id": "ret-exact_identifier-004",
+          "category": "exact_identifier",
+          "expected_docs": [
+            "RB-104"
+          ],
+          "top5": [
+            "RB-104",
+            "RB-310",
+            "RB-101",
+            "RB-WS-501",
+            "OPS-12"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.405
+        },
+        {
+          "id": "ret-exact_identifier-006",
+          "category": "exact_identifier",
+          "expected_docs": [
+            "OPS-12"
+          ],
+          "top5": [
+            "OPS-12",
+            "RB-101",
+            "RB-104",
+            "RB-WS-501",
+            "RB-310"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.439
+        },
+        {
+          "id": "ret-exact_identifier-008",
+          "category": "exact_identifier",
+          "expected_docs": [
+            "RB-WS-501"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "RB-310",
+            "RB-101",
+            "OPS-12",
+            "RB-104"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.501
+        },
+        {
+          "id": "ret-exact_identifier-010",
+          "category": "exact_identifier",
+          "expected_docs": [
+            "RB-310"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-101",
+            "RB-WS-501",
+            "RB-203",
+            "RB-104"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.318
+        },
+        {
+          "id": "ret-exact_identifier-012",
+          "category": "exact_identifier",
+          "expected_docs": [
+            "RB-104"
+          ],
+          "top5": [
+            "RB-104",
+            "RB-310",
+            "RB-101",
+            "RB-WS-501",
+            "OPS-12"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.482
+        },
+        {
+          "id": "ret-exact_identifier-014",
+          "category": "exact_identifier",
+          "expected_docs": [
+            "OPS-12"
+          ],
+          "top5": [
+            "OPS-12",
+            "RB-101",
+            "RB-104",
+            "RB-WS-501",
+            "RB-310"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.54
+        },
+        {
+          "id": "ret-exact_identifier-016",
+          "category": "exact_identifier",
+          "expected_docs": [
+            "RB-WS-501"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "RB-310",
+            "RB-101",
+            "OPS-12",
+            "RB-104"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.43
+        },
+        {
+          "id": "ret-exact_identifier-018",
+          "category": "exact_identifier",
+          "expected_docs": [
+            "RB-310"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-WS-501",
+            "RB-101",
+            "RB-203",
+            "RB-429"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.431
+        },
+        {
+          "id": "ret-exact_identifier-020",
+          "category": "exact_identifier",
+          "expected_docs": [
+            "RB-104"
+          ],
+          "top5": [
+            "RB-104",
+            "RB-310",
+            "RB-101",
+            "RB-WS-501",
+            "OPS-12"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.342
+        },
+        {
+          "id": "ret-exact_identifier-022",
+          "category": "exact_identifier",
+          "expected_docs": [
+            "OPS-12"
+          ],
+          "top5": [
+            "OPS-12",
+            "RB-101",
+            "RB-104",
+            "RB-WS-501",
+            "RB-310"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.689
+        },
+        {
+          "id": "ret-exact_identifier-024",
+          "category": "exact_identifier",
+          "expected_docs": [
+            "RB-WS-501"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "RB-310",
+            "RB-101",
+            "OPS-12",
+            "RB-104"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.587
+        },
+        {
+          "id": "ret-exact_identifier-026",
+          "category": "exact_identifier",
+          "expected_docs": [
+            "RB-310"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-WS-501",
+            "RB-101",
+            "RB-203",
+            "RB-429"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.808
+        },
+        {
+          "id": "ret-exact_identifier-028",
+          "category": "exact_identifier",
+          "expected_docs": [
+            "RB-104"
+          ],
+          "top5": [
+            "RB-104",
+            "RB-310",
+            "RB-101",
+            "OPS-12",
+            "RB-WS-501"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.93
+        },
+        {
+          "id": "ret-exact_identifier-030",
+          "category": "exact_identifier",
+          "expected_docs": [
+            "OPS-12"
+          ],
+          "top5": [
+            "OPS-12",
+            "RB-101",
+            "RB-104",
+            "RB-WS-501",
+            "RB-310"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.944
+        },
+        {
+          "id": "ret-error_code-002",
+          "category": "error_code",
+          "expected_docs": [
+            "RB-429"
+          ],
+          "top5": [
+            "RB-429",
+            "RB-101",
+            "OPS-12",
+            "RB-104",
+            "RB-203"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.943
+        },
+        {
+          "id": "ret-error_code-004",
+          "category": "error_code",
+          "expected_docs": [
+            "RB-203"
+          ],
+          "top5": [
+            "RB-203",
+            "OPS-12",
+            "RB-429",
+            "SEC-07",
+            "RB-310"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.703
+        },
+        {
+          "id": "ret-error_code-006",
+          "category": "error_code",
+          "expected_docs": [
+            "RB-101"
+          ],
+          "top5": [
+            "RB-101",
+            "RB-429",
+            "OPS-12",
+            "RB-WS-501",
+            "SEC-07"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.632
+        },
+        {
+          "id": "ret-error_code-008",
+          "category": "error_code",
+          "expected_docs": [
+            "SEC-07"
+          ],
+          "top5": [
+            "RB-203",
+            "SEC-07",
+            "RB-WS-501",
+            "OPS-12",
+            "RB-104"
+          ],
+          "first_relevant_rank": 2,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.438
+        },
+        {
+          "id": "ret-error_code-010",
+          "category": "error_code",
+          "expected_docs": [
+            "RB-429"
+          ],
+          "top5": [
+            "RB-429",
+            "RB-101",
+            "OPS-12",
+            "RB-104",
+            "RB-203"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.433
+        },
+        {
+          "id": "ret-error_code-012",
+          "category": "error_code",
+          "expected_docs": [
+            "RB-203"
+          ],
+          "top5": [
+            "RB-203",
+            "OPS-12",
+            "SEC-07",
+            "RB-429",
+            "RB-310"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.327
+        },
+        {
+          "id": "ret-error_code-014",
+          "category": "error_code",
+          "expected_docs": [
+            "RB-101"
+          ],
+          "top5": [
+            "RB-101",
+            "RB-429",
+            "OPS-12",
+            "RB-WS-501",
+            "SEC-07"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.313
+        },
+        {
+          "id": "ret-error_code-016",
+          "category": "error_code",
+          "expected_docs": [
+            "SEC-07"
+          ],
+          "top5": [
+            "RB-203",
+            "SEC-07",
+            "RB-WS-501",
+            "OPS-12",
+            "RB-104"
+          ],
+          "first_relevant_rank": 2,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.315
+        },
+        {
+          "id": "ret-error_code-018",
+          "category": "error_code",
+          "expected_docs": [
+            "RB-429"
+          ],
+          "top5": [
+            "RB-429",
+            "RB-101",
+            "OPS-12",
+            "RB-104",
+            "RB-203"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.457
+        },
+        {
+          "id": "ret-error_code-020",
+          "category": "error_code",
+          "expected_docs": [
+            "RB-203"
+          ],
+          "top5": [
+            "RB-203",
+            "OPS-12",
+            "SEC-07",
+            "RB-429",
+            "RB-310"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.35
+        },
+        {
+          "id": "ret-error_code-022",
+          "category": "error_code",
+          "expected_docs": [
+            "RB-101"
+          ],
+          "top5": [
+            "RB-101",
+            "OPS-12",
+            "RB-429",
+            "RB-WS-501",
+            "SEC-07"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.413
+        },
+        {
+          "id": "ret-error_code-024",
+          "category": "error_code",
+          "expected_docs": [
+            "SEC-07"
+          ],
+          "top5": [
+            "RB-203",
+            "SEC-07",
+            "OPS-12",
+            "RB-WS-501",
+            "RB-104"
+          ],
+          "first_relevant_rank": 2,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.338
+        },
+        {
+          "id": "ret-error_code-026",
+          "category": "error_code",
+          "expected_docs": [
+            "RB-429"
+          ],
+          "top5": [
+            "RB-429",
+            "RB-101",
+            "OPS-12",
+            "RB-104",
+            "RB-203"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.377
+        },
+        {
+          "id": "ret-error_code-028",
+          "category": "error_code",
+          "expected_docs": [
+            "RB-203"
+          ],
+          "top5": [
+            "RB-203",
+            "OPS-12",
+            "RB-429",
+            "SEC-07",
+            "RB-310"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.248
+        },
+        {
+          "id": "ret-error_code-030",
+          "category": "error_code",
+          "expected_docs": [
+            "RB-101"
+          ],
+          "top5": [
+            "RB-101",
+            "RB-429",
+            "OPS-12",
+            "RB-WS-501",
+            "SEC-07"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.508
+        },
+        {
+          "id": "ret-natural_language_paraphrase-002",
+          "category": "natural_language_paraphrase",
+          "expected_docs": [
+            "RB-WS-501"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "RB-101",
+            "OPS-12",
+            "RB-310",
+            "RB-104"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.358
+        },
+        {
+          "id": "ret-natural_language_paraphrase-004",
+          "category": "natural_language_paraphrase",
+          "expected_docs": [
+            "RB-310"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-WS-501",
+            "RB-101",
+            "OPS-12",
+            "RB-203"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.281
+        },
+        {
+          "id": "ret-natural_language_paraphrase-006",
+          "category": "natural_language_paraphrase",
+          "expected_docs": [
+            "RB-104"
+          ],
+          "top5": [
+            "RB-104",
+            "OPS-12",
+            "RB-101",
+            "RB-WS-501",
+            "RB-310"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.228
+        },
+        {
+          "id": "ret-natural_language_paraphrase-008",
+          "category": "natural_language_paraphrase",
+          "expected_docs": [
+            "OPS-12"
+          ],
+          "top5": [
+            "OPS-12",
+            "RB-101",
+            "SEC-07",
+            "RB-WS-501",
+            "RB-203"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.369
+        },
+        {
+          "id": "ret-natural_language_paraphrase-010",
+          "category": "natural_language_paraphrase",
+          "expected_docs": [
+            "RB-WS-501"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "RB-101",
+            "OPS-12",
+            "RB-310",
+            "RB-104"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.852
+        },
+        {
+          "id": "ret-natural_language_paraphrase-012",
+          "category": "natural_language_paraphrase",
+          "expected_docs": [
+            "RB-310"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-WS-501",
+            "OPS-12",
+            "RB-101",
+            "RB-203"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.972
+        },
+        {
+          "id": "ret-natural_language_paraphrase-014",
+          "category": "natural_language_paraphrase",
+          "expected_docs": [
+            "RB-104"
+          ],
+          "top5": [
+            "RB-104",
+            "OPS-12",
+            "RB-101",
+            "RB-WS-501",
+            "RB-310"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.971
+        },
+        {
+          "id": "ret-natural_language_paraphrase-016",
+          "category": "natural_language_paraphrase",
+          "expected_docs": [
+            "OPS-12"
+          ],
+          "top5": [
+            "OPS-12",
+            "RB-101",
+            "SEC-07",
+            "RB-203",
+            "RB-WS-501"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.984
+        },
+        {
+          "id": "ret-natural_language_paraphrase-018",
+          "category": "natural_language_paraphrase",
+          "expected_docs": [
+            "RB-WS-501"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "RB-101",
+            "OPS-12",
+            "RB-310",
+            "RB-104"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.628
+        },
+        {
+          "id": "ret-natural_language_paraphrase-020",
+          "category": "natural_language_paraphrase",
+          "expected_docs": [
+            "RB-310"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-WS-501",
+            "RB-101",
+            "OPS-12",
+            "RB-203"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.371
+        },
+        {
+          "id": "ret-natural_language_paraphrase-022",
+          "category": "natural_language_paraphrase",
+          "expected_docs": [
+            "RB-104"
+          ],
+          "top5": [
+            "RB-104",
+            "OPS-12",
+            "RB-101",
+            "RB-WS-501",
+            "RB-310"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 2.187
+        },
+        {
+          "id": "ret-natural_language_paraphrase-024",
+          "category": "natural_language_paraphrase",
+          "expected_docs": [
+            "OPS-12"
+          ],
+          "top5": [
+            "OPS-12",
+            "RB-101",
+            "SEC-07",
+            "RB-203",
+            "RB-WS-501"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.949
+        },
+        {
+          "id": "ret-natural_language_paraphrase-026",
+          "category": "natural_language_paraphrase",
+          "expected_docs": [
+            "RB-WS-501"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "RB-101",
+            "OPS-12",
+            "RB-104",
+            "RB-310"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.707
+        },
+        {
+          "id": "ret-natural_language_paraphrase-028",
+          "category": "natural_language_paraphrase",
+          "expected_docs": [
+            "RB-310"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-WS-501",
+            "OPS-12",
+            "RB-101",
+            "RB-203"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 6.919
+        },
+        {
+          "id": "ret-natural_language_paraphrase-030",
+          "category": "natural_language_paraphrase",
+          "expected_docs": [
+            "RB-104"
+          ],
+          "top5": [
+            "RB-104",
+            "OPS-12",
+            "RB-101",
+            "RB-WS-501",
+            "RB-310"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 2.49
+        },
+        {
+          "id": "ret-synonym-002",
+          "category": "synonym",
+          "expected_docs": [
+            "SEC-07"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "SEC-07",
+            "RB-203",
+            "OPS-12",
+            "RB-104"
+          ],
+          "first_relevant_rank": 2,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.309
+        },
+        {
+          "id": "ret-synonym-004",
+          "category": "synonym",
+          "expected_docs": [
+            "RB-429"
+          ],
+          "top5": [
+            "RB-429",
+            "OPS-12",
+            "RB-104",
+            "RB-WS-501",
+            "RB-203"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.535
+        },
+        {
+          "id": "ret-synonym-006",
+          "category": "synonym",
+          "expected_docs": [
+            "RB-203"
+          ],
+          "top5": [
+            "RB-203",
+            "OPS-12",
+            "RB-WS-501",
+            "RB-101",
+            "SEC-07"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.663
+        },
+        {
+          "id": "ret-synonym-008",
+          "category": "synonym",
+          "expected_docs": [
+            "RB-101"
+          ],
+          "top5": [
+            "RB-101",
+            "RB-104",
+            "RB-429",
+            "OPS-12",
+            "SEC-07"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.568
+        },
+        {
+          "id": "ret-synonym-010",
+          "category": "synonym",
+          "expected_docs": [
+            "SEC-07"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "SEC-07",
+            "RB-203",
+            "RB-104",
+            "OPS-12"
+          ],
+          "first_relevant_rank": 2,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.731
+        },
+        {
+          "id": "ret-synonym-012",
+          "category": "synonym",
+          "expected_docs": [
+            "RB-429"
+          ],
+          "top5": [
+            "RB-429",
+            "OPS-12",
+            "RB-104",
+            "RB-203",
+            "RB-WS-501"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.256
+        },
+        {
+          "id": "ret-synonym-014",
+          "category": "synonym",
+          "expected_docs": [
+            "RB-203"
+          ],
+          "top5": [
+            "RB-203",
+            "OPS-12",
+            "RB-WS-501",
+            "RB-101",
+            "SEC-07"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.328
+        },
+        {
+          "id": "ret-synonym-016",
+          "category": "synonym",
+          "expected_docs": [
+            "RB-101"
+          ],
+          "top5": [
+            "RB-101",
+            "RB-104",
+            "RB-429",
+            "OPS-12",
+            "SEC-07"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.64
+        },
+        {
+          "id": "ret-synonym-018",
+          "category": "synonym",
+          "expected_docs": [
+            "SEC-07"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "SEC-07",
+            "RB-203",
+            "RB-104",
+            "OPS-12"
+          ],
+          "first_relevant_rank": 2,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.332
+        },
+        {
+          "id": "ret-synonym-020",
+          "category": "synonym",
+          "expected_docs": [
+            "RB-429"
+          ],
+          "top5": [
+            "RB-429",
+            "OPS-12",
+            "RB-104",
+            "RB-WS-501",
+            "RB-203"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.211
+        },
+        {
+          "id": "ret-synonym-022",
+          "category": "synonym",
+          "expected_docs": [
+            "RB-203"
+          ],
+          "top5": [
+            "RB-203",
+            "OPS-12",
+            "RB-WS-501",
+            "RB-101",
+            "SEC-07"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.228
+        },
+        {
+          "id": "ret-synonym-024",
+          "category": "synonym",
+          "expected_docs": [
+            "RB-101"
+          ],
+          "top5": [
+            "RB-101",
+            "RB-104",
+            "RB-429",
+            "OPS-12",
+            "SEC-07"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.282
+        },
+        {
+          "id": "ret-synonym-026",
+          "category": "synonym",
+          "expected_docs": [
+            "SEC-07"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "SEC-07",
+            "RB-203",
+            "RB-104",
+            "OPS-12"
+          ],
+          "first_relevant_rank": 2,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.34
+        },
+        {
+          "id": "ret-synonym-028",
+          "category": "synonym",
+          "expected_docs": [
+            "RB-429"
+          ],
+          "top5": [
+            "RB-429",
+            "OPS-12",
+            "RB-104",
+            "RB-203",
+            "RB-WS-501"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.401
+        },
+        {
+          "id": "ret-synonym-030",
+          "category": "synonym",
+          "expected_docs": [
+            "RB-203"
+          ],
+          "top5": [
+            "RB-203",
+            "OPS-12",
+            "RB-WS-501",
+            "RB-101",
+            "SEC-07"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.993
+        },
+        {
+          "id": "ret-misleading_keyword-002",
+          "category": "misleading_keyword",
+          "expected_docs": [
+            "OPS-12"
+          ],
+          "top5": [
+            "OPS-12",
+            "RB-101",
+            "RB-WS-501",
+            "RB-429",
+            "RB-310"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.917
+        },
+        {
+          "id": "ret-misleading_keyword-004",
+          "category": "misleading_keyword",
+          "expected_docs": [
+            "RB-WS-501"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "RB-104",
+            "OPS-12",
+            "RB-101",
+            "SEC-07"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.342
+        },
+        {
+          "id": "ret-misleading_keyword-006",
+          "category": "misleading_keyword",
+          "expected_docs": [
+            "RB-310"
+          ],
+          "top5": [
+            "RB-101",
+            "RB-310",
+            "RB-WS-501",
+            "RB-104",
+            "RB-203"
+          ],
+          "first_relevant_rank": 2,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.838
+        },
+        {
+          "id": "ret-misleading_keyword-008",
+          "category": "misleading_keyword",
+          "expected_docs": [
+            "RB-104"
+          ],
+          "top5": [
+            "RB-101",
+            "RB-104",
+            "OPS-12",
+            "RB-429",
+            "RB-WS-501"
+          ],
+          "first_relevant_rank": 2,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.842
+        },
+        {
+          "id": "ret-misleading_keyword-010",
+          "category": "misleading_keyword",
+          "expected_docs": [
+            "OPS-12"
+          ],
+          "top5": [
+            "OPS-12",
+            "RB-101",
+            "RB-WS-501",
+            "RB-429",
+            "RB-310"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.461
+        },
+        {
+          "id": "ret-misleading_keyword-012",
+          "category": "misleading_keyword",
+          "expected_docs": [
+            "RB-WS-501"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "RB-104",
+            "OPS-12",
+            "RB-101",
+            "SEC-07"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.347
+        },
+        {
+          "id": "ret-misleading_keyword-014",
+          "category": "misleading_keyword",
+          "expected_docs": [
+            "RB-310"
+          ],
+          "top5": [
+            "RB-101",
+            "RB-310",
+            "RB-WS-501",
+            "RB-104",
+            "OPS-12"
+          ],
+          "first_relevant_rank": 2,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.634
+        },
+        {
+          "id": "ret-misleading_keyword-016",
+          "category": "misleading_keyword",
+          "expected_docs": [
+            "RB-104"
+          ],
+          "top5": [
+            "RB-101",
+            "RB-104",
+            "OPS-12",
+            "RB-429",
+            "RB-WS-501"
+          ],
+          "first_relevant_rank": 2,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.318
+        },
+        {
+          "id": "ret-misleading_keyword-018",
+          "category": "misleading_keyword",
+          "expected_docs": [
+            "OPS-12"
+          ],
+          "top5": [
+            "OPS-12",
+            "RB-101",
+            "RB-WS-501",
+            "RB-310",
+            "RB-429"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.698
+        },
+        {
+          "id": "ret-misleading_keyword-020",
+          "category": "misleading_keyword",
+          "expected_docs": [
+            "RB-WS-501"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "RB-104",
+            "OPS-12",
+            "RB-101",
+            "SEC-07"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.505
+        },
+        {
+          "id": "ret-misleading_keyword-022",
+          "category": "misleading_keyword",
+          "expected_docs": [
+            "RB-310"
+          ],
+          "top5": [
+            "RB-101",
+            "RB-310",
+            "RB-WS-501",
+            "RB-104",
+            "OPS-12"
+          ],
+          "first_relevant_rank": 2,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.482
+        },
+        {
+          "id": "ret-misleading_keyword-024",
+          "category": "misleading_keyword",
+          "expected_docs": [
+            "RB-104"
+          ],
+          "top5": [
+            "RB-104",
+            "RB-101",
+            "OPS-12",
+            "RB-429",
+            "RB-WS-501"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.361
+        },
+        {
+          "id": "ret-misleading_keyword-026",
+          "category": "misleading_keyword",
+          "expected_docs": [
+            "OPS-12"
+          ],
+          "top5": [
+            "OPS-12",
+            "RB-101",
+            "RB-WS-501",
+            "RB-429",
+            "RB-310"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.215
+        },
+        {
+          "id": "ret-misleading_keyword-028",
+          "category": "misleading_keyword",
+          "expected_docs": [
+            "RB-WS-501"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "RB-104",
+            "OPS-12",
+            "RB-101",
+            "SEC-07"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.614
+        },
+        {
+          "id": "ret-misleading_keyword-030",
+          "category": "misleading_keyword",
+          "expected_docs": [
+            "RB-310"
+          ],
+          "top5": [
+            "RB-101",
+            "RB-310",
+            "RB-WS-501",
+            "RB-104",
+            "RB-203"
+          ],
+          "first_relevant_rank": 2,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.402
+        },
+        {
+          "id": "ret-multi_symptom-002",
+          "category": "multi_symptom",
+          "expected_docs": [
+            "RB-101"
+          ],
+          "top5": [
+            "RB-101",
+            "RB-WS-501",
+            "RB-429",
+            "OPS-12",
+            "RB-104"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.323
+        },
+        {
+          "id": "ret-multi_symptom-004",
+          "category": "multi_symptom",
+          "expected_docs": [
+            "SEC-07"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "RB-104",
+            "SEC-07",
+            "RB-203",
+            "OPS-12"
+          ],
+          "first_relevant_rank": 3,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.338
+        },
+        {
+          "id": "ret-multi_symptom-006",
+          "category": "multi_symptom",
+          "expected_docs": [
+            "RB-429"
+          ],
+          "top5": [
+            "RB-429",
+            "RB-101",
+            "OPS-12",
+            "RB-104",
+            "RB-WS-501"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.367
+        },
+        {
+          "id": "ret-multi_symptom-008",
+          "category": "multi_symptom",
+          "expected_docs": [
+            "RB-203"
+          ],
+          "top5": [
+            "RB-101",
+            "OPS-12",
+            "RB-310",
+            "RB-203",
+            "RB-WS-501"
+          ],
+          "first_relevant_rank": 4,
+          "recall_at_3": 0.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.299
+        },
+        {
+          "id": "ret-multi_symptom-010",
+          "category": "multi_symptom",
+          "expected_docs": [
+            "RB-101"
+          ],
+          "top5": [
+            "RB-101",
+            "RB-WS-501",
+            "RB-429",
+            "OPS-12",
+            "RB-104"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.39
+        },
+        {
+          "id": "ret-multi_symptom-012",
+          "category": "multi_symptom",
+          "expected_docs": [
+            "SEC-07"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "SEC-07",
+            "RB-104",
+            "OPS-12",
+            "RB-203"
+          ],
+          "first_relevant_rank": 2,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.858
+        },
+        {
+          "id": "ret-multi_symptom-014",
+          "category": "multi_symptom",
+          "expected_docs": [
+            "RB-429"
+          ],
+          "top5": [
+            "RB-429",
+            "RB-101",
+            "OPS-12",
+            "RB-104",
+            "RB-WS-501"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.351
+        },
+        {
+          "id": "ret-multi_symptom-016",
+          "category": "multi_symptom",
+          "expected_docs": [
+            "RB-203"
+          ],
+          "top5": [
+            "RB-101",
+            "OPS-12",
+            "RB-310",
+            "RB-203",
+            "RB-WS-501"
+          ],
+          "first_relevant_rank": 4,
+          "recall_at_3": 0.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.354
+        },
+        {
+          "id": "ret-multi_symptom-018",
+          "category": "multi_symptom",
+          "expected_docs": [
+            "RB-101"
+          ],
+          "top5": [
+            "RB-101",
+            "RB-WS-501",
+            "RB-429",
+            "OPS-12",
+            "RB-104"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.319
+        },
+        {
+          "id": "ret-multi_symptom-020",
+          "category": "multi_symptom",
+          "expected_docs": [
+            "SEC-07"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "SEC-07",
+            "RB-104",
+            "RB-203",
+            "OPS-12"
+          ],
+          "first_relevant_rank": 2,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.81
+        },
+        {
+          "id": "ret-multi_symptom-022",
+          "category": "multi_symptom",
+          "expected_docs": [
+            "RB-429"
+          ],
+          "top5": [
+            "RB-429",
+            "RB-101",
+            "OPS-12",
+            "RB-104",
+            "RB-WS-501"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.998
+        },
+        {
+          "id": "ret-multi_symptom-024",
+          "category": "multi_symptom",
+          "expected_docs": [
+            "RB-203"
+          ],
+          "top5": [
+            "RB-101",
+            "OPS-12",
+            "RB-310",
+            "RB-203",
+            "RB-WS-501"
+          ],
+          "first_relevant_rank": 4,
+          "recall_at_3": 0.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.861
+        },
+        {
+          "id": "ret-multi_symptom-026",
+          "category": "multi_symptom",
+          "expected_docs": [
+            "RB-101"
+          ],
+          "top5": [
+            "RB-101",
+            "RB-WS-501",
+            "RB-429",
+            "OPS-12",
+            "RB-104"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.7
+        },
+        {
+          "id": "ret-multi_symptom-028",
+          "category": "multi_symptom",
+          "expected_docs": [
+            "SEC-07"
+          ],
+          "top5": [
+            "RB-104",
+            "SEC-07",
+            "RB-WS-501",
+            "RB-203",
+            "OPS-12"
+          ],
+          "first_relevant_rank": 2,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.443
+        },
+        {
+          "id": "ret-multi_symptom-030",
+          "category": "multi_symptom",
+          "expected_docs": [
+            "RB-429"
+          ],
+          "top5": [
+            "RB-429",
+            "RB-101",
+            "OPS-12",
+            "RB-104",
+            "RB-WS-501"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.211
+        },
+        {
+          "id": "ret-weak_lexical_overlap-002",
+          "category": "weak_lexical_overlap",
+          "expected_docs": [
+            "RB-104"
+          ],
+          "top5": [
+            "RB-104",
+            "RB-101",
+            "OPS-12",
+            "RB-WS-501",
+            "SEC-07"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.307
+        },
+        {
+          "id": "ret-weak_lexical_overlap-004",
+          "category": "weak_lexical_overlap",
+          "expected_docs": [
+            "OPS-12"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "OPS-12",
+            "SEC-07",
+            "RB-203",
+            "RB-310"
+          ],
+          "first_relevant_rank": 2,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.43
+        },
+        {
+          "id": "ret-weak_lexical_overlap-006",
+          "category": "weak_lexical_overlap",
+          "expected_docs": [
+            "RB-WS-501"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "RB-310",
+            "RB-101",
+            "RB-104",
+            "OPS-12"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.211
+        },
+        {
+          "id": "ret-weak_lexical_overlap-008",
+          "category": "weak_lexical_overlap",
+          "expected_docs": [
+            "RB-310"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-WS-501",
+            "OPS-12",
+            "SEC-07",
+            "RB-101"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.304
+        },
+        {
+          "id": "ret-weak_lexical_overlap-010",
+          "category": "weak_lexical_overlap",
+          "expected_docs": [
+            "RB-104"
+          ],
+          "top5": [
+            "RB-104",
+            "RB-101",
+            "OPS-12",
+            "RB-WS-501",
+            "SEC-07"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.908
+        },
+        {
+          "id": "ret-weak_lexical_overlap-012",
+          "category": "weak_lexical_overlap",
+          "expected_docs": [
+            "OPS-12"
+          ],
+          "top5": [
+            "OPS-12",
+            "RB-WS-501",
+            "SEC-07",
+            "RB-203",
+            "RB-310"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 2.062
+        },
+        {
+          "id": "ret-weak_lexical_overlap-014",
+          "category": "weak_lexical_overlap",
+          "expected_docs": [
+            "RB-WS-501"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "RB-310",
+            "RB-101",
+            "RB-104",
+            "OPS-12"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 2.052
+        },
+        {
+          "id": "ret-weak_lexical_overlap-016",
+          "category": "weak_lexical_overlap",
+          "expected_docs": [
+            "RB-310"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-WS-501",
+            "OPS-12",
+            "SEC-07",
+            "RB-101"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 2.066
+        },
+        {
+          "id": "ret-weak_lexical_overlap-018",
+          "category": "weak_lexical_overlap",
+          "expected_docs": [
+            "RB-104"
+          ],
+          "top5": [
+            "RB-104",
+            "RB-101",
+            "OPS-12",
+            "RB-WS-501",
+            "SEC-07"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.583
+        },
+        {
+          "id": "ret-weak_lexical_overlap-020",
+          "category": "weak_lexical_overlap",
+          "expected_docs": [
+            "OPS-12"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "OPS-12",
+            "SEC-07",
+            "RB-310",
+            "RB-203"
+          ],
+          "first_relevant_rank": 2,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.264
+        },
+        {
+          "id": "ret-weak_lexical_overlap-022",
+          "category": "weak_lexical_overlap",
+          "expected_docs": [
+            "RB-WS-501"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "RB-310",
+            "RB-101",
+            "RB-104",
+            "OPS-12"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.382
+        },
+        {
+          "id": "ret-weak_lexical_overlap-024",
+          "category": "weak_lexical_overlap",
+          "expected_docs": [
+            "RB-310"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-WS-501",
+            "OPS-12",
+            "SEC-07",
+            "RB-101"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.539
+        },
+        {
+          "id": "ret-weak_lexical_overlap-026",
+          "category": "weak_lexical_overlap",
+          "expected_docs": [
+            "RB-104"
+          ],
+          "top5": [
+            "RB-104",
+            "RB-101",
+            "OPS-12",
+            "RB-WS-501",
+            "RB-429"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.216
+        },
+        {
+          "id": "ret-weak_lexical_overlap-028",
+          "category": "weak_lexical_overlap",
+          "expected_docs": [
+            "OPS-12"
+          ],
+          "top5": [
+            "OPS-12",
+            "RB-WS-501",
+            "SEC-07",
+            "RB-203",
+            "RB-310"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.46
+        },
+        {
+          "id": "ret-weak_lexical_overlap-030",
+          "category": "weak_lexical_overlap",
+          "expected_docs": [
+            "RB-WS-501"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "RB-310",
+            "RB-101",
+            "RB-104",
+            "OPS-12"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.35
+        }
+      ]
+    },
+    "hybrid": {
+      "mode": "hybrid",
+      "query_count": 105,
+      "recall_at_3": 0.9714,
+      "recall_at_5": 1.0,
+      "mrr": 0.8817,
+      "ndcg": 0.912,
+      "latency_ms": {
+        "mean": 1.87,
+        "p50": 1.78,
+        "p95": 2.362,
+        "max": 2.438
+      },
+      "category_breakdown": {
+        "error_code": {
+          "query_count": 15,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        "exact_identifier": {
+          "query_count": 15,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        "misleading_keyword": {
+          "query_count": 15,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        "multi_symptom": {
+          "query_count": 15,
+          "recall_at_3": 0.8,
+          "recall_at_5": 1.0
+        },
+        "natural_language_paraphrase": {
+          "query_count": 15,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        "synonym": {
+          "query_count": 15,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        },
+        "weak_lexical_overlap": {
+          "query_count": 15,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0
+        }
+      },
+      "results": [
+        {
+          "id": "ret-exact_identifier-002",
+          "category": "exact_identifier",
+          "expected_docs": [
+            "RB-310"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-WS-501",
+            "RB-101",
+            "RB-203",
+            "RB-104"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 2.345
+        },
+        {
+          "id": "ret-exact_identifier-004",
+          "category": "exact_identifier",
+          "expected_docs": [
+            "RB-104"
+          ],
+          "top5": [
+            "RB-104",
+            "RB-310",
+            "RB-WS-501",
+            "RB-101",
+            "RB-203"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 2.238
+        },
+        {
+          "id": "ret-exact_identifier-006",
+          "category": "exact_identifier",
+          "expected_docs": [
+            "OPS-12"
+          ],
+          "top5": [
+            "OPS-12",
+            "RB-101",
+            "RB-104",
+            "RB-WS-501",
+            "RB-310"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 2.324
+        },
+        {
+          "id": "ret-exact_identifier-008",
+          "category": "exact_identifier",
+          "expected_docs": [
+            "RB-WS-501"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "RB-310",
+            "RB-101",
+            "RB-104",
+            "OPS-12"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 2.302
+        },
+        {
+          "id": "ret-exact_identifier-010",
+          "category": "exact_identifier",
+          "expected_docs": [
+            "RB-310"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-WS-501",
+            "RB-101",
+            "RB-203",
+            "RB-104"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 2.277
+        },
+        {
+          "id": "ret-exact_identifier-012",
+          "category": "exact_identifier",
+          "expected_docs": [
+            "RB-104"
+          ],
+          "top5": [
+            "RB-104",
+            "RB-310",
+            "RB-101",
+            "RB-WS-501",
+            "RB-203"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.858
+        },
+        {
+          "id": "ret-exact_identifier-014",
+          "category": "exact_identifier",
+          "expected_docs": [
+            "OPS-12"
+          ],
+          "top5": [
+            "OPS-12",
+            "RB-101",
+            "RB-104",
+            "RB-WS-501",
+            "RB-310"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 2.229
+        },
+        {
+          "id": "ret-exact_identifier-016",
+          "category": "exact_identifier",
+          "expected_docs": [
+            "RB-WS-501"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "RB-310",
+            "RB-101",
+            "RB-104",
+            "OPS-12"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.62
+        },
+        {
+          "id": "ret-exact_identifier-018",
+          "category": "exact_identifier",
+          "expected_docs": [
+            "RB-310"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-WS-501",
+            "RB-101",
+            "RB-203",
+            "RB-104"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.639
+        },
+        {
+          "id": "ret-exact_identifier-020",
+          "category": "exact_identifier",
+          "expected_docs": [
+            "RB-104"
+          ],
+          "top5": [
+            "RB-104",
+            "RB-310",
+            "RB-WS-501",
+            "RB-101",
+            "RB-203"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.762
+        },
+        {
+          "id": "ret-exact_identifier-022",
+          "category": "exact_identifier",
+          "expected_docs": [
+            "OPS-12"
+          ],
+          "top5": [
+            "OPS-12",
+            "RB-101",
+            "RB-104",
+            "RB-WS-501",
+            "RB-310"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.414
+        },
+        {
+          "id": "ret-exact_identifier-024",
+          "category": "exact_identifier",
+          "expected_docs": [
+            "RB-WS-501"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "RB-310",
+            "RB-101",
+            "RB-104",
+            "OPS-12"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 2.02
+        },
+        {
+          "id": "ret-exact_identifier-026",
+          "category": "exact_identifier",
+          "expected_docs": [
+            "RB-310"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-WS-501",
+            "RB-101",
+            "RB-203",
+            "RB-104"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.495
+        },
+        {
+          "id": "ret-exact_identifier-028",
+          "category": "exact_identifier",
+          "expected_docs": [
+            "RB-104"
+          ],
+          "top5": [
+            "RB-104",
+            "RB-310",
+            "RB-101",
+            "RB-WS-501",
+            "RB-203"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.534
+        },
+        {
+          "id": "ret-exact_identifier-030",
+          "category": "exact_identifier",
+          "expected_docs": [
+            "OPS-12"
+          ],
+          "top5": [
+            "OPS-12",
+            "RB-101",
+            "RB-104",
+            "RB-WS-501",
+            "RB-310"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 2.061
+        },
+        {
+          "id": "ret-error_code-002",
+          "category": "error_code",
+          "expected_docs": [
+            "RB-429"
+          ],
+          "top5": [
+            "RB-429",
+            "RB-101",
+            "OPS-12",
+            "RB-104",
+            "RB-203"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.785
+        },
+        {
+          "id": "ret-error_code-004",
+          "category": "error_code",
+          "expected_docs": [
+            "RB-203"
+          ],
+          "top5": [
+            "RB-203",
+            "RB-429",
+            "OPS-12",
+            "RB-310",
+            "SEC-07"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 2.035
+        },
+        {
+          "id": "ret-error_code-006",
+          "category": "error_code",
+          "expected_docs": [
+            "RB-101"
+          ],
+          "top5": [
+            "RB-101",
+            "RB-429",
+            "OPS-12",
+            "RB-WS-501",
+            "SEC-07"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.473
+        },
+        {
+          "id": "ret-error_code-008",
+          "category": "error_code",
+          "expected_docs": [
+            "SEC-07"
+          ],
+          "top5": [
+            "RB-203",
+            "RB-WS-501",
+            "SEC-07",
+            "OPS-12",
+            "RB-101"
+          ],
+          "first_relevant_rank": 3,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.664
+        },
+        {
+          "id": "ret-error_code-010",
+          "category": "error_code",
+          "expected_docs": [
+            "RB-429"
+          ],
+          "top5": [
+            "RB-429",
+            "RB-101",
+            "OPS-12",
+            "RB-104",
+            "RB-203"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.651
+        },
+        {
+          "id": "ret-error_code-012",
+          "category": "error_code",
+          "expected_docs": [
+            "RB-203"
+          ],
+          "top5": [
+            "RB-203",
+            "OPS-12",
+            "RB-429",
+            "RB-310",
+            "SEC-07"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.616
+        },
+        {
+          "id": "ret-error_code-014",
+          "category": "error_code",
+          "expected_docs": [
+            "RB-101"
+          ],
+          "top5": [
+            "RB-101",
+            "RB-429",
+            "OPS-12",
+            "RB-WS-501",
+            "SEC-07"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.57
+        },
+        {
+          "id": "ret-error_code-016",
+          "category": "error_code",
+          "expected_docs": [
+            "SEC-07"
+          ],
+          "top5": [
+            "RB-203",
+            "RB-WS-501",
+            "SEC-07",
+            "OPS-12",
+            "RB-101"
+          ],
+          "first_relevant_rank": 3,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.445
+        },
+        {
+          "id": "ret-error_code-018",
+          "category": "error_code",
+          "expected_docs": [
+            "RB-429"
+          ],
+          "top5": [
+            "RB-429",
+            "RB-101",
+            "OPS-12",
+            "RB-104",
+            "RB-203"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.717
+        },
+        {
+          "id": "ret-error_code-020",
+          "category": "error_code",
+          "expected_docs": [
+            "RB-203"
+          ],
+          "top5": [
+            "RB-203",
+            "OPS-12",
+            "RB-429",
+            "RB-310",
+            "SEC-07"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.589
+        },
+        {
+          "id": "ret-error_code-022",
+          "category": "error_code",
+          "expected_docs": [
+            "RB-101"
+          ],
+          "top5": [
+            "RB-101",
+            "OPS-12",
+            "RB-429",
+            "RB-WS-501",
+            "SEC-07"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.672
+        },
+        {
+          "id": "ret-error_code-024",
+          "category": "error_code",
+          "expected_docs": [
+            "SEC-07"
+          ],
+          "top5": [
+            "RB-203",
+            "RB-WS-501",
+            "SEC-07",
+            "OPS-12",
+            "RB-101"
+          ],
+          "first_relevant_rank": 3,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 2.066
+        },
+        {
+          "id": "ret-error_code-026",
+          "category": "error_code",
+          "expected_docs": [
+            "RB-429"
+          ],
+          "top5": [
+            "RB-429",
+            "RB-101",
+            "OPS-12",
+            "RB-104",
+            "RB-203"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.559
+        },
+        {
+          "id": "ret-error_code-028",
+          "category": "error_code",
+          "expected_docs": [
+            "RB-203"
+          ],
+          "top5": [
+            "RB-203",
+            "RB-429",
+            "OPS-12",
+            "RB-310",
+            "SEC-07"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.515
+        },
+        {
+          "id": "ret-error_code-030",
+          "category": "error_code",
+          "expected_docs": [
+            "RB-101"
+          ],
+          "top5": [
+            "RB-101",
+            "RB-429",
+            "OPS-12",
+            "RB-WS-501",
+            "SEC-07"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.538
+        },
+        {
+          "id": "ret-natural_language_paraphrase-002",
+          "category": "natural_language_paraphrase",
+          "expected_docs": [
+            "RB-WS-501"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "OPS-12",
+            "RB-310",
+            "RB-101",
+            "RB-104"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.514
+        },
+        {
+          "id": "ret-natural_language_paraphrase-004",
+          "category": "natural_language_paraphrase",
+          "expected_docs": [
+            "RB-310"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-WS-501",
+            "RB-101",
+            "OPS-12",
+            "RB-203"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 2.216
+        },
+        {
+          "id": "ret-natural_language_paraphrase-006",
+          "category": "natural_language_paraphrase",
+          "expected_docs": [
+            "RB-104"
+          ],
+          "top5": [
+            "RB-104",
+            "OPS-12",
+            "RB-101",
+            "RB-WS-501",
+            "RB-310"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.513
+        },
+        {
+          "id": "ret-natural_language_paraphrase-008",
+          "category": "natural_language_paraphrase",
+          "expected_docs": [
+            "OPS-12"
+          ],
+          "top5": [
+            "OPS-12",
+            "RB-101",
+            "SEC-07",
+            "RB-WS-501",
+            "RB-203"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 2.23
+        },
+        {
+          "id": "ret-natural_language_paraphrase-010",
+          "category": "natural_language_paraphrase",
+          "expected_docs": [
+            "RB-WS-501"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "OPS-12",
+            "RB-310",
+            "RB-101",
+            "RB-104"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.591
+        },
+        {
+          "id": "ret-natural_language_paraphrase-012",
+          "category": "natural_language_paraphrase",
+          "expected_docs": [
+            "RB-310"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-WS-501",
+            "RB-101",
+            "OPS-12",
+            "RB-203"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.508
+        },
+        {
+          "id": "ret-natural_language_paraphrase-014",
+          "category": "natural_language_paraphrase",
+          "expected_docs": [
+            "RB-104"
+          ],
+          "top5": [
+            "RB-104",
+            "OPS-12",
+            "RB-101",
+            "RB-WS-501",
+            "RB-310"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 2.024
+        },
+        {
+          "id": "ret-natural_language_paraphrase-016",
+          "category": "natural_language_paraphrase",
+          "expected_docs": [
+            "OPS-12"
+          ],
+          "top5": [
+            "OPS-12",
+            "RB-101",
+            "SEC-07",
+            "RB-203",
+            "RB-WS-501"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 2.362
+        },
+        {
+          "id": "ret-natural_language_paraphrase-018",
+          "category": "natural_language_paraphrase",
+          "expected_docs": [
+            "RB-WS-501"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "OPS-12",
+            "RB-310",
+            "RB-101",
+            "RB-104"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.809
+        },
+        {
+          "id": "ret-natural_language_paraphrase-020",
+          "category": "natural_language_paraphrase",
+          "expected_docs": [
+            "RB-310"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-WS-501",
+            "RB-101",
+            "RB-203",
+            "OPS-12"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 2.32
+        },
+        {
+          "id": "ret-natural_language_paraphrase-022",
+          "category": "natural_language_paraphrase",
+          "expected_docs": [
+            "RB-104"
+          ],
+          "top5": [
+            "RB-104",
+            "OPS-12",
+            "RB-101",
+            "RB-WS-501",
+            "RB-310"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.945
+        },
+        {
+          "id": "ret-natural_language_paraphrase-024",
+          "category": "natural_language_paraphrase",
+          "expected_docs": [
+            "OPS-12"
+          ],
+          "top5": [
+            "OPS-12",
+            "RB-101",
+            "SEC-07",
+            "RB-203",
+            "RB-WS-501"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.66
+        },
+        {
+          "id": "ret-natural_language_paraphrase-026",
+          "category": "natural_language_paraphrase",
+          "expected_docs": [
+            "RB-WS-501"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "OPS-12",
+            "RB-101",
+            "RB-310",
+            "RB-104"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 2.249
+        },
+        {
+          "id": "ret-natural_language_paraphrase-028",
+          "category": "natural_language_paraphrase",
+          "expected_docs": [
+            "RB-310"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-WS-501",
+            "RB-101",
+            "OPS-12",
+            "RB-203"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 2.275
+        },
+        {
+          "id": "ret-natural_language_paraphrase-030",
+          "category": "natural_language_paraphrase",
+          "expected_docs": [
+            "RB-104"
+          ],
+          "top5": [
+            "RB-104",
+            "OPS-12",
+            "RB-101",
+            "RB-WS-501",
+            "RB-310"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.769
+        },
+        {
+          "id": "ret-synonym-002",
+          "category": "synonym",
+          "expected_docs": [
+            "SEC-07"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "SEC-07",
+            "RB-203",
+            "OPS-12",
+            "RB-104"
+          ],
+          "first_relevant_rank": 2,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.503
+        },
+        {
+          "id": "ret-synonym-004",
+          "category": "synonym",
+          "expected_docs": [
+            "RB-429"
+          ],
+          "top5": [
+            "RB-429",
+            "OPS-12",
+            "RB-104",
+            "RB-WS-501",
+            "RB-203"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.698
+        },
+        {
+          "id": "ret-synonym-006",
+          "category": "synonym",
+          "expected_docs": [
+            "RB-203"
+          ],
+          "top5": [
+            "RB-203",
+            "OPS-12",
+            "RB-WS-501",
+            "RB-310",
+            "RB-101"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.463
+        },
+        {
+          "id": "ret-synonym-008",
+          "category": "synonym",
+          "expected_docs": [
+            "RB-101"
+          ],
+          "top5": [
+            "RB-101",
+            "RB-104",
+            "RB-429",
+            "OPS-12",
+            "SEC-07"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.431
+        },
+        {
+          "id": "ret-synonym-010",
+          "category": "synonym",
+          "expected_docs": [
+            "SEC-07"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "SEC-07",
+            "RB-203",
+            "RB-104",
+            "OPS-12"
+          ],
+          "first_relevant_rank": 2,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.626
+        },
+        {
+          "id": "ret-synonym-012",
+          "category": "synonym",
+          "expected_docs": [
+            "RB-429"
+          ],
+          "top5": [
+            "RB-429",
+            "OPS-12",
+            "RB-104",
+            "RB-WS-501",
+            "RB-203"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 2.326
+        },
+        {
+          "id": "ret-synonym-014",
+          "category": "synonym",
+          "expected_docs": [
+            "RB-203"
+          ],
+          "top5": [
+            "RB-203",
+            "OPS-12",
+            "RB-WS-501",
+            "RB-310",
+            "RB-101"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 2.391
+        },
+        {
+          "id": "ret-synonym-016",
+          "category": "synonym",
+          "expected_docs": [
+            "RB-101"
+          ],
+          "top5": [
+            "RB-101",
+            "RB-104",
+            "RB-429",
+            "OPS-12",
+            "SEC-07"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 2.369
+        },
+        {
+          "id": "ret-synonym-018",
+          "category": "synonym",
+          "expected_docs": [
+            "SEC-07"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "SEC-07",
+            "RB-203",
+            "RB-104",
+            "OPS-12"
+          ],
+          "first_relevant_rank": 2,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 2.412
+        },
+        {
+          "id": "ret-synonym-020",
+          "category": "synonym",
+          "expected_docs": [
+            "RB-429"
+          ],
+          "top5": [
+            "RB-429",
+            "OPS-12",
+            "RB-104",
+            "RB-WS-501",
+            "RB-310"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.972
+        },
+        {
+          "id": "ret-synonym-022",
+          "category": "synonym",
+          "expected_docs": [
+            "RB-203"
+          ],
+          "top5": [
+            "RB-203",
+            "OPS-12",
+            "RB-WS-501",
+            "RB-310",
+            "RB-101"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.564
+        },
+        {
+          "id": "ret-synonym-024",
+          "category": "synonym",
+          "expected_docs": [
+            "RB-101"
+          ],
+          "top5": [
+            "RB-101",
+            "RB-104",
+            "RB-429",
+            "OPS-12",
+            "SEC-07"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.512
+        },
+        {
+          "id": "ret-synonym-026",
+          "category": "synonym",
+          "expected_docs": [
+            "SEC-07"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "SEC-07",
+            "RB-203",
+            "RB-104",
+            "OPS-12"
+          ],
+          "first_relevant_rank": 2,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 2.218
+        },
+        {
+          "id": "ret-synonym-028",
+          "category": "synonym",
+          "expected_docs": [
+            "RB-429"
+          ],
+          "top5": [
+            "RB-429",
+            "OPS-12",
+            "RB-104",
+            "RB-WS-501",
+            "RB-203"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 2.356
+        },
+        {
+          "id": "ret-synonym-030",
+          "category": "synonym",
+          "expected_docs": [
+            "RB-203"
+          ],
+          "top5": [
+            "RB-203",
+            "OPS-12",
+            "RB-WS-501",
+            "RB-310",
+            "RB-101"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 2.354
+        },
+        {
+          "id": "ret-misleading_keyword-002",
+          "category": "misleading_keyword",
+          "expected_docs": [
+            "OPS-12"
+          ],
+          "top5": [
+            "OPS-12",
+            "RB-101",
+            "RB-WS-501",
+            "RB-429",
+            "RB-310"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 2.379
+        },
+        {
+          "id": "ret-misleading_keyword-004",
+          "category": "misleading_keyword",
+          "expected_docs": [
+            "RB-WS-501"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "RB-104",
+            "OPS-12",
+            "SEC-07",
+            "RB-101"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.818
+        },
+        {
+          "id": "ret-misleading_keyword-006",
+          "category": "misleading_keyword",
+          "expected_docs": [
+            "RB-310"
+          ],
+          "top5": [
+            "RB-101",
+            "RB-310",
+            "RB-WS-501",
+            "RB-203",
+            "OPS-12"
+          ],
+          "first_relevant_rank": 2,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.463
+        },
+        {
+          "id": "ret-misleading_keyword-008",
+          "category": "misleading_keyword",
+          "expected_docs": [
+            "RB-104"
+          ],
+          "top5": [
+            "RB-101",
+            "RB-104",
+            "OPS-12",
+            "RB-429",
+            "RB-WS-501"
+          ],
+          "first_relevant_rank": 2,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.839
+        },
+        {
+          "id": "ret-misleading_keyword-010",
+          "category": "misleading_keyword",
+          "expected_docs": [
+            "OPS-12"
+          ],
+          "top5": [
+            "OPS-12",
+            "RB-101",
+            "RB-WS-501",
+            "RB-429",
+            "RB-310"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.718
+        },
+        {
+          "id": "ret-misleading_keyword-012",
+          "category": "misleading_keyword",
+          "expected_docs": [
+            "RB-WS-501"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "RB-104",
+            "OPS-12",
+            "SEC-07",
+            "RB-101"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.601
+        },
+        {
+          "id": "ret-misleading_keyword-014",
+          "category": "misleading_keyword",
+          "expected_docs": [
+            "RB-310"
+          ],
+          "top5": [
+            "RB-101",
+            "RB-310",
+            "RB-WS-501",
+            "OPS-12",
+            "RB-203"
+          ],
+          "first_relevant_rank": 2,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.78
+        },
+        {
+          "id": "ret-misleading_keyword-016",
+          "category": "misleading_keyword",
+          "expected_docs": [
+            "RB-104"
+          ],
+          "top5": [
+            "RB-101",
+            "RB-104",
+            "OPS-12",
+            "RB-429",
+            "RB-WS-501"
+          ],
+          "first_relevant_rank": 2,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.512
+        },
+        {
+          "id": "ret-misleading_keyword-018",
+          "category": "misleading_keyword",
+          "expected_docs": [
+            "OPS-12"
+          ],
+          "top5": [
+            "OPS-12",
+            "RB-101",
+            "RB-WS-501",
+            "RB-310",
+            "RB-429"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.82
+        },
+        {
+          "id": "ret-misleading_keyword-020",
+          "category": "misleading_keyword",
+          "expected_docs": [
+            "RB-WS-501"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "RB-104",
+            "OPS-12",
+            "SEC-07",
+            "RB-101"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.606
+        },
+        {
+          "id": "ret-misleading_keyword-022",
+          "category": "misleading_keyword",
+          "expected_docs": [
+            "RB-310"
+          ],
+          "top5": [
+            "RB-101",
+            "RB-310",
+            "RB-WS-501",
+            "OPS-12",
+            "RB-203"
+          ],
+          "first_relevant_rank": 2,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.647
+        },
+        {
+          "id": "ret-misleading_keyword-024",
+          "category": "misleading_keyword",
+          "expected_docs": [
+            "RB-104"
+          ],
+          "top5": [
+            "RB-104",
+            "RB-101",
+            "OPS-12",
+            "RB-429",
+            "RB-WS-501"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.609
+        },
+        {
+          "id": "ret-misleading_keyword-026",
+          "category": "misleading_keyword",
+          "expected_docs": [
+            "OPS-12"
+          ],
+          "top5": [
+            "OPS-12",
+            "RB-101",
+            "RB-WS-501",
+            "RB-429",
+            "RB-310"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.501
+        },
+        {
+          "id": "ret-misleading_keyword-028",
+          "category": "misleading_keyword",
+          "expected_docs": [
+            "RB-WS-501"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "RB-104",
+            "OPS-12",
+            "SEC-07",
+            "RB-101"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 2.008
+        },
+        {
+          "id": "ret-misleading_keyword-030",
+          "category": "misleading_keyword",
+          "expected_docs": [
+            "RB-310"
+          ],
+          "top5": [
+            "RB-101",
+            "RB-310",
+            "RB-203",
+            "RB-WS-501",
+            "OPS-12"
+          ],
+          "first_relevant_rank": 2,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 2.438
+        },
+        {
+          "id": "ret-multi_symptom-002",
+          "category": "multi_symptom",
+          "expected_docs": [
+            "RB-101"
+          ],
+          "top5": [
+            "RB-101",
+            "RB-WS-501",
+            "RB-429",
+            "OPS-12",
+            "RB-104"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 2.325
+        },
+        {
+          "id": "ret-multi_symptom-004",
+          "category": "multi_symptom",
+          "expected_docs": [
+            "SEC-07"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "RB-104",
+            "SEC-07",
+            "RB-203",
+            "OPS-12"
+          ],
+          "first_relevant_rank": 3,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 2.343
+        },
+        {
+          "id": "ret-multi_symptom-006",
+          "category": "multi_symptom",
+          "expected_docs": [
+            "RB-429"
+          ],
+          "top5": [
+            "RB-429",
+            "RB-101",
+            "OPS-12",
+            "RB-104",
+            "RB-WS-501"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 2.04
+        },
+        {
+          "id": "ret-multi_symptom-008",
+          "category": "multi_symptom",
+          "expected_docs": [
+            "RB-203"
+          ],
+          "top5": [
+            "RB-101",
+            "OPS-12",
+            "RB-310",
+            "RB-203",
+            "RB-WS-501"
+          ],
+          "first_relevant_rank": 4,
+          "recall_at_3": 0.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.518
+        },
+        {
+          "id": "ret-multi_symptom-010",
+          "category": "multi_symptom",
+          "expected_docs": [
+            "RB-101"
+          ],
+          "top5": [
+            "RB-101",
+            "RB-WS-501",
+            "RB-429",
+            "OPS-12",
+            "RB-104"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 2.145
+        },
+        {
+          "id": "ret-multi_symptom-012",
+          "category": "multi_symptom",
+          "expected_docs": [
+            "SEC-07"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "SEC-07",
+            "RB-104",
+            "OPS-12",
+            "RB-203"
+          ],
+          "first_relevant_rank": 2,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.641
+        },
+        {
+          "id": "ret-multi_symptom-014",
+          "category": "multi_symptom",
+          "expected_docs": [
+            "RB-429"
+          ],
+          "top5": [
+            "RB-429",
+            "RB-101",
+            "OPS-12",
+            "RB-104",
+            "RB-WS-501"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.934
+        },
+        {
+          "id": "ret-multi_symptom-016",
+          "category": "multi_symptom",
+          "expected_docs": [
+            "RB-203"
+          ],
+          "top5": [
+            "RB-101",
+            "OPS-12",
+            "RB-310",
+            "RB-203",
+            "RB-429"
+          ],
+          "first_relevant_rank": 4,
+          "recall_at_3": 0.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 2.311
+        },
+        {
+          "id": "ret-multi_symptom-018",
+          "category": "multi_symptom",
+          "expected_docs": [
+            "RB-101"
+          ],
+          "top5": [
+            "RB-101",
+            "RB-WS-501",
+            "RB-429",
+            "OPS-12",
+            "RB-104"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 2.299
+        },
+        {
+          "id": "ret-multi_symptom-020",
+          "category": "multi_symptom",
+          "expected_docs": [
+            "SEC-07"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "SEC-07",
+            "RB-104",
+            "RB-203",
+            "OPS-12"
+          ],
+          "first_relevant_rank": 2,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 2.309
+        },
+        {
+          "id": "ret-multi_symptom-022",
+          "category": "multi_symptom",
+          "expected_docs": [
+            "RB-429"
+          ],
+          "top5": [
+            "RB-429",
+            "RB-101",
+            "OPS-12",
+            "RB-104",
+            "RB-WS-501"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 2.245
+        },
+        {
+          "id": "ret-multi_symptom-024",
+          "category": "multi_symptom",
+          "expected_docs": [
+            "RB-203"
+          ],
+          "top5": [
+            "RB-101",
+            "OPS-12",
+            "RB-310",
+            "RB-203",
+            "RB-WS-501"
+          ],
+          "first_relevant_rank": 4,
+          "recall_at_3": 0.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.543
+        },
+        {
+          "id": "ret-multi_symptom-026",
+          "category": "multi_symptom",
+          "expected_docs": [
+            "RB-101"
+          ],
+          "top5": [
+            "RB-101",
+            "RB-WS-501",
+            "RB-429",
+            "OPS-12",
+            "RB-104"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.726
+        },
+        {
+          "id": "ret-multi_symptom-028",
+          "category": "multi_symptom",
+          "expected_docs": [
+            "SEC-07"
+          ],
+          "top5": [
+            "RB-104",
+            "SEC-07",
+            "RB-WS-501",
+            "RB-203",
+            "OPS-12"
+          ],
+          "first_relevant_rank": 2,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.828
+        },
+        {
+          "id": "ret-multi_symptom-030",
+          "category": "multi_symptom",
+          "expected_docs": [
+            "RB-429"
+          ],
+          "top5": [
+            "RB-429",
+            "RB-101",
+            "OPS-12",
+            "RB-104",
+            "RB-WS-501"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.649
+        },
+        {
+          "id": "ret-weak_lexical_overlap-002",
+          "category": "weak_lexical_overlap",
+          "expected_docs": [
+            "RB-104"
+          ],
+          "top5": [
+            "RB-104",
+            "RB-101",
+            "OPS-12",
+            "RB-WS-501",
+            "SEC-07"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.693
+        },
+        {
+          "id": "ret-weak_lexical_overlap-004",
+          "category": "weak_lexical_overlap",
+          "expected_docs": [
+            "OPS-12"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "OPS-12",
+            "SEC-07",
+            "RB-203",
+            "RB-310"
+          ],
+          "first_relevant_rank": 2,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.58
+        },
+        {
+          "id": "ret-weak_lexical_overlap-006",
+          "category": "weak_lexical_overlap",
+          "expected_docs": [
+            "RB-WS-501"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "RB-310",
+            "RB-101",
+            "RB-104",
+            "OPS-12"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.552
+        },
+        {
+          "id": "ret-weak_lexical_overlap-008",
+          "category": "weak_lexical_overlap",
+          "expected_docs": [
+            "RB-310"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-WS-501",
+            "OPS-12",
+            "SEC-07",
+            "RB-101"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.481
+        },
+        {
+          "id": "ret-weak_lexical_overlap-010",
+          "category": "weak_lexical_overlap",
+          "expected_docs": [
+            "RB-104"
+          ],
+          "top5": [
+            "RB-104",
+            "RB-101",
+            "OPS-12",
+            "RB-WS-501",
+            "SEC-07"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.563
+        },
+        {
+          "id": "ret-weak_lexical_overlap-012",
+          "category": "weak_lexical_overlap",
+          "expected_docs": [
+            "OPS-12"
+          ],
+          "top5": [
+            "OPS-12",
+            "RB-WS-501",
+            "SEC-07",
+            "RB-203",
+            "RB-310"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.67
+        },
+        {
+          "id": "ret-weak_lexical_overlap-014",
+          "category": "weak_lexical_overlap",
+          "expected_docs": [
+            "RB-WS-501"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "RB-310",
+            "RB-101",
+            "RB-104",
+            "OPS-12"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.538
+        },
+        {
+          "id": "ret-weak_lexical_overlap-016",
+          "category": "weak_lexical_overlap",
+          "expected_docs": [
+            "RB-310"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-WS-501",
+            "OPS-12",
+            "SEC-07",
+            "RB-101"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 2.177
+        },
+        {
+          "id": "ret-weak_lexical_overlap-018",
+          "category": "weak_lexical_overlap",
+          "expected_docs": [
+            "RB-104"
+          ],
+          "top5": [
+            "RB-104",
+            "RB-101",
+            "OPS-12",
+            "RB-WS-501",
+            "SEC-07"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 2.298
+        },
+        {
+          "id": "ret-weak_lexical_overlap-020",
+          "category": "weak_lexical_overlap",
+          "expected_docs": [
+            "OPS-12"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "OPS-12",
+            "SEC-07",
+            "RB-310",
+            "RB-203"
+          ],
+          "first_relevant_rank": 2,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 2.336
+        },
+        {
+          "id": "ret-weak_lexical_overlap-022",
+          "category": "weak_lexical_overlap",
+          "expected_docs": [
+            "RB-WS-501"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "RB-310",
+            "RB-101",
+            "RB-104",
+            "OPS-12"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 2.285
+        },
+        {
+          "id": "ret-weak_lexical_overlap-024",
+          "category": "weak_lexical_overlap",
+          "expected_docs": [
+            "RB-310"
+          ],
+          "top5": [
+            "RB-310",
+            "RB-WS-501",
+            "OPS-12",
+            "SEC-07",
+            "RB-101"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 2.158
+        },
+        {
+          "id": "ret-weak_lexical_overlap-026",
+          "category": "weak_lexical_overlap",
+          "expected_docs": [
+            "RB-104"
+          ],
+          "top5": [
+            "RB-104",
+            "RB-101",
+            "OPS-12",
+            "RB-WS-501",
+            "SEC-07"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.488
+        },
+        {
+          "id": "ret-weak_lexical_overlap-028",
+          "category": "weak_lexical_overlap",
+          "expected_docs": [
+            "OPS-12"
+          ],
+          "top5": [
+            "OPS-12",
+            "RB-WS-501",
+            "SEC-07",
+            "RB-203",
+            "RB-310"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.869
+        },
+        {
+          "id": "ret-weak_lexical_overlap-030",
+          "category": "weak_lexical_overlap",
+          "expected_docs": [
+            "RB-WS-501"
+          ],
+          "top5": [
+            "RB-WS-501",
+            "RB-310",
+            "RB-101",
+            "RB-104",
+            "OPS-12"
+          ],
+          "first_relevant_rank": 1,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "latency_ms": 1.925
+        }
+      ]
+    }
+  },
+  "memory_usage": {
+    "measurement": "recursive-python-container-estimate",
+    "bm25_bytes": 453461,
+    "embedding_bytes": 987094,
+    "hybrid_bytes": 1440555
+  },
+  "hybrid_lift_over_bm25": {
+    "recall_at_3": 0.0381,
+    "recall_at_5": 0.0286,
+    "mrr": 0.1309,
+    "ndcg": 0.1055
+  },
+  "semantic_lift_over_bm25": {
+    "recall_at_3": 0.0381,
+    "recall_at_5": 0.0286,
+    "mrr": 0.1357,
+    "ndcg": 0.1092
+  },
+  "stable_hybrid_advantage": false,
+  "embedding_runtime_recommendation": "optional-no-stable-hybrid-advantage"
+}

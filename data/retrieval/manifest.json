@@ -1,0 +1,29 @@
+{
+  "schema": "harbor-retrieval-manifest/v1",
+  "dataset_version": "retrieval-210-v1",
+  "total_query_count": 210,
+  "categories": [
+    "exact_identifier",
+    "error_code",
+    "natural_language_paraphrase",
+    "synonym",
+    "misleading_keyword",
+    "multi_symptom",
+    "weak_lexical_overlap"
+  ],
+  "splits": {
+    "calibration": {
+      "path": "calibration/queries.json",
+      "query_count": 105,
+      "sha256": "f88f6bc9db37ae89f8ab9a89abda3af16c989477a743811e6ed3cd4453415b6b",
+      "tuning_allowed": true
+    },
+    "holdout": {
+      "path": "holdout/queries.json",
+      "query_count": 105,
+      "sha256": "57c558a4c1825dcf4acf722d5b72d15faa72657d476d939b73f5b473b693ba84",
+      "tuning_allowed": false
+    }
+  },
+  "holdout_frozen": true
+}

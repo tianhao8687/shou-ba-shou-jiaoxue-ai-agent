@@ -1,0 +1,16 @@
+{
+  "schema": "harbor-retrieval-config/v1",
+  "chunk": {
+    "target_characters": 960,
+    "overlap_characters": 0
+  },
+  "rrf": {
+    "pool": 16,
+    "constant": 30
+  },
+  "semantic": {
+    "lexical_threshold": 0.5,
+    "low_lexical_dense_weight": 1.0,
+    "high_lexical_dense_weight": 0.9
+  }
+}

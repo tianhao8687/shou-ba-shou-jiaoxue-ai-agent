@@ -61,10 +61,7 @@ def http_json(
 
 
 def compose(args: argparse.Namespace, *arguments: str) -> str:
-    command = ["docker", "compose"]
-    for path in args.compose_file:
-        command.extend(["-f", str(path)])
-    command.extend(arguments)
+    command = compose_command(args, *arguments)
     completed = subprocess.run(
         command,
         cwd=ROOT,
@@ -81,6 +78,14 @@ def compose(args: argparse.Namespace, *arguments: str) -> str:
             f"{' '.join(command)} failed: {completed.stderr.strip()[-1500:]}"
         )
     return completed.stdout.strip()
+
+
+def compose_command(args: argparse.Namespace, *arguments: str) -> list[str]:
+    command = ["docker", "compose"]
+    for path in args.compose_file:
+        command.extend(["-f", str(path)])
+    command.extend(arguments)
+    return command
 
 
 def login(args: argparse.Namespace) -> str:
@@ -237,6 +242,125 @@ def restart_database(args: argparse.Namespace) -> dict[str, Any]:
     }
 
 
+def poll_claimed_job(
+    args: argparse.Namespace, token: str, run_id: str, timeout: float = 30
+) -> dict[str, Any]:
+    deadline = time.monotonic() + timeout
+    last: list[dict[str, Any]] = []
+    while time.monotonic() < deadline:
+        request = Request(
+            f"{args.base_url.rstrip('/')}/api/runs/{run_id}/jobs",
+            headers={
+                "Accept": "application/json",
+                "Authorization": f"Bearer {token}",
+            },
+            method="GET",
+        )
+        try:
+            with urlopen(request, timeout=5) as response:
+                payload = json.loads(response.read().decode("utf-8"))
+            if isinstance(payload, list):
+                last = payload
+                claimed = next(
+                    (item for item in payload if item.get("status") == "claimed"),
+                    None,
+                )
+                if claimed is not None:
+                    return claimed
+        except (URLError, HTTPError, json.JSONDecodeError):
+            pass
+        time.sleep(0.1)
+    raise ReliabilityFailure(
+        f"run {run_id} was not observed in claimed state before timeout: {last}"
+    )
+
+
+def wait_agent_runs_lock(args: argparse.Namespace, timeout: float = 15) -> None:
+    deadline = time.monotonic() + timeout
+    query = (
+        "SELECT count(*) FROM pg_locks l JOIN pg_class c ON c.oid=l.relation "
+        "WHERE c.relname='agent_runs' AND l.mode='AccessExclusiveLock' AND l.granted"
+    )
+    while time.monotonic() < deadline:
+        observed = compose(
+            args,
+            "exec",
+            "-T",
+            "database",
+            "psql",
+            "-U",
+            "harbor",
+            "-d",
+            "harbor",
+            "-Atc",
+            query,
+        )
+        if observed.strip() == "1":
+            return
+        time.sleep(0.1)
+    raise ReliabilityFailure("failed to acquire deterministic agent_runs crash-window lock")
+
+
+def restart_database_after_claim(
+    args: argparse.Namespace, token: str
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Force the exact claim -> first Run read PostgreSQL crash window."""
+    compose(args, "stop", "worker")
+    run_id = start_run(args, token)
+    lock_command = compose_command(
+        args,
+        "exec",
+        "-T",
+        "database",
+        "psql",
+        "-U",
+        "harbor",
+        "-d",
+        "harbor",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-c",
+        "BEGIN; LOCK TABLE agent_runs IN ACCESS EXCLUSIVE MODE; SELECT pg_sleep(120);",
+    )
+    lock_process = subprocess.Popen(
+        lock_command,
+        cwd=ROOT,
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    try:
+        wait_agent_runs_lock(args)
+        compose(args, "start", "worker")
+        claimed = poll_claimed_job(args, token, run_id)
+        started = time.monotonic()
+        compose(args, "restart", "database")
+        wait_ready(args, ready=True)
+        compose(args, "start", "worker")
+        run = poll_run(args, token, run_id, timeout=150)
+        result = assert_completed(run)
+        result["latency_seconds"] = round(time.monotonic() - started, 3)
+        evidence = {
+            "kind": "database_restart_after_job_claim_before_node",
+            "run_id": run_id,
+            "job_id": claimed.get("id"),
+            "fencing_token_before_restart": claimed.get("fencing_token"),
+            "run_preserved": True,
+            "terminal_status": run.get("status"),
+            "duration_seconds": round(time.monotonic() - started, 3),
+        }
+        return evidence, result
+    finally:
+        if lock_process.poll() is None:
+            lock_process.terminate()
+            try:
+                lock_process.wait(timeout=3)
+            except subprocess.TimeoutExpired:
+                lock_process.kill()
+        compose(args, "start", "worker")
+
+
 def prometheus_outage(args: argparse.Namespace) -> dict[str, Any]:
     started = time.monotonic()
     compose(args, "stop", "prometheus")
@@ -269,6 +393,11 @@ def execute(args: argparse.Namespace) -> dict[str, Any]:
     token = login(args)
     results: list[dict[str, Any]] = []
     injections: list[dict[str, Any]] = []
+    if args.database_restart_after_claim:
+        injection, recovered = restart_database_after_claim(args, token)
+        injections.append(injection)
+        results.append(recovered)
+        token = login(args)
     prometheus_injected = False
     iteration = 0
     deadline = started + max(0.0, args.duration_seconds)
@@ -334,6 +463,7 @@ def parser() -> argparse.ArgumentParser:
     result.add_argument("--min-runs", type=int, default=10)
     result.add_argument("--worker-restart-every", type=int, default=0)
     result.add_argument("--database-restart-every", type=int, default=0)
+    result.add_argument("--database-restart-after-claim", action="store_true")
     result.add_argument("--prometheus-outage-once", action="store_true")
     result.add_argument(
         "--compose-file", action="append", type=Path, default=None

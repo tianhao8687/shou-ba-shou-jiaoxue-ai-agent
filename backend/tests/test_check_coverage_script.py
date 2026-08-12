@@ -8,6 +8,13 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "scripts" / "check-coverage.py"
+PASSING_MODULES = {
+    "app/store/sqlite.py": 90.0,
+    "app/store/idempotency.py": 70.0,
+    "app/agent/transitions.py": 90.0,
+    "app/tools/executor.py": 85.0,
+    "app/worker.py": 80.0,
+}
 
 
 def _run_gate(tmp_path: Path, files: dict[str, float]) -> subprocess.CompletedProcess[str]:
@@ -31,7 +38,7 @@ def _run_gate(tmp_path: Path, files: dict[str, float]) -> subprocess.CompletedPr
 def test_coverage_gate_accepts_windows_report_paths(tmp_path: Path) -> None:
     result = _run_gate(
         tmp_path,
-        {"app\\store.py": 76.0, "app\\worker.py": 80.0},
+        {path.replace("/", "\\"): value for path, value in PASSING_MODULES.items()},
     )
 
     assert result.returncode == 0, result.stderr
@@ -41,7 +48,10 @@ def test_coverage_gate_accepts_windows_report_paths(tmp_path: Path) -> None:
 def test_coverage_gate_fails_closed_when_a_required_module_is_missing(
     tmp_path: Path,
 ) -> None:
-    result = _run_gate(tmp_path, {"app/store.py": 76.0})
+    result = _run_gate(
+        tmp_path,
+        {path: value for path, value in PASSING_MODULES.items() if path != "app/worker.py"},
+    )
 
     assert result.returncode == 1
     assert "app/worker.py" in result.stderr

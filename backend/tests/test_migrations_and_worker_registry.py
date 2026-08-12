@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from contextlib import closing
 import sqlite3
 import time
 
@@ -11,7 +12,7 @@ from app.store import SQLiteStore
 
 def test_sqlite_migrations_upgrade_legacy_schema_without_losing_rows(tmp_path) -> None:
     path = tmp_path / "legacy.db"
-    with sqlite3.connect(path) as connection:
+    with closing(sqlite3.connect(path)) as connection, connection:
         connection.executescript(
             """
             CREATE TABLE evaluation_reports (
@@ -28,7 +29,7 @@ def test_sqlite_migrations_upgrade_legacy_schema_without_losing_rows(tmp_path) -
     store.initialize()
     store.initialize()
 
-    with sqlite3.connect(path) as connection:
+    with closing(sqlite3.connect(path)) as connection, connection:
         versions = [
             row[0]
             for row in connection.execute(
@@ -56,7 +57,7 @@ def test_migration_checksum_drift_fails_closed(tmp_path) -> None:
     path = tmp_path / "drift.db"
     store = SQLiteStore(f"sqlite:///{path}")
     store.initialize()
-    with sqlite3.connect(path) as connection:
+    with closing(sqlite3.connect(path)) as connection, connection:
         connection.execute(
             "UPDATE schema_migrations SET checksum='tampered' WHERE version=1"
         )

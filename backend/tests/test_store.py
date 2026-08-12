@@ -1,3 +1,4 @@
+from contextlib import closing
 from pathlib import Path
 import sqlite3
 from threading import Barrier, Lock, Thread
@@ -111,7 +112,7 @@ def test_run_and_job_are_committed_atomically(tmp_path: Path) -> None:
     database = tmp_path / "atomic.db"
     store = SQLiteStore(f"sqlite:///{database}")
     store.initialize()
-    with sqlite3.connect(database) as connection:
+    with closing(sqlite3.connect(database)) as connection, connection:
         connection.execute(
             """
             CREATE TRIGGER reject_job_insert

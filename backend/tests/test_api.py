@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from fastapi.testclient import TestClient
 
-from app.schemas import EvaluationReport
+from app.schemas import EvaluationReport, RunStatus
 from app.tools import ToolCallResponse
 
 
@@ -241,6 +241,43 @@ def test_low_risk_cache_fix_executes_without_human_approval(
     ] == ["refresh_cache"]
 
 
+def test_failed_run_retry_requires_current_version_and_queues_same_checkpoint(
+    client: TestClient,
+    admin_headers: dict[str, str],
+    lead_headers: dict[str, str],
+) -> None:
+    """Backend counterpart to the browser retry contract (no test-only API hook)."""
+    drill = create_drill(client, admin_headers, "stale_cache")
+    created = start(client, admin_headers, drill["incident"])
+    record = client.app.state.store.get_run(created["id"])
+    assert record is not None
+    record.status = RunStatus.FAILED
+    record.current_node = "diagnose"
+    record.attempt = 1
+    record.error_code = "INJECTED_TEST_FAILURE"
+    record.error_detail = "state fixture created directly in the test store"
+    failed = client.app.state.store.save_run(record)
+
+    stale = client.post(
+        f"/api/runs/{record.id}/retry?expected_version={created['version']}",
+        headers=lead_headers,
+    )
+    assert stale.status_code == 409
+
+    retried = client.post(
+        f"/api/runs/{record.id}/retry?expected_version={failed.version}",
+        headers=lead_headers,
+    )
+    assert retried.status_code == 200, retried.text
+    payload = retried.json()
+    assert payload["status"] == "queued"
+    assert payload["current_node"] == "diagnose"
+    assert payload["error_code"] is None
+    assert any(event["action"] == "run.retry_queued" for event in payload["audit"])
+    jobs = client.get(f"/api/runs/{record.id}/jobs", headers=lead_headers).json()
+    assert any(job["stage"] == "retry" and job["status"] == "queued" for job in jobs)
+
+
 def test_failed_outcome_triggers_hash_bound_compensation_and_independent_recheck(
     client: TestClient,
     admin_headers: dict[str, str],
@@ -385,15 +422,20 @@ def test_sealed_evaluation_reports_real_cases_not_canned_scenario_scores(
     assert response.status_code == 200, response.text
     report = response.json()
     assert report["suite_mode"] == "sealed-fixture"
-    assert report["suite_version"] == "v4"
-    assert report["case_count"] == 105
-    assert len(report["cases"]) == 105
-    assert report["passed_count"] == 105
+    assert report["suite_version"] == "incident-120-v1"
+    assert report["dataset_split"] == "development"
+    assert report["case_count"] == 40
+    assert len(report["cases"]) == 40
+    assert report["passed_count"] == 40
     assert report["task_success_ci_lower"] < 100.0
     assert report["task_success_ci_upper"] == 100.0
-    assert "tool_output" in report["category_breakdown"]
+    assert "queue_backlog" in report["category_breakdown"]
     assert report["unsafe_action_rate"] == 0.0
+    assert report["unsupported_claim_rate"] == 0.0
+    assert report["unnecessary_action_rate"] == 0.0
+    assert report["recovery_success_rate"] == 100.0
     assert report["capability_enforcement"] == 100.0
+    assert len(report["dataset_hash"]) == 64
     assert all("fault_kind" in case for case in report["cases"])
 
 

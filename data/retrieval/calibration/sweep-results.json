@@ -1,0 +1,472 @@
+{
+  "schema": "harbor-retrieval-calibration/v1",
+  "generated_at": "2026-08-12T08:31:03.756103+00:00",
+  "git_commit": "e3959c7ea63d3b2a40448b3d2031133838dd83da",
+  "calibration_dataset": "calibration/queries.json",
+  "dataset_version": "retrieval-210-v1",
+  "dataset_hash": "f88f6bc9db37ae89f8ab9a89abda3af16c989477a743811e6ed3cd4453415b6b",
+  "query_count": 105,
+  "model": "OpenVINO/Qwen3-Embedding-0.6B-int4-cw-ov",
+  "baseline_config": {
+    "schema": "harbor-retrieval-config/v1",
+    "chunk": {
+      "target_characters": 960,
+      "overlap_characters": 0
+    },
+    "rrf": {
+      "pool": 16,
+      "constant": 60
+    },
+    "semantic": {
+      "lexical_threshold": 0.35,
+      "low_lexical_dense_weight": 1.0,
+      "high_lexical_dense_weight": 0.9
+    }
+  },
+  "baseline_config_hash": "a84a4955867399d8a9404b826cc3375ab720bf687e7c2d886e4d9f911ff6e647",
+  "baseline_metrics": {
+    "recall_at_3": 0.961905,
+    "recall_at_5": 1.0,
+    "mrr": 0.903175,
+    "ndcg": 0.927855,
+    "objective": 0.942627
+  },
+  "sweeps": {
+    "chunk.target_characters": {
+      "metric": "0.4*MRR + 0.3*Recall@3 + 0.2*Recall@5 + 0.1*nDCG",
+      "search_range": [
+        480,
+        720,
+        960
+      ],
+      "selected_value": 960,
+      "sensitivity": 0.0,
+      "effect": "low",
+      "results": [
+        {
+          "value": 480,
+          "metrics": {
+            "recall_at_3": 0.961905,
+            "recall_at_5": 1.0,
+            "mrr": 0.903175,
+            "ndcg": 0.927855,
+            "objective": 0.942627
+          }
+        },
+        {
+          "value": 720,
+          "metrics": {
+            "recall_at_3": 0.961905,
+            "recall_at_5": 1.0,
+            "mrr": 0.903175,
+            "ndcg": 0.927855,
+            "objective": 0.942627
+          }
+        },
+        {
+          "value": 960,
+          "metrics": {
+            "recall_at_3": 0.961905,
+            "recall_at_5": 1.0,
+            "mrr": 0.903175,
+            "ndcg": 0.927855,
+            "objective": 0.942627
+          }
+        }
+      ]
+    },
+    "chunk.overlap_characters": {
+      "metric": "0.4*MRR + 0.3*Recall@3 + 0.2*Recall@5 + 0.1*nDCG",
+      "search_range": [
+        0,
+        120,
+        240
+      ],
+      "selected_value": 0,
+      "sensitivity": 0.0,
+      "effect": "low",
+      "results": [
+        {
+          "value": 0,
+          "metrics": {
+            "recall_at_3": 0.961905,
+            "recall_at_5": 1.0,
+            "mrr": 0.903175,
+            "ndcg": 0.927855,
+            "objective": 0.942627
+          }
+        },
+        {
+          "value": 120,
+          "metrics": {
+            "recall_at_3": 0.961905,
+            "recall_at_5": 1.0,
+            "mrr": 0.903175,
+            "ndcg": 0.927855,
+            "objective": 0.942627
+          }
+        },
+        {
+          "value": 240,
+          "metrics": {
+            "recall_at_3": 0.961905,
+            "recall_at_5": 1.0,
+            "mrr": 0.903175,
+            "ndcg": 0.927855,
+            "objective": 0.942627
+          }
+        }
+      ]
+    },
+    "rrf.pool": {
+      "metric": "0.4*MRR + 0.3*Recall@3 + 0.2*Recall@5 + 0.1*nDCG",
+      "search_range": [
+        8,
+        16,
+        24,
+        48,
+        96
+      ],
+      "selected_value": 16,
+      "sensitivity": 0.010545,
+      "effect": "material",
+      "results": [
+        {
+          "value": 8,
+          "metrics": {
+            "recall_at_3": 0.961905,
+            "recall_at_5": 1.0,
+            "mrr": 0.880952,
+            "ndcg": 0.911301,
+            "objective": 0.932082
+          }
+        },
+        {
+          "value": 16,
+          "metrics": {
+            "recall_at_3": 0.961905,
+            "recall_at_5": 1.0,
+            "mrr": 0.903175,
+            "ndcg": 0.927855,
+            "objective": 0.942627
+          }
+        },
+        {
+          "value": 24,
+          "metrics": {
+            "recall_at_3": 0.961905,
+            "recall_at_5": 1.0,
+            "mrr": 0.903175,
+            "ndcg": 0.927855,
+            "objective": 0.942627
+          }
+        },
+        {
+          "value": 48,
+          "metrics": {
+            "recall_at_3": 0.961905,
+            "recall_at_5": 1.0,
+            "mrr": 0.903175,
+            "ndcg": 0.927855,
+            "objective": 0.942627
+          }
+        },
+        {
+          "value": 96,
+          "metrics": {
+            "recall_at_3": 0.961905,
+            "recall_at_5": 1.0,
+            "mrr": 0.903175,
+            "ndcg": 0.927855,
+            "objective": 0.942627
+          }
+        }
+      ]
+    },
+    "rrf.constant": {
+      "metric": "0.4*MRR + 0.3*Recall@3 + 0.2*Recall@5 + 0.1*nDCG",
+      "search_range": [
+        10,
+        30,
+        60,
+        90
+      ],
+      "selected_value": 30,
+      "sensitivity": 0.025026,
+      "effect": "material",
+      "results": [
+        {
+          "value": 10,
+          "metrics": {
+            "recall_at_3": 0.961905,
+            "recall_at_5": 1.0,
+            "mrr": 0.92381,
+            "ndcg": 0.943162,
+            "objective": 0.952412
+          }
+        },
+        {
+          "value": 30,
+          "metrics": {
+            "recall_at_3": 0.961905,
+            "recall_at_5": 1.0,
+            "mrr": 0.92381,
+            "ndcg": 0.943162,
+            "objective": 0.952412
+          }
+        },
+        {
+          "value": 60,
+          "metrics": {
+            "recall_at_3": 0.961905,
+            "recall_at_5": 1.0,
+            "mrr": 0.903175,
+            "ndcg": 0.927855,
+            "objective": 0.942627
+          }
+        },
+        {
+          "value": 90,
+          "metrics": {
+            "recall_at_3": 0.92381,
+            "recall_at_5": 1.0,
+            "mrr": 0.895238,
+            "ndcg": 0.921473,
+            "objective": 0.927386
+          }
+        }
+      ]
+    },
+    "semantic.lexical_threshold": {
+      "metric": "0.4*MRR + 0.3*Recall@3 + 0.2*Recall@5 + 0.1*nDCG",
+      "search_range": [
+        0.2,
+        0.35,
+        0.5,
+        0.65,
+        0.8
+      ],
+      "selected_value": 0.5,
+      "sensitivity": 0.004513,
+      "effect": "low",
+      "results": [
+        {
+          "value": 0.2,
+          "metrics": {
+            "recall_at_3": 0.961905,
+            "recall_at_5": 1.0,
+            "mrr": 0.92381,
+            "ndcg": 0.943162,
+            "objective": 0.952412
+          }
+        },
+        {
+          "value": 0.35,
+          "metrics": {
+            "recall_at_3": 0.961905,
+            "recall_at_5": 1.0,
+            "mrr": 0.92381,
+            "ndcg": 0.943162,
+            "objective": 0.952412
+          }
+        },
+        {
+          "value": 0.5,
+          "metrics": {
+            "recall_at_3": 0.961905,
+            "recall_at_5": 1.0,
+            "mrr": 0.92381,
+            "ndcg": 0.943162,
+            "objective": 0.952412
+          }
+        },
+        {
+          "value": 0.65,
+          "metrics": {
+            "recall_at_3": 0.961905,
+            "recall_at_5": 1.0,
+            "mrr": 0.914286,
+            "ndcg": 0.936132,
+            "objective": 0.947899
+          }
+        },
+        {
+          "value": 0.8,
+          "metrics": {
+            "recall_at_3": 0.961905,
+            "recall_at_5": 1.0,
+            "mrr": 0.914286,
+            "ndcg": 0.936132,
+            "objective": 0.947899
+          }
+        }
+      ]
+    },
+    "semantic.low_lexical_dense_weight": {
+      "metric": "0.4*MRR + 0.3*Recall@3 + 0.2*Recall@5 + 0.1*nDCG",
+      "search_range": [
+        0.2,
+        0.4,
+        0.6,
+        0.8,
+        1.0
+      ],
+      "selected_value": 1.0,
+      "sensitivity": 0.090434,
+      "effect": "material",
+      "results": [
+        {
+          "value": 0.2,
+          "metrics": {
+            "recall_at_3": 0.866667,
+            "recall_at_5": 0.971429,
+            "mrr": 0.805952,
+            "ndcg": 0.853111,
+            "objective": 0.861978
+          }
+        },
+        {
+          "value": 0.4,
+          "metrics": {
+            "recall_at_3": 0.847619,
+            "recall_at_5": 0.971429,
+            "mrr": 0.831349,
+            "ndcg": 0.872311,
+            "objective": 0.868342
+          }
+        },
+        {
+          "value": 0.6,
+          "metrics": {
+            "recall_at_3": 0.933333,
+            "recall_at_5": 0.971429,
+            "mrr": 0.893197,
+            "ndcg": 0.919344,
+            "objective": 0.923499
+          }
+        },
+        {
+          "value": 0.8,
+          "metrics": {
+            "recall_at_3": 0.933333,
+            "recall_at_5": 1.0,
+            "mrr": 0.915238,
+            "ndcg": 0.936188,
+            "objective": 0.939714
+          }
+        },
+        {
+          "value": 1.0,
+          "metrics": {
+            "recall_at_3": 0.961905,
+            "recall_at_5": 1.0,
+            "mrr": 0.92381,
+            "ndcg": 0.943162,
+            "objective": 0.952412
+          }
+        }
+      ]
+    },
+    "semantic.high_lexical_dense_weight": {
+      "metric": "0.4*MRR + 0.3*Recall@3 + 0.2*Recall@5 + 0.1*nDCG",
+      "search_range": [
+        0.0,
+        0.1,
+        0.3,
+        0.5,
+        0.7,
+        0.9
+      ],
+      "selected_value": 0.9,
+      "sensitivity": 0.052007,
+      "effect": "material",
+      "results": [
+        {
+          "value": 0.0,
+          "metrics": {
+            "recall_at_3": 0.92381,
+            "recall_at_5": 0.961905,
+            "mrr": 0.854649,
+            "ndcg": 0.890215,
+            "objective": 0.900405
+          }
+        },
+        {
+          "value": 0.1,
+          "metrics": {
+            "recall_at_3": 0.92381,
+            "recall_at_5": 0.961905,
+            "mrr": 0.860998,
+            "ndcg": 0.895203,
+            "objective": 0.903443
+          }
+        },
+        {
+          "value": 0.3,
+          "metrics": {
+            "recall_at_3": 0.961905,
+            "recall_at_5": 0.961905,
+            "mrr": 0.851474,
+            "ndcg": 0.88832,
+            "objective": 0.910374
+          }
+        },
+        {
+          "value": 0.5,
+          "metrics": {
+            "recall_at_3": 0.961905,
+            "recall_at_5": 1.0,
+            "mrr": 0.885397,
+            "ndcg": 0.913942,
+            "objective": 0.934124
+          }
+        },
+        {
+          "value": 0.7,
+          "metrics": {
+            "recall_at_3": 0.92381,
+            "recall_at_5": 1.0,
+            "mrr": 0.907619,
+            "ndcg": 0.930349,
+            "objective": 0.933225
+          }
+        },
+        {
+          "value": 0.9,
+          "metrics": {
+            "recall_at_3": 0.961905,
+            "recall_at_5": 1.0,
+            "mrr": 0.92381,
+            "ndcg": 0.943162,
+            "objective": 0.952412
+          }
+        }
+      ]
+    }
+  },
+  "selected_config": {
+    "schema": "harbor-retrieval-config/v1",
+    "chunk": {
+      "target_characters": 960,
+      "overlap_characters": 0
+    },
+    "rrf": {
+      "pool": 16,
+      "constant": 30
+    },
+    "semantic": {
+      "lexical_threshold": 0.5,
+      "low_lexical_dense_weight": 1.0,
+      "high_lexical_dense_weight": 0.9
+    }
+  },
+  "selected_config_hash": "baf4d50eb8bffecd22030dd43bf579b417f3ac5d05b8b6092f81417834e7f731",
+  "selected_metrics": {
+    "recall_at_3": 0.961905,
+    "recall_at_5": 1.0,
+    "mrr": 0.92381,
+    "ndcg": 0.943162,
+    "objective": 0.952412
+  },
+  "holdout_accessed": false
+}

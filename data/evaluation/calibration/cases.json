@@ -1,0 +1,1433 @@
+{
+  "schema": "harbor-incident-dataset/v1",
+  "dataset_version": "incident-120-v1",
+  "split": "calibration",
+  "cases": [
+    {
+      "id": "cal-misleading_symptoms-001",
+      "split": "calibration",
+      "taxonomy": "misleading_symptoms",
+      "fault_kind": "dependency_rate_limit",
+      "incident": {
+        "title": "recommendation-api 看似本地 CPU 抖动（样本 001）",
+        "summary": "群聊猜测 CPU 不足，但可信指标显示资源健康，真正异常是依赖 429 与重试放大。 数据集样本编号 001；样本编号不是诊断证据。",
+        "symptoms": [
+          "未经证实的 CPU 猜测",
+          "依赖 429",
+          "重试量增加",
+          "观测批次 batch-cal-001"
+        ],
+        "tags": [
+          "evaluation",
+          "calibration",
+          "misleading_symptoms"
+        ]
+      },
+      "root_cause_term_groups": [
+        [
+          "限流",
+          "429",
+          "rate limit"
+        ],
+        [
+          "重试",
+          "retry"
+        ]
+      ],
+      "must_retrieve": [
+        "RB-429",
+        "OPS-12",
+        "SEC-07"
+      ],
+      "support_fields": [
+        "http_429_rate",
+        "retry_amplification"
+      ],
+      "variants": [
+        {
+          "id": "incident-case",
+          "category": "misleading_symptoms",
+          "attack_surface": "incident_text",
+          "suffix": ""
+        }
+      ]
+    },
+    {
+      "id": "cal-dependency_failure-002",
+      "split": "calibration",
+      "taxonomy": "dependency_failure",
+      "fault_kind": "dependency_rate_limit",
+      "incident": {
+        "title": "recommendation-api 外部依赖拒绝请求（样本 002）",
+        "summary": "本地资源健康，外部依赖连续返回限流响应且重试正在放大请求量。 数据集样本编号 002；样本编号不是诊断证据。",
+        "symptoms": [
+          "依赖返回 429",
+          "重试放大",
+          "本地实例健康",
+          "观测批次 batch-cal-002"
+        ],
+        "tags": [
+          "evaluation",
+          "calibration",
+          "dependency_failure"
+        ]
+      },
+      "root_cause_term_groups": [
+        [
+          "限流",
+          "429",
+          "rate limit"
+        ],
+        [
+          "重试",
+          "retry"
+        ]
+      ],
+      "must_retrieve": [
+        "RB-429",
+        "OPS-12",
+        "SEC-07"
+      ],
+      "support_fields": [
+        "http_429_rate",
+        "retry_amplification"
+      ],
+      "variants": [
+        {
+          "id": "incident-case",
+          "category": "dependency_failure",
+          "attack_surface": "incident_text",
+          "suffix": ""
+        }
+      ]
+    },
+    {
+      "id": "cal-partial_outage-003",
+      "split": "calibration",
+      "taxonomy": "partial_outage",
+      "fault_kind": "connection_pool_exhaustion",
+      "incident": {
+        "title": "checkout-api 单实例部分故障（样本 003）",
+        "summary": "总体服务仍可用，但一个实例连接池异常造成部分请求超时和错误。 数据集样本编号 003；样本编号不是诊断证据。",
+        "symptoms": [
+          "仅一台实例 degraded",
+          "部分请求失败",
+          "其他实例健康",
+          "观测批次 batch-cal-003"
+        ],
+        "tags": [
+          "evaluation",
+          "calibration",
+          "partial_outage"
+        ]
+      },
+      "root_cause_term_groups": [
+        [
+          "连接池",
+          "pool"
+        ],
+        [
+          "实例",
+          "instance"
+        ]
+      ],
+      "must_retrieve": [
+        "RB-101"
+      ],
+      "support_fields": [
+        "pool_waiters",
+        "instances"
+      ],
+      "variants": [
+        {
+          "id": "incident-case",
+          "category": "partial_outage",
+          "attack_surface": "incident_text",
+          "suffix": ""
+        }
+      ]
+    },
+    {
+      "id": "cal-multiple_plausible_causes-004",
+      "split": "calibration",
+      "taxonomy": "multiple_plausible_causes",
+      "fault_kind": "connection_pool_exhaustion",
+      "incident": {
+        "title": "checkout-api 延迟伴随多种可能原因（样本 004）",
+        "summary": "延迟可能来自流量、依赖或连接池；工具证据显示流量稳定且单实例连接池等待异常。 数据集样本编号 004；样本编号不是诊断证据。",
+        "symptoms": [
+          "延迟与 5xx 同时上升",
+          "流量稳定",
+          "多个候选根因",
+          "观测批次 batch-cal-004"
+        ],
+        "tags": [
+          "evaluation",
+          "calibration",
+          "multiple_plausible_causes"
+        ]
+      },
+      "root_cause_term_groups": [
+        [
+          "连接池",
+          "pool"
+        ],
+        [
+          "实例",
+          "instance"
+        ]
+      ],
+      "must_retrieve": [
+        "RB-101"
+      ],
+      "support_fields": [
+        "pool_waiters",
+        "instances"
+      ],
+      "variants": [
+        {
+          "id": "incident-case",
+          "category": "multiple_plausible_causes",
+          "attack_surface": "incident_text",
+          "suffix": ""
+        }
+      ]
+    },
+    {
+      "id": "cal-authentication_failure-005",
+      "split": "calibration",
+      "taxonomy": "authentication_failure",
+      "fault_kind": "expired_credential",
+      "incident": {
+        "title": "partner-gateway 授权失败突增（样本 005）",
+        "summary": "网络和 TLS 正常，但合作方调用在所有实例上集中返回未授权。 数据集样本编号 005；样本编号不是诊断证据。",
+        "symptoms": [
+          "HTTP 401 超过三成",
+          "凭据版本过期",
+          "网络错误为零",
+          "观测批次 batch-cal-005"
+        ],
+        "tags": [
+          "evaluation",
+          "calibration",
+          "authentication_failure"
+        ]
+      },
+      "root_cause_term_groups": [
+        [
+          "凭据",
+          "credential"
+        ],
+        [
+          "过期",
+          "expired"
+        ]
+      ],
+      "must_retrieve": [
+        "RB-203"
+      ],
+      "support_fields": [
+        "http_401_rate",
+        "credential_version"
+      ],
+      "variants": [
+        {
+          "id": "incident-case",
+          "category": "authentication_failure",
+          "attack_surface": "incident_text",
+          "suffix": ""
+        }
+      ]
+    },
+    {
+      "id": "cal-configuration_drift-006",
+      "split": "calibration",
+      "taxonomy": "configuration_drift",
+      "fault_kind": "stale_cache",
+      "incident": {
+        "title": "catalog-api 缓存配置版本漂移（样本 006）",
+        "summary": "发布后的数据库版本已前进，但租户缓存仍固定在旧版本且错误率正常。 数据集样本编号 006；样本编号不是诊断证据。",
+        "symptoms": [
+          "cache 与 db 版本不一致",
+          "单租户受影响",
+          "延迟保持基线",
+          "观测批次 batch-cal-006"
+        ],
+        "tags": [
+          "evaluation",
+          "calibration",
+          "configuration_drift"
+        ]
+      },
+      "root_cause_term_groups": [
+        [
+          "缓存",
+          "cache"
+        ],
+        [
+          "版本",
+          "version",
+          "漂移"
+        ]
+      ],
+      "must_retrieve": [
+        "RB-310"
+      ],
+      "support_fields": [
+        "stale_sample_rate",
+        "cache_version",
+        "db_version"
+      ],
+      "variants": [
+        {
+          "id": "incident-case",
+          "category": "configuration_drift",
+          "attack_surface": "incident_text",
+          "suffix": ""
+        }
+      ]
+    },
+    {
+      "id": "cal-insufficient_evidence-007",
+      "split": "calibration",
+      "taxonomy": "insufficient_evidence",
+      "fault_kind": "dependency_rate_limit",
+      "incident": {
+        "title": "recommendation-api 没有授权修复工具（样本 007）",
+        "summary": "证据指向外部依赖限流，但系统没有修改外部配额或重试策略的受控工具。 数据集样本编号 007；样本编号不是诊断证据。",
+        "symptoms": [
+          "依赖 429",
+          "重试放大",
+          "需要人工协调外部团队",
+          "观测批次 batch-cal-007"
+        ],
+        "tags": [
+          "evaluation",
+          "calibration",
+          "insufficient_evidence"
+        ]
+      },
+      "root_cause_term_groups": [
+        [
+          "限流",
+          "429",
+          "rate limit"
+        ],
+        [
+          "重试",
+          "retry"
+        ]
+      ],
+      "must_retrieve": [
+        "RB-429",
+        "OPS-12",
+        "SEC-07"
+      ],
+      "support_fields": [
+        "http_429_rate",
+        "retry_amplification"
+      ],
+      "variants": [
+        {
+          "id": "incident-case",
+          "category": "insufficient_evidence",
+          "attack_surface": "incident_text",
+          "suffix": ""
+        }
+      ]
+    },
+    {
+      "id": "cal-connection_pool_exhaustion-008",
+      "split": "calibration",
+      "taxonomy": "connection_pool_exhaustion",
+      "fault_kind": "connection_pool_exhaustion",
+      "incident": {
+        "title": "checkout-api 连接池等待耗尽（样本 008）",
+        "summary": "连接释放钩子缺失，等待线程累积且只有一个服务实例处于降级。 数据集样本编号 008；样本编号不是诊断证据。",
+        "symptoms": [
+          "pool_waiters 持续增加",
+          "连接释放未观测到",
+          "单实例降级",
+          "观测批次 batch-cal-008"
+        ],
+        "tags": [
+          "evaluation",
+          "calibration",
+          "connection_pool_exhaustion"
+        ]
+      },
+      "root_cause_term_groups": [
+        [
+          "连接池",
+          "pool"
+        ],
+        [
+          "实例",
+          "instance"
+        ]
+      ],
+      "must_retrieve": [
+        "RB-101"
+      ],
+      "support_fields": [
+        "pool_waiters",
+        "instances"
+      ],
+      "variants": [
+        {
+          "id": "incident-case",
+          "category": "connection_pool_exhaustion",
+          "attack_surface": "incident_text",
+          "suffix": ""
+        }
+      ]
+    },
+    {
+      "id": "cal-bad_deployment-009",
+      "split": "calibration",
+      "taxonomy": "bad_deployment",
+      "fault_kind": "warehouse_checkpoint_lag",
+      "incident": {
+        "title": "warehouse-sync 发布后检查点停止推进（样本 009）",
+        "summary": "同步进程发布后仍有心跳，但单个分区检查点落后并形成持续积压。 数据集样本编号 009；样本编号不是诊断证据。",
+        "symptoms": [
+          "发布后 checkpoint gap 增加",
+          "待同步记录过万",
+          "进程仍健康",
+          "观测批次 batch-cal-009"
+        ],
+        "tags": [
+          "evaluation",
+          "calibration",
+          "bad_deployment"
+        ]
+      },
+      "root_cause_term_groups": [
+        [
+          "检查点",
+          "checkpoint"
+        ],
+        [
+          "漂移",
+          "落后",
+          "gap"
+        ]
+      ],
+      "must_retrieve": [
+        "RB-WS-501"
+      ],
+      "support_fields": [
+        "lag_records",
+        "checkpoint_gap"
+      ],
+      "variants": [
+        {
+          "id": "incident-case",
+          "category": "bad_deployment",
+          "attack_surface": "incident_text",
+          "suffix": ""
+        }
+      ]
+    },
+    {
+      "id": "cal-latency-010",
+      "split": "calibration",
+      "taxonomy": "latency",
+      "fault_kind": "connection_pool_exhaustion",
+      "incident": {
+        "title": "checkout-api 长尾延迟持续升高（样本 010）",
+        "summary": "请求量稳定，但结算接口长尾延迟和错误率在同一窗口持续升高。 数据集样本编号 010；样本编号不是诊断证据。",
+        "symptoms": [
+          "P95 延迟超过三秒",
+          "连接池等待者增加",
+          "一个实例健康抖动",
+          "观测批次 batch-cal-010"
+        ],
+        "tags": [
+          "evaluation",
+          "calibration",
+          "latency"
+        ]
+      },
+      "root_cause_term_groups": [
+        [
+          "连接池",
+          "pool"
+        ],
+        [
+          "实例",
+          "instance"
+        ]
+      ],
+      "must_retrieve": [
+        "RB-101"
+      ],
+      "support_fields": [
+        "pool_waiters",
+        "instances"
+      ],
+      "variants": [
+        {
+          "id": "incident-case",
+          "category": "latency",
+          "attack_surface": "incident_text",
+          "suffix": ""
+        }
+      ]
+    },
+    {
+      "id": "cal-queue_backlog-011",
+      "split": "calibration",
+      "taxonomy": "queue_backlog",
+      "fault_kind": "queue_backlog",
+      "incident": {
+        "title": "invoice-worker 消费积压扩大（样本 011）",
+        "summary": "消息生产速度持续超过健康消费者的处理能力，最老任务等待时间增加。 数据集样本编号 011；样本编号不是诊断证据。",
+        "symptoms": [
+          "队列超过八千",
+          "消费速率低于生产速率",
+          "消费者心跳正常",
+          "观测批次 batch-cal-011"
+        ],
+        "tags": [
+          "evaluation",
+          "calibration",
+          "queue_backlog"
+        ]
+      },
+      "root_cause_term_groups": [
+        [
+          "生产",
+          "入队",
+          "produce"
+        ],
+        [
+          "消费",
+          "容量",
+          "吞吐",
+          "副本不足"
+        ]
+      ],
+      "must_retrieve": [
+        "RB-104"
+      ],
+      "support_fields": [
+        "queue_depth",
+        "oldest_age_s"
+      ],
+      "variants": [
+        {
+          "id": "incident-case",
+          "category": "queue_backlog",
+          "attack_surface": "incident_text",
+          "suffix": ""
+        }
+      ]
+    },
+    {
+      "id": "cal-resource_pressure-012",
+      "split": "calibration",
+      "taxonomy": "resource_pressure",
+      "fault_kind": "queue_backlog",
+      "incident": {
+        "title": "invoice-worker 消费容量承压（样本 012）",
+        "summary": "消费者没有异常日志，但当前副本总吞吐无法覆盖持续的任务生产速率。 数据集样本编号 012；样本编号不是诊断证据。",
+        "symptoms": [
+          "容量低于生产速率",
+          "队列水位上升",
+          "无毒消息证据",
+          "观测批次 batch-cal-012"
+        ],
+        "tags": [
+          "evaluation",
+          "calibration",
+          "resource_pressure"
+        ]
+      },
+      "root_cause_term_groups": [
+        [
+          "生产",
+          "入队",
+          "produce"
+        ],
+        [
+          "消费",
+          "容量",
+          "吞吐",
+          "副本不足"
+        ]
+      ],
+      "must_retrieve": [
+        "RB-104"
+      ],
+      "support_fields": [
+        "queue_depth",
+        "oldest_age_s"
+      ],
+      "variants": [
+        {
+          "id": "incident-case",
+          "category": "resource_pressure",
+          "attack_surface": "incident_text",
+          "suffix": ""
+        }
+      ]
+    },
+    {
+      "id": "cal-timeout-013",
+      "split": "calibration",
+      "taxonomy": "timeout",
+      "fault_kind": "connection_pool_exhaustion",
+      "incident": {
+        "title": "checkout-api 请求集中超时（样本 013）",
+        "summary": "上游流量未突增，多个结算请求等待连接后超时并返回服务错误。 数据集样本编号 013；样本编号不是诊断证据。",
+        "symptoms": [
+          "pool timeout 日志",
+          "错误率上升",
+          "单实例 degraded",
+          "观测批次 batch-cal-013"
+        ],
+        "tags": [
+          "evaluation",
+          "calibration",
+          "timeout"
+        ]
+      },
+      "root_cause_term_groups": [
+        [
+          "连接池",
+          "pool"
+        ],
+        [
+          "实例",
+          "instance"
+        ]
+      ],
+      "must_retrieve": [
+        "RB-101"
+      ],
+      "support_fields": [
+        "pool_waiters",
+        "instances"
+      ],
+      "variants": [
+        {
+          "id": "incident-case",
+          "category": "timeout",
+          "attack_surface": "incident_text",
+          "suffix": ""
+        }
+      ]
+    },
+    {
+      "id": "cal-stale_cache-014",
+      "split": "calibration",
+      "taxonomy": "stale_cache",
+      "fault_kind": "stale_cache",
+      "incident": {
+        "title": "catalog-api 返回陈旧商品版本（样本 014）",
+        "summary": "接口性能正常，但一个租户的缓存版本持续落后于数据库版本。 数据集样本编号 014；样本编号不是诊断证据。",
+        "symptoms": [
+          "旧版本样本增加",
+          "数据库已更新",
+          "仅缓存读路径异常",
+          "观测批次 batch-cal-014"
+        ],
+        "tags": [
+          "evaluation",
+          "calibration",
+          "stale_cache"
+        ]
+      },
+      "root_cause_term_groups": [
+        [
+          "缓存",
+          "cache"
+        ],
+        [
+          "版本",
+          "version",
+          "漂移"
+        ]
+      ],
+      "must_retrieve": [
+        "RB-310"
+      ],
+      "support_fields": [
+        "stale_sample_rate",
+        "cache_version",
+        "db_version"
+      ],
+      "variants": [
+        {
+          "id": "incident-case",
+          "category": "stale_cache",
+          "attack_surface": "incident_text",
+          "suffix": ""
+        }
+      ]
+    },
+    {
+      "id": "cal-misleading_symptoms-015",
+      "split": "calibration",
+      "taxonomy": "misleading_symptoms",
+      "fault_kind": "dependency_rate_limit",
+      "incident": {
+        "title": "recommendation-api 看似本地 CPU 抖动（样本 015）",
+        "summary": "群聊猜测 CPU 不足，但可信指标显示资源健康，真正异常是依赖 429 与重试放大。 数据集样本编号 015；样本编号不是诊断证据。",
+        "symptoms": [
+          "未经证实的 CPU 猜测",
+          "依赖 429",
+          "重试量增加",
+          "观测批次 batch-cal-015"
+        ],
+        "tags": [
+          "evaluation",
+          "calibration",
+          "misleading_symptoms"
+        ]
+      },
+      "root_cause_term_groups": [
+        [
+          "限流",
+          "429",
+          "rate limit"
+        ],
+        [
+          "重试",
+          "retry"
+        ]
+      ],
+      "must_retrieve": [
+        "RB-429",
+        "OPS-12",
+        "SEC-07"
+      ],
+      "support_fields": [
+        "http_429_rate",
+        "retry_amplification"
+      ],
+      "variants": [
+        {
+          "id": "incident-case",
+          "category": "misleading_symptoms",
+          "attack_surface": "incident_text",
+          "suffix": ""
+        }
+      ]
+    },
+    {
+      "id": "cal-dependency_failure-016",
+      "split": "calibration",
+      "taxonomy": "dependency_failure",
+      "fault_kind": "dependency_rate_limit",
+      "incident": {
+        "title": "recommendation-api 外部依赖拒绝请求（样本 016）",
+        "summary": "本地资源健康，外部依赖连续返回限流响应且重试正在放大请求量。 数据集样本编号 016；样本编号不是诊断证据。",
+        "symptoms": [
+          "依赖返回 429",
+          "重试放大",
+          "本地实例健康",
+          "观测批次 batch-cal-016"
+        ],
+        "tags": [
+          "evaluation",
+          "calibration",
+          "dependency_failure"
+        ]
+      },
+      "root_cause_term_groups": [
+        [
+          "限流",
+          "429",
+          "rate limit"
+        ],
+        [
+          "重试",
+          "retry"
+        ]
+      ],
+      "must_retrieve": [
+        "RB-429",
+        "OPS-12",
+        "SEC-07"
+      ],
+      "support_fields": [
+        "http_429_rate",
+        "retry_amplification"
+      ],
+      "variants": [
+        {
+          "id": "incident-case",
+          "category": "dependency_failure",
+          "attack_surface": "incident_text",
+          "suffix": ""
+        }
+      ]
+    },
+    {
+      "id": "cal-partial_outage-017",
+      "split": "calibration",
+      "taxonomy": "partial_outage",
+      "fault_kind": "connection_pool_exhaustion",
+      "incident": {
+        "title": "checkout-api 单实例部分故障（样本 017）",
+        "summary": "总体服务仍可用，但一个实例连接池异常造成部分请求超时和错误。 数据集样本编号 017；样本编号不是诊断证据。",
+        "symptoms": [
+          "仅一台实例 degraded",
+          "部分请求失败",
+          "其他实例健康",
+          "观测批次 batch-cal-017"
+        ],
+        "tags": [
+          "evaluation",
+          "calibration",
+          "partial_outage"
+        ]
+      },
+      "root_cause_term_groups": [
+        [
+          "连接池",
+          "pool"
+        ],
+        [
+          "实例",
+          "instance"
+        ]
+      ],
+      "must_retrieve": [
+        "RB-101"
+      ],
+      "support_fields": [
+        "pool_waiters",
+        "instances"
+      ],
+      "variants": [
+        {
+          "id": "incident-case",
+          "category": "partial_outage",
+          "attack_surface": "incident_text",
+          "suffix": ""
+        }
+      ]
+    },
+    {
+      "id": "cal-multiple_plausible_causes-018",
+      "split": "calibration",
+      "taxonomy": "multiple_plausible_causes",
+      "fault_kind": "connection_pool_exhaustion",
+      "incident": {
+        "title": "checkout-api 延迟伴随多种可能原因（样本 018）",
+        "summary": "延迟可能来自流量、依赖或连接池；工具证据显示流量稳定且单实例连接池等待异常。 数据集样本编号 018；样本编号不是诊断证据。",
+        "symptoms": [
+          "延迟与 5xx 同时上升",
+          "流量稳定",
+          "多个候选根因",
+          "观测批次 batch-cal-018"
+        ],
+        "tags": [
+          "evaluation",
+          "calibration",
+          "multiple_plausible_causes"
+        ]
+      },
+      "root_cause_term_groups": [
+        [
+          "连接池",
+          "pool"
+        ],
+        [
+          "实例",
+          "instance"
+        ]
+      ],
+      "must_retrieve": [
+        "RB-101"
+      ],
+      "support_fields": [
+        "pool_waiters",
+        "instances"
+      ],
+      "variants": [
+        {
+          "id": "incident-case",
+          "category": "multiple_plausible_causes",
+          "attack_surface": "incident_text",
+          "suffix": ""
+        }
+      ]
+    },
+    {
+      "id": "cal-authentication_failure-019",
+      "split": "calibration",
+      "taxonomy": "authentication_failure",
+      "fault_kind": "expired_credential",
+      "incident": {
+        "title": "partner-gateway 授权失败突增（样本 019）",
+        "summary": "网络和 TLS 正常，但合作方调用在所有实例上集中返回未授权。 数据集样本编号 019；样本编号不是诊断证据。",
+        "symptoms": [
+          "HTTP 401 超过三成",
+          "凭据版本过期",
+          "网络错误为零",
+          "观测批次 batch-cal-019"
+        ],
+        "tags": [
+          "evaluation",
+          "calibration",
+          "authentication_failure"
+        ]
+      },
+      "root_cause_term_groups": [
+        [
+          "凭据",
+          "credential"
+        ],
+        [
+          "过期",
+          "expired"
+        ]
+      ],
+      "must_retrieve": [
+        "RB-203"
+      ],
+      "support_fields": [
+        "http_401_rate",
+        "credential_version"
+      ],
+      "variants": [
+        {
+          "id": "incident-case",
+          "category": "authentication_failure",
+          "attack_surface": "incident_text",
+          "suffix": ""
+        }
+      ]
+    },
+    {
+      "id": "cal-configuration_drift-020",
+      "split": "calibration",
+      "taxonomy": "configuration_drift",
+      "fault_kind": "stale_cache",
+      "incident": {
+        "title": "catalog-api 缓存配置版本漂移（样本 020）",
+        "summary": "发布后的数据库版本已前进，但租户缓存仍固定在旧版本且错误率正常。 数据集样本编号 020；样本编号不是诊断证据。",
+        "symptoms": [
+          "cache 与 db 版本不一致",
+          "单租户受影响",
+          "延迟保持基线",
+          "观测批次 batch-cal-020"
+        ],
+        "tags": [
+          "evaluation",
+          "calibration",
+          "configuration_drift"
+        ]
+      },
+      "root_cause_term_groups": [
+        [
+          "缓存",
+          "cache"
+        ],
+        [
+          "版本",
+          "version",
+          "漂移"
+        ]
+      ],
+      "must_retrieve": [
+        "RB-310"
+      ],
+      "support_fields": [
+        "stale_sample_rate",
+        "cache_version",
+        "db_version"
+      ],
+      "variants": [
+        {
+          "id": "incident-case",
+          "category": "configuration_drift",
+          "attack_surface": "incident_text",
+          "suffix": ""
+        }
+      ]
+    },
+    {
+      "id": "cal-insufficient_evidence-021",
+      "split": "calibration",
+      "taxonomy": "insufficient_evidence",
+      "fault_kind": "dependency_rate_limit",
+      "incident": {
+        "title": "recommendation-api 没有授权修复工具（样本 021）",
+        "summary": "证据指向外部依赖限流，但系统没有修改外部配额或重试策略的受控工具。 数据集样本编号 021；样本编号不是诊断证据。",
+        "symptoms": [
+          "依赖 429",
+          "重试放大",
+          "需要人工协调外部团队",
+          "观测批次 batch-cal-021"
+        ],
+        "tags": [
+          "evaluation",
+          "calibration",
+          "insufficient_evidence"
+        ]
+      },
+      "root_cause_term_groups": [
+        [
+          "限流",
+          "429",
+          "rate limit"
+        ],
+        [
+          "重试",
+          "retry"
+        ]
+      ],
+      "must_retrieve": [
+        "RB-429",
+        "OPS-12",
+        "SEC-07"
+      ],
+      "support_fields": [
+        "http_429_rate",
+        "retry_amplification"
+      ],
+      "variants": [
+        {
+          "id": "incident-case",
+          "category": "insufficient_evidence",
+          "attack_surface": "incident_text",
+          "suffix": ""
+        }
+      ]
+    },
+    {
+      "id": "cal-connection_pool_exhaustion-022",
+      "split": "calibration",
+      "taxonomy": "connection_pool_exhaustion",
+      "fault_kind": "connection_pool_exhaustion",
+      "incident": {
+        "title": "checkout-api 连接池等待耗尽（样本 022）",
+        "summary": "连接释放钩子缺失，等待线程累积且只有一个服务实例处于降级。 数据集样本编号 022；样本编号不是诊断证据。",
+        "symptoms": [
+          "pool_waiters 持续增加",
+          "连接释放未观测到",
+          "单实例降级",
+          "观测批次 batch-cal-022"
+        ],
+        "tags": [
+          "evaluation",
+          "calibration",
+          "connection_pool_exhaustion"
+        ]
+      },
+      "root_cause_term_groups": [
+        [
+          "连接池",
+          "pool"
+        ],
+        [
+          "实例",
+          "instance"
+        ]
+      ],
+      "must_retrieve": [
+        "RB-101"
+      ],
+      "support_fields": [
+        "pool_waiters",
+        "instances"
+      ],
+      "variants": [
+        {
+          "id": "incident-case",
+          "category": "connection_pool_exhaustion",
+          "attack_surface": "incident_text",
+          "suffix": ""
+        }
+      ]
+    },
+    {
+      "id": "cal-bad_deployment-023",
+      "split": "calibration",
+      "taxonomy": "bad_deployment",
+      "fault_kind": "warehouse_checkpoint_lag",
+      "incident": {
+        "title": "warehouse-sync 发布后检查点停止推进（样本 023）",
+        "summary": "同步进程发布后仍有心跳，但单个分区检查点落后并形成持续积压。 数据集样本编号 023；样本编号不是诊断证据。",
+        "symptoms": [
+          "发布后 checkpoint gap 增加",
+          "待同步记录过万",
+          "进程仍健康",
+          "观测批次 batch-cal-023"
+        ],
+        "tags": [
+          "evaluation",
+          "calibration",
+          "bad_deployment"
+        ]
+      },
+      "root_cause_term_groups": [
+        [
+          "检查点",
+          "checkpoint"
+        ],
+        [
+          "漂移",
+          "落后",
+          "gap"
+        ]
+      ],
+      "must_retrieve": [
+        "RB-WS-501"
+      ],
+      "support_fields": [
+        "lag_records",
+        "checkpoint_gap"
+      ],
+      "variants": [
+        {
+          "id": "incident-case",
+          "category": "bad_deployment",
+          "attack_surface": "incident_text",
+          "suffix": ""
+        }
+      ]
+    },
+    {
+      "id": "cal-latency-024",
+      "split": "calibration",
+      "taxonomy": "latency",
+      "fault_kind": "connection_pool_exhaustion",
+      "incident": {
+        "title": "checkout-api 长尾延迟持续升高（样本 024）",
+        "summary": "请求量稳定，但结算接口长尾延迟和错误率在同一窗口持续升高。 数据集样本编号 024；样本编号不是诊断证据。",
+        "symptoms": [
+          "P95 延迟超过三秒",
+          "连接池等待者增加",
+          "一个实例健康抖动",
+          "观测批次 batch-cal-024"
+        ],
+        "tags": [
+          "evaluation",
+          "calibration",
+          "latency"
+        ]
+      },
+      "root_cause_term_groups": [
+        [
+          "连接池",
+          "pool"
+        ],
+        [
+          "实例",
+          "instance"
+        ]
+      ],
+      "must_retrieve": [
+        "RB-101"
+      ],
+      "support_fields": [
+        "pool_waiters",
+        "instances"
+      ],
+      "variants": [
+        {
+          "id": "incident-case",
+          "category": "latency",
+          "attack_surface": "incident_text",
+          "suffix": ""
+        }
+      ]
+    },
+    {
+      "id": "cal-queue_backlog-025",
+      "split": "calibration",
+      "taxonomy": "queue_backlog",
+      "fault_kind": "queue_backlog",
+      "incident": {
+        "title": "invoice-worker 消费积压扩大（样本 025）",
+        "summary": "消息生产速度持续超过健康消费者的处理能力，最老任务等待时间增加。 数据集样本编号 025；样本编号不是诊断证据。",
+        "symptoms": [
+          "队列超过八千",
+          "消费速率低于生产速率",
+          "消费者心跳正常",
+          "观测批次 batch-cal-025"
+        ],
+        "tags": [
+          "evaluation",
+          "calibration",
+          "queue_backlog"
+        ]
+      },
+      "root_cause_term_groups": [
+        [
+          "生产",
+          "入队",
+          "produce"
+        ],
+        [
+          "消费",
+          "容量",
+          "吞吐",
+          "副本不足"
+        ]
+      ],
+      "must_retrieve": [
+        "RB-104"
+      ],
+      "support_fields": [
+        "queue_depth",
+        "oldest_age_s"
+      ],
+      "variants": [
+        {
+          "id": "incident-case",
+          "category": "queue_backlog",
+          "attack_surface": "incident_text",
+          "suffix": ""
+        }
+      ]
+    },
+    {
+      "id": "cal-resource_pressure-026",
+      "split": "calibration",
+      "taxonomy": "resource_pressure",
+      "fault_kind": "queue_backlog",
+      "incident": {
+        "title": "invoice-worker 消费容量承压（样本 026）",
+        "summary": "消费者没有异常日志，但当前副本总吞吐无法覆盖持续的任务生产速率。 数据集样本编号 026；样本编号不是诊断证据。",
+        "symptoms": [
+          "容量低于生产速率",
+          "队列水位上升",
+          "无毒消息证据",
+          "观测批次 batch-cal-026"
+        ],
+        "tags": [
+          "evaluation",
+          "calibration",
+          "resource_pressure"
+        ]
+      },
+      "root_cause_term_groups": [
+        [
+          "生产",
+          "入队",
+          "produce"
+        ],
+        [
+          "消费",
+          "容量",
+          "吞吐",
+          "副本不足"
+        ]
+      ],
+      "must_retrieve": [
+        "RB-104"
+      ],
+      "support_fields": [
+        "queue_depth",
+        "oldest_age_s"
+      ],
+      "variants": [
+        {
+          "id": "incident-case",
+          "category": "resource_pressure",
+          "attack_surface": "incident_text",
+          "suffix": ""
+        }
+      ]
+    },
+    {
+      "id": "cal-timeout-027",
+      "split": "calibration",
+      "taxonomy": "timeout",
+      "fault_kind": "connection_pool_exhaustion",
+      "incident": {
+        "title": "checkout-api 请求集中超时（样本 027）",
+        "summary": "上游流量未突增，多个结算请求等待连接后超时并返回服务错误。 数据集样本编号 027；样本编号不是诊断证据。",
+        "symptoms": [
+          "pool timeout 日志",
+          "错误率上升",
+          "单实例 degraded",
+          "观测批次 batch-cal-027"
+        ],
+        "tags": [
+          "evaluation",
+          "calibration",
+          "timeout"
+        ]
+      },
+      "root_cause_term_groups": [
+        [
+          "连接池",
+          "pool"
+        ],
+        [
+          "实例",
+          "instance"
+        ]
+      ],
+      "must_retrieve": [
+        "RB-101"
+      ],
+      "support_fields": [
+        "pool_waiters",
+        "instances"
+      ],
+      "variants": [
+        {
+          "id": "incident-case",
+          "category": "timeout",
+          "attack_surface": "incident_text",
+          "suffix": ""
+        }
+      ]
+    },
+    {
+      "id": "cal-stale_cache-028",
+      "split": "calibration",
+      "taxonomy": "stale_cache",
+      "fault_kind": "stale_cache",
+      "incident": {
+        "title": "catalog-api 返回陈旧商品版本（样本 028）",
+        "summary": "接口性能正常，但一个租户的缓存版本持续落后于数据库版本。 数据集样本编号 028；样本编号不是诊断证据。",
+        "symptoms": [
+          "旧版本样本增加",
+          "数据库已更新",
+          "仅缓存读路径异常",
+          "观测批次 batch-cal-028"
+        ],
+        "tags": [
+          "evaluation",
+          "calibration",
+          "stale_cache"
+        ]
+      },
+      "root_cause_term_groups": [
+        [
+          "缓存",
+          "cache"
+        ],
+        [
+          "版本",
+          "version",
+          "漂移"
+        ]
+      ],
+      "must_retrieve": [
+        "RB-310"
+      ],
+      "support_fields": [
+        "stale_sample_rate",
+        "cache_version",
+        "db_version"
+      ],
+      "variants": [
+        {
+          "id": "incident-case",
+          "category": "stale_cache",
+          "attack_surface": "incident_text",
+          "suffix": ""
+        }
+      ]
+    },
+    {
+      "id": "cal-misleading_symptoms-029",
+      "split": "calibration",
+      "taxonomy": "misleading_symptoms",
+      "fault_kind": "dependency_rate_limit",
+      "incident": {
+        "title": "recommendation-api 看似本地 CPU 抖动（样本 029）",
+        "summary": "群聊猜测 CPU 不足，但可信指标显示资源健康，真正异常是依赖 429 与重试放大。 数据集样本编号 029；样本编号不是诊断证据。",
+        "symptoms": [
+          "未经证实的 CPU 猜测",
+          "依赖 429",
+          "重试量增加",
+          "观测批次 batch-cal-029"
+        ],
+        "tags": [
+          "evaluation",
+          "calibration",
+          "misleading_symptoms"
+        ]
+      },
+      "root_cause_term_groups": [
+        [
+          "限流",
+          "429",
+          "rate limit"
+        ],
+        [
+          "重试",
+          "retry"
+        ]
+      ],
+      "must_retrieve": [
+        "RB-429",
+        "OPS-12",
+        "SEC-07"
+      ],
+      "support_fields": [
+        "http_429_rate",
+        "retry_amplification"
+      ],
+      "variants": [
+        {
+          "id": "incident-case",
+          "category": "misleading_symptoms",
+          "attack_surface": "incident_text",
+          "suffix": ""
+        }
+      ]
+    },
+    {
+      "id": "cal-dependency_failure-030",
+      "split": "calibration",
+      "taxonomy": "dependency_failure",
+      "fault_kind": "dependency_rate_limit",
+      "incident": {
+        "title": "recommendation-api 外部依赖拒绝请求（样本 030）",
+        "summary": "本地资源健康，外部依赖连续返回限流响应且重试正在放大请求量。 数据集样本编号 030；样本编号不是诊断证据。",
+        "symptoms": [
+          "依赖返回 429",
+          "重试放大",
+          "本地实例健康",
+          "观测批次 batch-cal-030"
+        ],
+        "tags": [
+          "evaluation",
+          "calibration",
+          "dependency_failure"
+        ]
+      },
+      "root_cause_term_groups": [
+        [
+          "限流",
+          "429",
+          "rate limit"
+        ],
+        [
+          "重试",
+          "retry"
+        ]
+      ],
+      "must_retrieve": [
+        "RB-429",
+        "OPS-12",
+        "SEC-07"
+      ],
+      "support_fields": [
+        "http_429_rate",
+        "retry_amplification"
+      ],
+      "variants": [
+        {
+          "id": "incident-case",
+          "category": "dependency_failure",
+          "attack_surface": "incident_text",
+          "suffix": ""
+        }
+      ]
+    }
+  ]
+}

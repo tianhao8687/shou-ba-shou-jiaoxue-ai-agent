@@ -1,0 +1,847 @@
+{
+  "schema": "harbor-retrieval-dataset/v1",
+  "dataset_version": "retrieval-210-v1",
+  "split": "holdout",
+  "queries": [
+    {
+      "id": "ret-exact_identifier-002",
+      "category": "exact_identifier",
+      "query": "RB-310 catalog-api cache_version v452 db_version v453；观测窗口样本 1-1-2。",
+      "expected_docs": [
+        "RB-310"
+      ]
+    },
+    {
+      "id": "ret-exact_identifier-004",
+      "category": "exact_identifier",
+      "query": "RB-104 invoice-worker queue_depth oldest_age_s；观测窗口样本 1-1-4。",
+      "expected_docs": [
+        "RB-104"
+      ]
+    },
+    {
+      "id": "ret-exact_identifier-006",
+      "category": "exact_identifier",
+      "query": "OPS-12 verification rollback retry idempotency；观测窗口样本 1-1-6。",
+      "expected_docs": [
+        "OPS-12"
+      ]
+    },
+    {
+      "id": "ret-exact_identifier-008",
+      "category": "exact_identifier",
+      "query": "RB-WS-501 warehouse-sync checkpoint_gap lag_records；观测窗口样本 1-1-8。",
+      "expected_docs": [
+        "RB-WS-501"
+      ]
+    },
+    {
+      "id": "ret-exact_identifier-010",
+      "category": "exact_identifier",
+      "query": "RB-310 catalog-api cache_version v452 db_version v453；观测窗口样本 1-2-10。",
+      "expected_docs": [
+        "RB-310"
+      ]
+    },
+    {
+      "id": "ret-exact_identifier-012",
+      "category": "exact_identifier",
+      "query": "RB-104 invoice-worker queue_depth oldest_age_s；观测窗口样本 1-2-12。",
+      "expected_docs": [
+        "RB-104"
+      ]
+    },
+    {
+      "id": "ret-exact_identifier-014",
+      "category": "exact_identifier",
+      "query": "OPS-12 verification rollback retry idempotency；观测窗口样本 1-2-14。",
+      "expected_docs": [
+        "OPS-12"
+      ]
+    },
+    {
+      "id": "ret-exact_identifier-016",
+      "category": "exact_identifier",
+      "query": "RB-WS-501 warehouse-sync checkpoint_gap lag_records；观测窗口样本 1-2-16。",
+      "expected_docs": [
+        "RB-WS-501"
+      ]
+    },
+    {
+      "id": "ret-exact_identifier-018",
+      "category": "exact_identifier",
+      "query": "RB-310 catalog-api cache_version v452 db_version v453；观测窗口样本 1-3-18。",
+      "expected_docs": [
+        "RB-310"
+      ]
+    },
+    {
+      "id": "ret-exact_identifier-020",
+      "category": "exact_identifier",
+      "query": "RB-104 invoice-worker queue_depth oldest_age_s；观测窗口样本 1-3-20。",
+      "expected_docs": [
+        "RB-104"
+      ]
+    },
+    {
+      "id": "ret-exact_identifier-022",
+      "category": "exact_identifier",
+      "query": "OPS-12 verification rollback retry idempotency；观测窗口样本 1-3-22。",
+      "expected_docs": [
+        "OPS-12"
+      ]
+    },
+    {
+      "id": "ret-exact_identifier-024",
+      "category": "exact_identifier",
+      "query": "RB-WS-501 warehouse-sync checkpoint_gap lag_records；观测窗口样本 1-3-24。",
+      "expected_docs": [
+        "RB-WS-501"
+      ]
+    },
+    {
+      "id": "ret-exact_identifier-026",
+      "category": "exact_identifier",
+      "query": "RB-310 catalog-api cache_version v452 db_version v453；观测窗口样本 1-4-26。",
+      "expected_docs": [
+        "RB-310"
+      ]
+    },
+    {
+      "id": "ret-exact_identifier-028",
+      "category": "exact_identifier",
+      "query": "RB-104 invoice-worker queue_depth oldest_age_s；观测窗口样本 1-4-28。",
+      "expected_docs": [
+        "RB-104"
+      ]
+    },
+    {
+      "id": "ret-exact_identifier-030",
+      "category": "exact_identifier",
+      "query": "OPS-12 verification rollback retry idempotency；观测窗口样本 1-4-30。",
+      "expected_docs": [
+        "OPS-12"
+      ]
+    },
+    {
+      "id": "ret-error_code-002",
+      "category": "error_code",
+      "query": "HTTP 429 retry-after=30 retry budget exhausted；观测窗口样本 2-1-2。",
+      "expected_docs": [
+        "RB-429"
+      ]
+    },
+    {
+      "id": "ret-error_code-004",
+      "category": "error_code",
+      "query": "HTTP 401 unauthorized expired=true TLS ok；观测窗口样本 2-1-4。",
+      "expected_docs": [
+        "RB-203"
+      ]
+    },
+    {
+      "id": "ret-error_code-006",
+      "category": "error_code",
+      "query": "pool timeout after 2000ms connection release hook missing；观测窗口样本 2-1-6。",
+      "expected_docs": [
+        "RB-101"
+      ]
+    },
+    {
+      "id": "ret-error_code-008",
+      "category": "error_code",
+      "query": "CAPABILITY_BINDING_MISMATCH stale fencing token；观测窗口样本 2-1-8。",
+      "expected_docs": [
+        "SEC-07"
+      ]
+    },
+    {
+      "id": "ret-error_code-010",
+      "category": "error_code",
+      "query": "HTTP 429 retry-after=30 retry budget exhausted；观测窗口样本 2-2-10。",
+      "expected_docs": [
+        "RB-429"
+      ]
+    },
+    {
+      "id": "ret-error_code-012",
+      "category": "error_code",
+      "query": "HTTP 401 unauthorized expired=true TLS ok；观测窗口样本 2-2-12。",
+      "expected_docs": [
+        "RB-203"
+      ]
+    },
+    {
+      "id": "ret-error_code-014",
+      "category": "error_code",
+      "query": "pool timeout after 2000ms connection release hook missing；观测窗口样本 2-2-14。",
+      "expected_docs": [
+        "RB-101"
+      ]
+    },
+    {
+      "id": "ret-error_code-016",
+      "category": "error_code",
+      "query": "CAPABILITY_BINDING_MISMATCH stale fencing token；观测窗口样本 2-2-16。",
+      "expected_docs": [
+        "SEC-07"
+      ]
+    },
+    {
+      "id": "ret-error_code-018",
+      "category": "error_code",
+      "query": "HTTP 429 retry-after=30 retry budget exhausted；观测窗口样本 2-3-18。",
+      "expected_docs": [
+        "RB-429"
+      ]
+    },
+    {
+      "id": "ret-error_code-020",
+      "category": "error_code",
+      "query": "HTTP 401 unauthorized expired=true TLS ok；观测窗口样本 2-3-20。",
+      "expected_docs": [
+        "RB-203"
+      ]
+    },
+    {
+      "id": "ret-error_code-022",
+      "category": "error_code",
+      "query": "pool timeout after 2000ms connection release hook missing；观测窗口样本 2-3-22。",
+      "expected_docs": [
+        "RB-101"
+      ]
+    },
+    {
+      "id": "ret-error_code-024",
+      "category": "error_code",
+      "query": "CAPABILITY_BINDING_MISMATCH stale fencing token；观测窗口样本 2-3-24。",
+      "expected_docs": [
+        "SEC-07"
+      ]
+    },
+    {
+      "id": "ret-error_code-026",
+      "category": "error_code",
+      "query": "HTTP 429 retry-after=30 retry budget exhausted；观测窗口样本 2-4-26。",
+      "expected_docs": [
+        "RB-429"
+      ]
+    },
+    {
+      "id": "ret-error_code-028",
+      "category": "error_code",
+      "query": "HTTP 401 unauthorized expired=true TLS ok；观测窗口样本 2-4-28。",
+      "expected_docs": [
+        "RB-203"
+      ]
+    },
+    {
+      "id": "ret-error_code-030",
+      "category": "error_code",
+      "query": "pool timeout after 2000ms connection release hook missing；观测窗口样本 2-4-30。",
+      "expected_docs": [
+        "RB-101"
+      ]
+    },
+    {
+      "id": "ret-natural_language_paraphrase-002",
+      "category": "natural_language_paraphrase",
+      "query": "同步进程还活着，但某个分区的进度游标长期不再前进；观测窗口样本 3-1-2。",
+      "expected_docs": [
+        "RB-WS-501"
+      ]
+    },
+    {
+      "id": "ret-natural_language_paraphrase-004",
+      "category": "natural_language_paraphrase",
+      "query": "后台商品已经更新，但一个租户仍然看到旧内容；观测窗口样本 3-1-4。",
+      "expected_docs": [
+        "RB-310"
+      ]
+    },
+    {
+      "id": "ret-natural_language_paraphrase-006",
+      "category": "natural_language_paraphrase",
+      "query": "开票任务进入系统的速度长期超过处理速度，待办越积越多；观测窗口样本 3-1-6。",
+      "expected_docs": [
+        "RB-104"
+      ]
+    },
+    {
+      "id": "ret-natural_language_paraphrase-008",
+      "category": "natural_language_paraphrase",
+      "query": "工具声称成功以后为什么还不能直接宣布事故恢复；观测窗口样本 3-1-8。",
+      "expected_docs": [
+        "OPS-12"
+      ]
+    },
+    {
+      "id": "ret-natural_language_paraphrase-010",
+      "category": "natural_language_paraphrase",
+      "query": "同步进程还活着，但某个分区的进度游标长期不再前进；观测窗口样本 3-2-10。",
+      "expected_docs": [
+        "RB-WS-501"
+      ]
+    },
+    {
+      "id": "ret-natural_language_paraphrase-012",
+      "category": "natural_language_paraphrase",
+      "query": "后台商品已经更新，但一个租户仍然看到旧内容；观测窗口样本 3-2-12。",
+      "expected_docs": [
+        "RB-310"
+      ]
+    },
+    {
+      "id": "ret-natural_language_paraphrase-014",
+      "category": "natural_language_paraphrase",
+      "query": "开票任务进入系统的速度长期超过处理速度，待办越积越多；观测窗口样本 3-2-14。",
+      "expected_docs": [
+        "RB-104"
+      ]
+    },
+    {
+      "id": "ret-natural_language_paraphrase-016",
+      "category": "natural_language_paraphrase",
+      "query": "工具声称成功以后为什么还不能直接宣布事故恢复；观测窗口样本 3-2-16。",
+      "expected_docs": [
+        "OPS-12"
+      ]
+    },
+    {
+      "id": "ret-natural_language_paraphrase-018",
+      "category": "natural_language_paraphrase",
+      "query": "同步进程还活着，但某个分区的进度游标长期不再前进；观测窗口样本 3-3-18。",
+      "expected_docs": [
+        "RB-WS-501"
+      ]
+    },
+    {
+      "id": "ret-natural_language_paraphrase-020",
+      "category": "natural_language_paraphrase",
+      "query": "后台商品已经更新，但一个租户仍然看到旧内容；观测窗口样本 3-3-20。",
+      "expected_docs": [
+        "RB-310"
+      ]
+    },
+    {
+      "id": "ret-natural_language_paraphrase-022",
+      "category": "natural_language_paraphrase",
+      "query": "开票任务进入系统的速度长期超过处理速度，待办越积越多；观测窗口样本 3-3-22。",
+      "expected_docs": [
+        "RB-104"
+      ]
+    },
+    {
+      "id": "ret-natural_language_paraphrase-024",
+      "category": "natural_language_paraphrase",
+      "query": "工具声称成功以后为什么还不能直接宣布事故恢复；观测窗口样本 3-3-24。",
+      "expected_docs": [
+        "OPS-12"
+      ]
+    },
+    {
+      "id": "ret-natural_language_paraphrase-026",
+      "category": "natural_language_paraphrase",
+      "query": "同步进程还活着，但某个分区的进度游标长期不再前进；观测窗口样本 3-4-26。",
+      "expected_docs": [
+        "RB-WS-501"
+      ]
+    },
+    {
+      "id": "ret-natural_language_paraphrase-028",
+      "category": "natural_language_paraphrase",
+      "query": "后台商品已经更新，但一个租户仍然看到旧内容；观测窗口样本 3-4-28。",
+      "expected_docs": [
+        "RB-310"
+      ]
+    },
+    {
+      "id": "ret-natural_language_paraphrase-030",
+      "category": "natural_language_paraphrase",
+      "query": "开票任务进入系统的速度长期超过处理速度，待办越积越多；观测窗口样本 3-4-30。",
+      "expected_docs": [
+        "RB-104"
+      ]
+    },
+    {
+      "id": "ret-synonym-002",
+      "category": "synonym",
+      "query": "最小授权票据必须绑定计划摘要、租户、任务和隔离代次；观测窗口样本 4-1-2。",
+      "expected_docs": [
+        "SEC-07"
+      ]
+    },
+    {
+      "id": "ret-synonym-004",
+      "category": "synonym",
+      "query": "外部配额节流与重试风暴叠加，需要协调依赖团队；观测窗口样本 4-1-4。",
+      "expected_docs": [
+        "RB-429"
+      ]
+    },
+    {
+      "id": "ret-synonym-006",
+      "category": "synonym",
+      "query": "第三方认证凭证失效，需要安全值班灰度更换；观测窗口样本 4-1-6。",
+      "expected_docs": [
+        "RB-203"
+      ]
+    },
+    {
+      "id": "ret-synonym-008",
+      "category": "synonym",
+      "query": "数据库连接借用资源枯竭，工作线程排队；观测窗口样本 4-1-8。",
+      "expected_docs": [
+        "RB-101"
+      ]
+    },
+    {
+      "id": "ret-synonym-010",
+      "category": "synonym",
+      "query": "最小授权票据必须绑定计划摘要、租户、任务和隔离代次；观测窗口样本 4-2-10。",
+      "expected_docs": [
+        "SEC-07"
+      ]
+    },
+    {
+      "id": "ret-synonym-012",
+      "category": "synonym",
+      "query": "外部配额节流与重试风暴叠加，需要协调依赖团队；观测窗口样本 4-2-12。",
+      "expected_docs": [
+        "RB-429"
+      ]
+    },
+    {
+      "id": "ret-synonym-014",
+      "category": "synonym",
+      "query": "第三方认证凭证失效，需要安全值班灰度更换；观测窗口样本 4-2-14。",
+      "expected_docs": [
+        "RB-203"
+      ]
+    },
+    {
+      "id": "ret-synonym-016",
+      "category": "synonym",
+      "query": "数据库连接借用资源枯竭，工作线程排队；观测窗口样本 4-2-16。",
+      "expected_docs": [
+        "RB-101"
+      ]
+    },
+    {
+      "id": "ret-synonym-018",
+      "category": "synonym",
+      "query": "最小授权票据必须绑定计划摘要、租户、任务和隔离代次；观测窗口样本 4-3-18。",
+      "expected_docs": [
+        "SEC-07"
+      ]
+    },
+    {
+      "id": "ret-synonym-020",
+      "category": "synonym",
+      "query": "外部配额节流与重试风暴叠加，需要协调依赖团队；观测窗口样本 4-3-20。",
+      "expected_docs": [
+        "RB-429"
+      ]
+    },
+    {
+      "id": "ret-synonym-022",
+      "category": "synonym",
+      "query": "第三方认证凭证失效，需要安全值班灰度更换；观测窗口样本 4-3-22。",
+      "expected_docs": [
+        "RB-203"
+      ]
+    },
+    {
+      "id": "ret-synonym-024",
+      "category": "synonym",
+      "query": "数据库连接借用资源枯竭，工作线程排队；观测窗口样本 4-3-24。",
+      "expected_docs": [
+        "RB-101"
+      ]
+    },
+    {
+      "id": "ret-synonym-026",
+      "category": "synonym",
+      "query": "最小授权票据必须绑定计划摘要、租户、任务和隔离代次；观测窗口样本 4-4-26。",
+      "expected_docs": [
+        "SEC-07"
+      ]
+    },
+    {
+      "id": "ret-synonym-028",
+      "category": "synonym",
+      "query": "外部配额节流与重试风暴叠加，需要协调依赖团队；观测窗口样本 4-4-28。",
+      "expected_docs": [
+        "RB-429"
+      ]
+    },
+    {
+      "id": "ret-synonym-030",
+      "category": "synonym",
+      "query": "第三方认证凭证失效，需要安全值班灰度更换；观测窗口样本 4-4-30。",
+      "expected_docs": [
+        "RB-203"
+      ]
+    },
+    {
+      "id": "ret-misleading_keyword-002",
+      "category": "misleading_keyword",
+      "query": "用户说已经恢复，但仍要读取原始指标并验证回滚结果；观测窗口样本 5-1-2。",
+      "expected_docs": [
+        "OPS-12"
+      ]
+    },
+    {
+      "id": "ret-misleading_keyword-004",
+      "category": "misleading_keyword",
+      "query": "有人建议扩容 worker，但进程健康且单分区 checkpoint 停滞；观测窗口样本 5-1-4。",
+      "expected_docs": [
+        "RB-WS-501"
+      ]
+    },
+    {
+      "id": "ret-misleading_keyword-006",
+      "category": "misleading_keyword",
+      "query": "用户说接口慢但延迟正常，真正证据是 cache 与 db 版本不一致；观测窗口样本 5-1-6。",
+      "expected_docs": [
+        "RB-310"
+      ]
+    },
+    {
+      "id": "ret-misleading_keyword-008",
+      "category": "misleading_keyword",
+      "query": "有人建议重启数据库，但消费者健康且 queue_depth 持续增长；观测窗口样本 5-1-8。",
+      "expected_docs": [
+        "RB-104"
+      ]
+    },
+    {
+      "id": "ret-misleading_keyword-010",
+      "category": "misleading_keyword",
+      "query": "用户说已经恢复，但仍要读取原始指标并验证回滚结果；观测窗口样本 5-2-10。",
+      "expected_docs": [
+        "OPS-12"
+      ]
+    },
+    {
+      "id": "ret-misleading_keyword-012",
+      "category": "misleading_keyword",
+      "query": "有人建议扩容 worker，但进程健康且单分区 checkpoint 停滞；观测窗口样本 5-2-12。",
+      "expected_docs": [
+        "RB-WS-501"
+      ]
+    },
+    {
+      "id": "ret-misleading_keyword-014",
+      "category": "misleading_keyword",
+      "query": "用户说接口慢但延迟正常，真正证据是 cache 与 db 版本不一致；观测窗口样本 5-2-14。",
+      "expected_docs": [
+        "RB-310"
+      ]
+    },
+    {
+      "id": "ret-misleading_keyword-016",
+      "category": "misleading_keyword",
+      "query": "有人建议重启数据库，但消费者健康且 queue_depth 持续增长；观测窗口样本 5-2-16。",
+      "expected_docs": [
+        "RB-104"
+      ]
+    },
+    {
+      "id": "ret-misleading_keyword-018",
+      "category": "misleading_keyword",
+      "query": "用户说已经恢复，但仍要读取原始指标并验证回滚结果；观测窗口样本 5-3-18。",
+      "expected_docs": [
+        "OPS-12"
+      ]
+    },
+    {
+      "id": "ret-misleading_keyword-020",
+      "category": "misleading_keyword",
+      "query": "有人建议扩容 worker，但进程健康且单分区 checkpoint 停滞；观测窗口样本 5-3-20。",
+      "expected_docs": [
+        "RB-WS-501"
+      ]
+    },
+    {
+      "id": "ret-misleading_keyword-022",
+      "category": "misleading_keyword",
+      "query": "用户说接口慢但延迟正常，真正证据是 cache 与 db 版本不一致；观测窗口样本 5-3-22。",
+      "expected_docs": [
+        "RB-310"
+      ]
+    },
+    {
+      "id": "ret-misleading_keyword-024",
+      "category": "misleading_keyword",
+      "query": "有人建议重启数据库，但消费者健康且 queue_depth 持续增长；观测窗口样本 5-3-24。",
+      "expected_docs": [
+        "RB-104"
+      ]
+    },
+    {
+      "id": "ret-misleading_keyword-026",
+      "category": "misleading_keyword",
+      "query": "用户说已经恢复，但仍要读取原始指标并验证回滚结果；观测窗口样本 5-4-26。",
+      "expected_docs": [
+        "OPS-12"
+      ]
+    },
+    {
+      "id": "ret-misleading_keyword-028",
+      "category": "misleading_keyword",
+      "query": "有人建议扩容 worker，但进程健康且单分区 checkpoint 停滞；观测窗口样本 5-4-28。",
+      "expected_docs": [
+        "RB-WS-501"
+      ]
+    },
+    {
+      "id": "ret-misleading_keyword-030",
+      "category": "misleading_keyword",
+      "query": "用户说接口慢但延迟正常，真正证据是 cache 与 db 版本不一致；观测窗口样本 5-4-30。",
+      "expected_docs": [
+        "RB-310"
+      ]
+    },
+    {
+      "id": "ret-multi_symptom-002",
+      "category": "multi_symptom",
+      "query": "P95 三秒、5xx 上升、连接等待者增加、一个实例健康抖动；观测窗口样本 6-1-2。",
+      "expected_docs": [
+        "RB-101"
+      ]
+    },
+    {
+      "id": "ret-multi_symptom-004",
+      "category": "multi_symptom",
+      "query": "申请人自批、计划变化、租户不符、旧 worker 提交都必须拒绝；观测窗口样本 6-1-4。",
+      "expected_docs": [
+        "SEC-07"
+      ]
+    },
+    {
+      "id": "ret-multi_symptom-006",
+      "category": "multi_symptom",
+      "query": "下游拒绝过多请求、重试倍率升高、本地实例健康、延迟上升；观测窗口样本 6-1-6。",
+      "expected_docs": [
+        "RB-429"
+      ]
+    },
+    {
+      "id": "ret-multi_symptom-008",
+      "category": "multi_symptom",
+      "query": "所有实例 401、TLS 正常、凭据版本过期、网络错误为零；观测窗口样本 6-1-8。",
+      "expected_docs": [
+        "RB-203"
+      ]
+    },
+    {
+      "id": "ret-multi_symptom-010",
+      "category": "multi_symptom",
+      "query": "P95 三秒、5xx 上升、连接等待者增加、一个实例健康抖动；观测窗口样本 6-2-10。",
+      "expected_docs": [
+        "RB-101"
+      ]
+    },
+    {
+      "id": "ret-multi_symptom-012",
+      "category": "multi_symptom",
+      "query": "申请人自批、计划变化、租户不符、旧 worker 提交都必须拒绝；观测窗口样本 6-2-12。",
+      "expected_docs": [
+        "SEC-07"
+      ]
+    },
+    {
+      "id": "ret-multi_symptom-014",
+      "category": "multi_symptom",
+      "query": "下游拒绝过多请求、重试倍率升高、本地实例健康、延迟上升；观测窗口样本 6-2-14。",
+      "expected_docs": [
+        "RB-429"
+      ]
+    },
+    {
+      "id": "ret-multi_symptom-016",
+      "category": "multi_symptom",
+      "query": "所有实例 401、TLS 正常、凭据版本过期、网络错误为零；观测窗口样本 6-2-16。",
+      "expected_docs": [
+        "RB-203"
+      ]
+    },
+    {
+      "id": "ret-multi_symptom-018",
+      "category": "multi_symptom",
+      "query": "P95 三秒、5xx 上升、连接等待者增加、一个实例健康抖动；观测窗口样本 6-3-18。",
+      "expected_docs": [
+        "RB-101"
+      ]
+    },
+    {
+      "id": "ret-multi_symptom-020",
+      "category": "multi_symptom",
+      "query": "申请人自批、计划变化、租户不符、旧 worker 提交都必须拒绝；观测窗口样本 6-3-20。",
+      "expected_docs": [
+        "SEC-07"
+      ]
+    },
+    {
+      "id": "ret-multi_symptom-022",
+      "category": "multi_symptom",
+      "query": "下游拒绝过多请求、重试倍率升高、本地实例健康、延迟上升；观测窗口样本 6-3-22。",
+      "expected_docs": [
+        "RB-429"
+      ]
+    },
+    {
+      "id": "ret-multi_symptom-024",
+      "category": "multi_symptom",
+      "query": "所有实例 401、TLS 正常、凭据版本过期、网络错误为零；观测窗口样本 6-3-24。",
+      "expected_docs": [
+        "RB-203"
+      ]
+    },
+    {
+      "id": "ret-multi_symptom-026",
+      "category": "multi_symptom",
+      "query": "P95 三秒、5xx 上升、连接等待者增加、一个实例健康抖动；观测窗口样本 6-4-26。",
+      "expected_docs": [
+        "RB-101"
+      ]
+    },
+    {
+      "id": "ret-multi_symptom-028",
+      "category": "multi_symptom",
+      "query": "申请人自批、计划变化、租户不符、旧 worker 提交都必须拒绝；观测窗口样本 6-4-28。",
+      "expected_docs": [
+        "SEC-07"
+      ]
+    },
+    {
+      "id": "ret-multi_symptom-030",
+      "category": "multi_symptom",
+      "query": "下游拒绝过多请求、重试倍率升高、本地实例健康、延迟上升；观测窗口样本 6-4-30。",
+      "expected_docs": [
+        "RB-429"
+      ]
+    },
+    {
+      "id": "ret-weak_lexical_overlap-002",
+      "category": "weak_lexical_overlap",
+      "query": "工作到达速率压过服务速率，排队等待无法收敛；观测窗口样本 7-1-2。",
+      "expected_docs": [
+        "RB-104"
+      ]
+    },
+    {
+      "id": "ret-weak_lexical_overlap-004",
+      "category": "weak_lexical_overlap",
+      "query": "改变系统之后必须从另一条观测通道确认目标状态真的达成；观测窗口样本 7-1-4。",
+      "expected_docs": [
+        "OPS-12"
+      ]
+    },
+    {
+      "id": "ret-weak_lexical_overlap-006",
+      "category": "weak_lexical_overlap",
+      "query": "数据搬运者存活，只有一个分片的消费位置冻结；观测窗口样本 7-1-6。",
+      "expected_docs": [
+        "RB-WS-501"
+      ]
+    },
+    {
+      "id": "ret-weak_lexical_overlap-008",
+      "category": "weak_lexical_overlap",
+      "query": "读取侧的临时副本没有跟上主数据的新修订；观测窗口样本 7-1-8。",
+      "expected_docs": [
+        "RB-310"
+      ]
+    },
+    {
+      "id": "ret-weak_lexical_overlap-010",
+      "category": "weak_lexical_overlap",
+      "query": "工作到达速率压过服务速率，排队等待无法收敛；观测窗口样本 7-2-10。",
+      "expected_docs": [
+        "RB-104"
+      ]
+    },
+    {
+      "id": "ret-weak_lexical_overlap-012",
+      "category": "weak_lexical_overlap",
+      "query": "改变系统之后必须从另一条观测通道确认目标状态真的达成；观测窗口样本 7-2-12。",
+      "expected_docs": [
+        "OPS-12"
+      ]
+    },
+    {
+      "id": "ret-weak_lexical_overlap-014",
+      "category": "weak_lexical_overlap",
+      "query": "数据搬运者存活，只有一个分片的消费位置冻结；观测窗口样本 7-2-14。",
+      "expected_docs": [
+        "RB-WS-501"
+      ]
+    },
+    {
+      "id": "ret-weak_lexical_overlap-016",
+      "category": "weak_lexical_overlap",
+      "query": "读取侧的临时副本没有跟上主数据的新修订；观测窗口样本 7-2-16。",
+      "expected_docs": [
+        "RB-310"
+      ]
+    },
+    {
+      "id": "ret-weak_lexical_overlap-018",
+      "category": "weak_lexical_overlap",
+      "query": "工作到达速率压过服务速率，排队等待无法收敛；观测窗口样本 7-3-18。",
+      "expected_docs": [
+        "RB-104"
+      ]
+    },
+    {
+      "id": "ret-weak_lexical_overlap-020",
+      "category": "weak_lexical_overlap",
+      "query": "改变系统之后必须从另一条观测通道确认目标状态真的达成；观测窗口样本 7-3-20。",
+      "expected_docs": [
+        "OPS-12"
+      ]
+    },
+    {
+      "id": "ret-weak_lexical_overlap-022",
+      "category": "weak_lexical_overlap",
+      "query": "数据搬运者存活，只有一个分片的消费位置冻结；观测窗口样本 7-3-22。",
+      "expected_docs": [
+        "RB-WS-501"
+      ]
+    },
+    {
+      "id": "ret-weak_lexical_overlap-024",
+      "category": "weak_lexical_overlap",
+      "query": "读取侧的临时副本没有跟上主数据的新修订；观测窗口样本 7-3-24。",
+      "expected_docs": [
+        "RB-310"
+      ]
+    },
+    {
+      "id": "ret-weak_lexical_overlap-026",
+      "category": "weak_lexical_overlap",
+      "query": "工作到达速率压过服务速率，排队等待无法收敛；观测窗口样本 7-4-26。",
+      "expected_docs": [
+        "RB-104"
+      ]
+    },
+    {
+      "id": "ret-weak_lexical_overlap-028",
+      "category": "weak_lexical_overlap",
+      "query": "改变系统之后必须从另一条观测通道确认目标状态真的达成；观测窗口样本 7-4-28。",
+      "expected_docs": [
+        "OPS-12"
+      ]
+    },
+    {
+      "id": "ret-weak_lexical_overlap-030",
+      "category": "weak_lexical_overlap",
+      "query": "数据搬运者存活，只有一个分片的消费位置冻结；观测窗口样本 7-4-30。",
+      "expected_docs": [
+        "RB-WS-501"
+      ]
+    }
+  ]
+}

@@ -7,7 +7,12 @@ import sys
 
 THRESHOLDS = {
     "TOTAL": 82.0,
-    "app/store.py": 75.0,
+    # The former monolithic store.py is now split. Keep the gate on the
+    # executable durability paths instead of silently dropping the old check.
+    "app/store/sqlite.py": 75.0,
+    "app/store/idempotency.py": 65.0,
+    "app/agent/transitions.py": 85.0,
+    "app/tools/executor.py": 80.0,
     "app/worker.py": 75.0,
 }
 

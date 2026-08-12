@@ -43,12 +43,13 @@ def main() -> None:
         api_key=args.api_key,
     )
     evaluator = EvaluationService(
-        PROJECT_ROOT / "data" / "eval_cases_v4.json",
+        PROJECT_ROOT / "data" / "evaluation" / "manifest.json",
         retriever,
         "harbor-live-validation-capability-secret",
         adapter,
     )
     report = evaluator.run(
+        tenant_id="live-model-validation",
         live_model=True,
         case_limit=args.case_limit,
         case_offset=args.case_offset,
