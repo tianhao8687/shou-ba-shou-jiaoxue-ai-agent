@@ -1,0 +1,63 @@
+{
+  "format": "harbor-agentops-release-evidence/v1",
+  "version": "3.6.0",
+  "repository": "tianhao8687/shou-ba-shou-jiaoxue-ai-agent",
+  "validated_code_commit": "14a0ec538901e4817cc047b7a8315492cec3a7a3",
+  "ci": {
+    "status": "passed",
+    "run_id": 31592619182,
+    "url": "https://github.com/tianhao8687/shou-ba-shou-jiaoxue-ai-agent/actions/runs/31592619182",
+    "workflow": "CI",
+    "event": "pull_request",
+    "created_at": "2026-08-12T11:36:38Z",
+    "validated_at": "2026-08-12T11:39:19Z",
+    "required_jobs_passed": 6,
+    "required_jobs_total": 6
+  },
+  "required_ci_jobs": {
+    "Quality gates": {
+      "status": "passed",
+      "job_id": 94100784743,
+      "url": "https://github.com/tianhao8687/shou-ba-shou-jiaoxue-ai-agent/actions/runs/31592619182/job/94100784743",
+      "started_at": "2026-08-12T11:36:41Z",
+      "completed_at": "2026-08-12T11:36:48Z"
+    },
+    "Pinned external data validation": {
+      "status": "passed",
+      "job_id": 94100784824,
+      "url": "https://github.com/tianhao8687/shou-ba-shou-jiaoxue-ai-agent/actions/runs/31592619182/job/94100784824",
+      "started_at": "2026-08-12T11:36:42Z",
+      "completed_at": "2026-08-12T11:37:07Z"
+    },
+    "Backend tests": {
+      "status": "passed",
+      "job_id": 94100784680,
+      "url": "https://github.com/tianhao8687/shou-ba-shou-jiaoxue-ai-agent/actions/runs/31592619182/job/94100784680",
+      "started_at": "2026-08-12T11:36:41Z",
+      "completed_at": "2026-08-12T11:37:37Z"
+    },
+    "Frontend tests": {
+      "status": "passed",
+      "job_id": 94100784663,
+      "url": "https://github.com/tianhao8687/shou-ba-shou-jiaoxue-ai-agent/actions/runs/31592619182/job/94100784663",
+      "started_at": "2026-08-12T11:36:42Z",
+      "completed_at": "2026-08-12T11:37:10Z"
+    },
+    "Compose smoke and browser E2E": {
+      "status": "passed",
+      "job_id": 94100784700,
+      "url": "https://github.com/tianhao8687/shou-ba-shou-jiaoxue-ai-agent/actions/runs/31592619182/job/94100784700",
+      "started_at": "2026-08-12T11:36:41Z",
+      "completed_at": "2026-08-12T11:39:18Z"
+    },
+    "kind least-privilege staging E2E": {
+      "status": "passed",
+      "job_id": 94100784631,
+      "url": "https://github.com/tianhao8687/shou-ba-shou-jiaoxue-ai-agent/actions/runs/31592619182/job/94100784631",
+      "started_at": "2026-08-12T11:36:41Z",
+      "completed_at": "2026-08-12T11:38:45Z"
+    }
+  },
+  "production_claim": false,
+  "claim_boundary": "This proves the repository's required CI gates for the recorded commit; it does not prove sustained enterprise production traffic."
+}

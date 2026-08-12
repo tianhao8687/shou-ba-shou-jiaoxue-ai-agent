@@ -13,6 +13,7 @@
 - [完整遥测 RCA 验证报告](./docs/完整遥测RCA验证报告_2026-08-11.md)：四天、54,426,202 行公开日志/指标/调用链的三阶段隔离、失败复盘与最终盲测。
 - [v3.6 可交付复评](./docs/项目成熟度审计与v3.6完整遥测交付报告_2026-08-11.md)：基于实现、测试和真实数据重新评分，并映射 20K+ 招聘要求。
 - [v3.6 生产加固整改报告](./docs/v3.6-production-hardening-report.md)：Fresh Observation、Saga、生产密钥、连接池、故障注入和最新验收边界。
+- [v3.6 机器发布证据](./docs/release-evidence-v3.6.json)：从 GitHub Actions API 生成的提交、Run、六个 Job 与时间戳，不手填绿色状态。
 - [v3.3 成熟度审计与整改报告](./docs/项目成熟度审计与v3.3整改报告_2026-08-10.md)：按源码、容器、数据库、故障和浏览器行为复评，不用 Markdown 代替证据。
 - [v3.4 1–4 项交付与复评报告](./docs/项目成熟度审计与v3.4交付报告_2026-08-10.md)：真实 kind staging、迁移、备份恢复、可靠性和 105 项对抗评测。
 - [岗位明细 CSV](./career/厦门_AI_Agent_20K以上岗位明细_2026-08-08.csv)：逐条招聘来源和需求证据。
@@ -396,7 +397,7 @@ python scripts/check-portability.py
 
 GitHub Actions 对每个 PR 和 `main` 提交执行六个稳定检查：`Quality gates`、`Pinned external data validation`、`Backend tests`、`Frontend tests`、`Compose smoke and browser E2E`、`kind least-privilege staging E2E`。外部轻量数据 job 先联网核验固定字节，再断网复跑；Compose job 执行备份恢复和依赖故障矩阵；kind job 验证真实 RBAC、审批、Scale 与独立就绪证据。约 1.90 GB 的完整遥测另设手动 workflow，并缓存验真原始文件，避免每个小改动浪费带宽和 CI 时间。
 
-当前工作树的远端 CI 尚未运行；上一已推送提交 `386990612ef1c2c66702ae22bab3f1cdd29474ea` 的 Run `31582016526` 为 4/6，Compose 与 Kind 因 runtime 缺配置失败。本轮不会在新提交实际全绿前把它改写成 6/6。全绿证据将由 `scripts/generate-release-evidence.py` 从 GitHub API 生成，脚本会拒绝失败、取消、运行中或缺 Job 的 Run。
+最新生产加固代码提交 `14a0ec538901e4817cc047b7a8315492cec3a7a3` 已由 GitHub Actions Run [`31592619182`](https://github.com/tianhao8687/shou-ba-shou-jiaoxue-ai-agent/actions/runs/31592619182) 验证：六个必需 Job 6/6 passed，验证完成时间为 2026-08-12 11:39:19 UTC。机器证据由 `scripts/generate-release-evidence.py` 从 GitHub API 生成；脚本会拒绝失败、取消、运行中或缺 Job 的 Run。
 
 2026-08-12 v3.6 生产加固本机验证：
 
