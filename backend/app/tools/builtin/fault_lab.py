@@ -1,140 +1,13 @@
 from __future__ import annotations
 
 from copy import deepcopy
-from dataclasses import dataclass
-import hashlib
-import json
+import math
 import threading
-import time
-from typing import Any, Protocol
+from typing import Any
 from uuid import uuid4
 
-import httpx
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
-
-from .schemas import Incident, PlanStep, RiskLevel, ToolResult, UserIdentity
-from .security import CapabilityService, canonical_json
-
-
-class StrictToolInput(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-
-class LabTargetInput(StrictToolInput):
-    experiment_id: str = Field(pattern=r"^EXP-[A-Z0-9]{8,32}$")
-    service: str = Field(pattern=r"^[a-z0-9][a-z0-9-]{1,79}$")
-
-
-class QueryMetricsInput(LabTargetInput):
-    window_minutes: int = Field(ge=1, le=120)
-
-
-class InspectLogsInput(LabTargetInput):
-    query: str = Field(min_length=2, max_length=160)
-    limit: int = Field(ge=1, le=100)
-
-
-class GetServiceStatusInput(LabTargetInput):
-    include_instances: bool = True
-
-
-class RestartServiceInput(LabTargetInput):
-    instance: str = Field(min_length=2, max_length=120)
-    strategy: str = Field(pattern=r"^(single-instance|rolling)$")
-
-
-class ScaleWorkersInput(LabTargetInput):
-    target_replicas: int = Field(ge=1, le=30)
-    change_ticket: str = Field(pattern=r"^CHG-\d{4,}$")
-
-
-class RotateCredentialInput(LabTargetInput):
-    credential_id: str = Field(pattern=r"^[a-z0-9][a-z0-9_-]{2,80}$")
-    target_version: str = Field(pattern=r"^v\d+$")
-    scope: str = Field(pattern=r"^(canary|single-tenant)$")
-
-
-class RefreshCacheInput(LabTargetInput):
-    tenant: str = Field(pattern=r"^[a-z0-9][a-z0-9_-]{1,80}$")
-    category: str = Field(pattern=r"^[a-z0-9][a-z0-9_-]{1,80}$")
-
-
-@dataclass(frozen=True)
-class ToolSpec:
-    name: str
-    description: str
-    risk: RiskLevel
-    input_model: type[StrictToolInput]
-    required_role: str
-    read_only: bool
-    applicability: str
-
-
-TOOL_REGISTRY: dict[str, ToolSpec] = {
-    "query_metrics": ToolSpec(
-        "query_metrics", "读取实验服务的时序指标快照", RiskLevel.LOW, QueryMetricsInput, "observer", True,
-        "所有已绑定实验的基础调查；只读。",
-    ),
-    "inspect_logs": ToolSpec(
-        "inspect_logs", "读取并脱敏实验服务日志", RiskLevel.LOW, InspectLogsInput, "observer", True,
-        "所有需要区分错误类型的基础调查；只读并脱敏。",
-    ),
-    "get_service_status": ToolSpec(
-        "get_service_status", "读取服务与实例状态", RiskLevel.LOW, GetServiceStatusInput, "observer", True,
-        "写操作前确认具体实例与当前副本；只读。",
-    ),
-    "restart_service": ToolSpec(
-        "restart_service", "滚动重启指定实例", RiskLevel.HIGH, RestartServiceInput, "on-call-lead", False,
-        "仅当观测显示具体实例异常或连接池等待/超时；必须使用观测到的实例名。",
-    ),
-    "scale_workers": ToolSpec(
-        "scale_workers", "调整消费者实例数量", RiskLevel.MEDIUM, ScaleWorkersInput, "on-call-lead", False,
-        "仅当观测存在 queue_depth/oldest_age_s 且消费能力不足；服务端按生产/单副本消费速率和 20% 余量计算最小副本，不能用于连接池故障。",
-    ),
-    "rotate_credential": ToolSpec(
-        "rotate_credential", "灰度轮换服务凭据", RiskLevel.HIGH, RotateCredentialInput, "security-on-call", False,
-        "仅当观测存在凭据过期证据与 http_401_rate；需要安全值班角色。",
-    ),
-    "refresh_cache": ToolSpec(
-        "refresh_cache", "精确刷新租户品类缓存", RiskLevel.LOW, RefreshCacheInput, "operator", False,
-        "仅当观测存在 stale_sample_rate 或 cache/db 版本不一致；目标租户必须来自证据。",
-    ),
-}
-
-
-RISK_WEIGHT = {RiskLevel.LOW: 1, RiskLevel.MEDIUM: 2, RiskLevel.HIGH: 3}
-
-
-def effective_risk(step: PlanStep) -> RiskLevel:
-    spec = TOOL_REGISTRY.get(step.tool_name)
-    if spec is None:
-        return RiskLevel.HIGH
-    declared = RiskLevel(step.risk)
-    return spec.risk if RISK_WEIGHT[spec.risk] >= RISK_WEIGHT[declared] else declared
-
-
-@dataclass(frozen=True)
-class ToolCallResponse:
-    status: str
-    summary: str
-    output: dict[str, Any]
-    error: str | None = None
-
-
-class ToolClient(Protocol):
-    name: str
-
-    def invoke(
-        self,
-        tool_name: str,
-        payload: dict[str, Any],
-        idempotency_key: str,
-        capability_token: str,
-        tenant_id: str,
-    ) -> ToolCallResponse: ...
-
-    def health(self) -> dict[str, Any]: ...
-
+from ...schemas import Incident
+from ..contracts import ToolCallResponse
 
 FAULT_DEFINITIONS: dict[str, dict[str, Any]] = {
     "connection_pool_exhaustion": {
@@ -243,6 +116,7 @@ class InMemoryFaultLabClient:
     def __init__(self) -> None:
         self._experiments: dict[str, dict[str, Any]] = {}
         self._idempotency: dict[str, ToolCallResponse] = {}
+        self._fencing: dict[str, int] = {}
         self._lock = threading.RLock()
 
     def create_experiment(self, fault_kind: str) -> tuple[str, Incident]:
@@ -286,9 +160,17 @@ class InMemoryFaultLabClient:
         idempotency_key: str,
         capability_token: str,
         tenant_id: str,
+        job_id: str,
+        fencing_token: int,
     ) -> ToolCallResponse:
         del capability_token, tenant_id  # Fixture security is tested separately by CapabilityService and the HTTP lab.
         with self._lock:
+            latest_token = self._fencing.get(job_id, 0)
+            if fencing_token < latest_token:
+                raise RuntimeError(
+                    f"stale fencing token {fencing_token}; latest is {latest_token}"
+                )
+            self._fencing[job_id] = fencing_token
             prior = self._idempotency.get(idempotency_key)
             if prior is not None:
                 return ToolCallResponse("skipped", "持久幂等命中：返回首次调用结果。", prior.output, prior.error)
@@ -302,6 +184,13 @@ class InMemoryFaultLabClient:
             return response
 
     def _apply(self, tool_name: str, payload: dict[str, Any], experiment: dict[str, Any]) -> ToolCallResponse:
+        # Onboarded tools register handlers through the platform boundary.  The lab
+        # remains unaware of service names and tool-specific business logic.
+        from ...registry.tools import LAB_TOOL_HANDLERS
+
+        extension = LAB_TOOL_HANDLERS.get(tool_name)
+        if extension is not None:
+            return extension(experiment, payload)
         state = experiment["state"]
         fault_kind = experiment["fault_kind"]
         if tool_name == "query_metrics":
@@ -311,10 +200,25 @@ class InMemoryFaultLabClient:
             samples = [line.replace("secret=actual", "secret=[REDACTED]") for line in state["logs"][:limit]]
             return ToolCallResponse("succeeded", "已读取并脱敏日志样本。", {"matches": len(samples), "samples": samples})
         if tool_name == "get_service_status":
+            snapshot = {
+                "instances": deepcopy(state["instances"]),
+                "replicas": state.get("replicas", len(state["instances"])),
+                **deepcopy(state.get("metrics", {})),
+            }
+            for field in (
+                "credential_version",
+                "cache_version",
+                "db_version",
+                "partition",
+                "applied_checkpoint",
+                "expected_checkpoint",
+            ):
+                if field in state:
+                    snapshot[field] = deepcopy(state[field])
             return ToolCallResponse(
                 "succeeded",
                 "已读取服务实例状态。",
-                {"instances": deepcopy(state["instances"]), "replicas": state.get("replicas", len(state["instances"]))},
+                snapshot,
             )
         if tool_name == "restart_service":
             experiment["effects"] += 1
@@ -370,192 +274,3 @@ class InMemoryFaultLabClient:
                 "experiments": len(self._experiments),
                 "idempotency_records": len(self._idempotency),
             }
-
-
-class RemoteToolClient:
-    name = "remote-http-fault-lab"
-
-    def __init__(self, base_url: str, health_token: str, timeout_seconds: float) -> None:
-        self.base_url = base_url.rstrip("/")
-        self.health_token = health_token
-        self.timeout_seconds = timeout_seconds
-
-    def invoke(
-        self,
-        tool_name: str,
-        payload: dict[str, Any],
-        idempotency_key: str,
-        capability_token: str,
-        tenant_id: str,
-    ) -> ToolCallResponse:
-        with httpx.Client(timeout=self.timeout_seconds) as client:
-            response = client.post(
-                f"{self.base_url}/v1/tools/{tool_name}",
-                json=payload,
-                headers={
-                    "Authorization": f"Bearer {capability_token}",
-                    "X-Idempotency-Key": idempotency_key,
-                    "X-Harbor-Control-Tenant": tenant_id,
-                },
-            )
-        try:
-            body = response.json()
-        except ValueError as exc:
-            raise RuntimeError(f"tool lab returned non-JSON HTTP {response.status_code}") from exc
-        if response.status_code in {401, 403, 404, 409, 422}:
-            raise RuntimeError(body.get("detail") or f"tool lab HTTP {response.status_code}")
-        if response.status_code >= 500:
-            raise RuntimeError(body.get("detail") or f"tool lab HTTP {response.status_code}")
-        return ToolCallResponse(
-            status=str(body.get("status", "failed")),
-            summary=str(body.get("summary", "工具实验室未返回摘要。")),
-            output=dict(body.get("output") or {}),
-            error=body.get("error"),
-        )
-
-    def health(self) -> dict[str, Any]:
-        try:
-            with httpx.Client(timeout=1.5) as client:
-                response = client.get(
-                    f"{self.base_url}/health",
-                    headers={"Authorization": f"Bearer {self.health_token}"},
-                )
-                response.raise_for_status()
-                body = response.json()
-            return {"status": body.get("status", "ready"), "mode": self.name, **body}
-        except Exception as exc:
-            return {"status": "unavailable", "mode": self.name, "detail": f"{type(exc).__name__}: lab unreachable"}
-
-
-class ToolExecutor:
-    def __init__(self, client: ToolClient, capabilities: CapabilityService) -> None:
-        self.client = client
-        self.capabilities = capabilities
-
-    def execute(
-        self,
-        step: PlanStep,
-        *,
-        run_id: str,
-        plan_hash_value: str,
-        actor: UserIdentity,
-        attempt: int,
-        previous_results: list[ToolResult],
-    ) -> ToolResult:
-        spec = TOOL_REGISTRY.get(step.tool_name)
-        if spec is None:
-            return self._failure(step, run_id, attempt, "工具未注册，已拒绝执行")
-        try:
-            validated = spec.input_model.model_validate(step.tool_input).model_dump()
-        except ValidationError as exc:
-            return self._failure(step, run_id, attempt, f"参数校验失败：{exc.errors()[0]['msg']}")
-
-        idempotency_key = self._idempotency_key(run_id, plan_hash_value, step.id, validated)
-        prior_success = next(
-            (
-                result
-                for result in reversed(previous_results)
-                if result.idempotency_key == idempotency_key and result.status in {"succeeded", "skipped"}
-            ),
-            None,
-        )
-        if prior_success:
-            return ToolResult(
-                step_id=step.id,
-                tool_name=step.tool_name,
-                status="skipped",
-                summary="运行记录幂等命中：该动作不重复执行。",
-                output=prior_success.output,
-                idempotency_key=idempotency_key,
-                duration_ms=0,
-                attempt=attempt,
-                transport=self.client.name,
-                capability_jti=prior_success.capability_jti,
-            )
-
-        try:
-            grant = self.capabilities.issue(
-                run_id=run_id,
-                plan_hash_value=plan_hash_value,
-                step_id=step.id,
-                tool_name=step.tool_name,
-                payload=validated,
-                actor=actor,
-                required_role=spec.required_role,
-            )
-        except Exception as exc:
-            return self._failure(step, run_id, attempt, f"能力授权失败：{exc}")
-
-        started = time.perf_counter()
-        try:
-            response = self.client.invoke(
-                step.tool_name,
-                validated,
-                idempotency_key,
-                grant.token,
-                actor.tenant_id,
-            )
-            status = response.status if response.status in {"succeeded", "failed", "skipped", "unknown"} else "failed"
-            return ToolResult(
-                step_id=step.id,
-                tool_name=step.tool_name,
-                status=status,
-                summary=response.summary,
-                output=response.output,
-                idempotency_key=idempotency_key,
-                duration_ms=round((time.perf_counter() - started) * 1000),
-                error=response.error,
-                attempt=attempt,
-                transport=self.client.name,
-                capability_jti=grant.jti,
-            )
-        except Exception as exc:
-            return ToolResult(
-                step_id=step.id,
-                tool_name=step.tool_name,
-                status="unknown",
-                summary="工具调用响应未知；禁止使用新幂等键重试，已停止后续写操作。",
-                output={"retryable_with_same_key": True, "code": "tool_result_unknown"},
-                idempotency_key=idempotency_key,
-                duration_ms=round((time.perf_counter() - started) * 1000),
-                error=f"{type(exc).__name__}: {str(exc)[:240]}",
-                attempt=attempt,
-                transport=self.client.name,
-                capability_jti=grant.jti,
-            )
-
-    @staticmethod
-    def _idempotency_key(
-        run_id: str, plan_hash_value: str, step_id: str, payload: dict[str, Any]
-    ) -> str:
-        material = f"{run_id}:{plan_hash_value}:{step_id}:{canonical_json(payload)}"
-        return hashlib.sha256(material.encode("utf-8")).hexdigest()
-
-    def _failure(self, step: PlanStep, run_id: str, attempt: int, message: str) -> ToolResult:
-        return ToolResult(
-            step_id=step.id,
-            tool_name=step.tool_name,
-            status="failed",
-            summary=message,
-            idempotency_key=hashlib.sha256(f"{run_id}:{step.id}:{json.dumps(step.tool_input, sort_keys=True)}".encode()).hexdigest(),
-            error=message,
-            attempt=attempt,
-            transport=self.client.name,
-        )
-
-
-def create_tool_executor(
-    *,
-    mode: str,
-    base_url: str,
-    health_token: str,
-    timeout_seconds: float,
-    capabilities: CapabilityService,
-) -> tuple[ToolExecutor, InMemoryFaultLabClient | None]:
-    if mode == "remote":
-        client: ToolClient = RemoteToolClient(base_url, health_token, timeout_seconds)
-        return ToolExecutor(client, capabilities), None
-    if mode != "inprocess":
-        raise ValueError("TOOL_MODE must be 'remote' or 'inprocess'")
-    lab = InMemoryFaultLabClient()
-    return ToolExecutor(lab, capabilities), lab

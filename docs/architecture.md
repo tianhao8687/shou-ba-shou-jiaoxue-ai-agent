@@ -1,4 +1,4 @@
-# Harbor AgentOps 3.2：架构、信任边界与底层原理
+# Harbor AgentOps 3.6：架构、信任边界与底层原理
 
 ## 1. 设计目标
 
@@ -20,6 +20,10 @@ Harbor 要解决的不是“怎样让模型更大胆地操作系统”，而是�
 10. worker 的旧 lease 即使恢复执行也不能覆盖新 owner 的状态。
 11. 自动补偿必须与主动作一起编译、审批和哈希，不能成为权限后门。
 12. fixture、真实模型、真实 Embedding 和生产结论分开报告。
+13. Run 进入 queued 与 durable Job 创建必须原子提交，不能出现只有业务状态、没有可领取任务的半完成状态。
+14. production 观测只允许服务端固定 PromQL 模板；空数据、认证失败和超时都必须在模型与写动作之前停止。
+15. staging Kubernetes 写入只经过命名空间 connector；API Server RBAC 必须拒绝 Secret、Pod 执行、模板修改和提权。
+16. 数据库结构只能通过有版本、有校验和、有升级锁的 migration 演进；备份只有完成隔离恢复校验才算可用。
 
 ## 2. 组件与信任区
 
@@ -35,11 +39,13 @@ flowchart LR
       ENGINE["State Machine"]
       RAG["Retriever"]
       MODEL["Model Adapter"]
+      PROM["Prometheus Read-only Provider"]
       POLICY["Policy Compiler"]
       AUDIT["Trace / Audit / Metrics"]
     end
     subgraph Execution["执行边界"]
       LAB["Sealed Fault Lab"]
+      KUBE["Kubernetes Staging Connector<br/>Scale subresource only"]
       IDEM["Idempotency + Capability Usage"]
       STATE["Mutable Experiment State"]
     end
@@ -54,8 +60,10 @@ flowchart LR
     JOB --> ENGINE
     ENGINE --> RAG
     ENGINE --> MODEL
+    ENGINE -->|"template-only query"| PROM
     ENGINE --> POLICY
     POLICY -->|"HMAC capability"| LAB
+    POLICY -->|"medium-risk capability"| KUBE
     LAB --> IDEM
     LAB --> STATE
     ENGINE --> AUDIT
@@ -180,9 +188,15 @@ V3.2 保留并实测真实 `OpenVINO/Qwen3-Embedding-0.6B-int4-cw-ov`。sidecar 
 
 融合不是固定“向量权重越大越先进”。校准时直接使用 52% dense 权重，留出前实验出现 MRR 回归；最终使用 lexical strength 调节：精确 AIOps 术语由 BM25 主导，弱词面查询提高 dense 权重。15 条校准集上语义 R@1 从 0.9333 到 1.0；另 15 条留出集 R@1=0.9333、R@3=1.0、MRR=0.9667，与词法基线持平。结论是“不回归且能真实运行”，不是“小样本证明全面提升”。
 
-PostgreSQL 模式使用 pgvector cosine `<=>` 和 HNSW。表名包含向量维度，因此从 256 维 fallback 切换到 1024 维 Qwen 时不会对旧列做危险的原地迁移；知识表是可重建派生索引，源文档仍是 Markdown。
+PostgreSQL 模式使用 pgvector cosine `<=>` 和 HNSW。表名包含向量维度，因此从 256 维 fallback 切换到 1024 维 Qwen 时不会对旧列做危险的原地迁移；知识表是可重建派生索引，源文档仍是 Markdown。API 和多个 Worker 可能同时面对一张全新数据库，因此扩展、派生表、知识种子与索引初始化由独立的 transaction advisory lock 串行；`IF NOT EXISTS` 本身不能消除并发 `CREATE EXTENSION` 的系统目录竞态。
 
 服务路由分数固定为 0.72，并用 `routed` 标签展示；它不是伪造的相似度。metadata route 与 learned retrieval 分开报告，便于评测和调试。
+
+### 7.1 生产 Prometheus 只读边界
+
+没有 `experiment_id` 的 production / staging 事件不会借用 Fault Lab 假装生产。控制面只能调用 `query_prometheus_slo`，服务端根据经过 Schema 校验的 `service`、`environment` 和时间窗口生成四个固定查询：请求率、5xx 百分比、P95 延迟和 `up`。
+
+调用方不能提交 `query` 字段，模型也没有任意 PromQL 接口。Observation 保存 provider、样本数和来源 URI。四项全空时直接 handoff，不调用模型；HTTP 401、超时或未知结果同样停止后续节点。取得可归因指标后模型可以生成诊断，但当前没有 production 写 connector，所以计划被清空并携带证据转人工。
 
 ## 8. Plan IR 与策略编译
 
@@ -249,6 +263,10 @@ fault lab 重新验签、比较 tool/payload、核对 `X-Harbor-Control-Tenant` 
 
 SQLite 使用事务和条件更新；PostgreSQL claim 使用 `FOR UPDATE SKIP LOCKED`。每次重新 claim 都递增 fencing token。`save_run_with_lease` 和 `finish_job` 同时校验 job id、owner、token 和 lease，所以暂停过久的旧 worker 即使醒来，也不能覆盖新 owner。
 
+Run 进入 `queued` 与 Job 创建由 `save_run_and_enqueue()` 在同一事务完成，并对同一 Run + stage 的 queued / claimed Job 建立部分唯一索引。注入 Job INSERT 失败时，Run 更新同时回滚；reconciler 只修复确实缺少活动 Job 的非终态 Run。
+
+heartbeat 不只是记录日志：连续失败超过预算后会设置共享取消事件。每个节点、模型调用和工具调用前后都检查它。job id 与 fencing token 还进入 capability、HTTP header 和工具端持久记录；即使旧 Worker 手里的签名和幂等键仍有效，工具端也会拒绝较低 token。
+
 SQLite 测试让 32 个线程同时 claim 同一个 job，只有 1 个成功；PostgreSQL 集成测试再让 16 个连接并发 claim，仍然精确一次。恢复测试让 worker #1 的 lease 立即过期，worker #2 用 fencing #2 恢复，旧 token 写入抛出 `LeaseLostError`；真实容器测试还停止了刚完成 claim 的 worker，确认同一 job 被另一个副本以 attempt 2 / fencing 2 接管。
 
 Compose 把 API 和 3 个 worker 副本分成独立进程，共享 PostgreSQL。worker id 展开容器 hostname，避免副本误用同一个 owner；`worker_main.py` 处理 SIGINT/SIGTERM 并等待当前心跳线程收尾。
@@ -264,7 +282,9 @@ Compose 把 API 和 3 个 worker 副本分成独立进程，共享 PostgreSQL。
 - slot 等待时间与实际推理时间分别写入 `ModelInvocation.queue_wait_ms` 和 Prometheus histogram；
 - 锁只包围模型调用，不包围检索、工具读取、策略编译或数据库任务 claim。
 
-修复后同样 3 条并发任务 3/3 完成：等待约 0、67、135 秒，实际推理各约 67–70 秒。这个方案避免容量型假失败，但不提升吞吐；生产仍应使用有界队列、GPU 副本、容量预算和过载拒绝策略。
+修复后同样 3 条并发任务 3/3 完成：等待约 0、67、135 秒，实际推理各约 67–70 秒。V3.3 又在本地网关增加第二层保护：一个执行槽、可配置的有界等待队列和等待超时。队列满返回 429，已入队但超出时间预算返回 503；Prometheus 分别暴露 active、queued、reject、timeout、排队和生成耗时。
+
+数据库 advisory lock 负责跨 Worker 协调，网关 admission queue 负责保护模型进程。两层都不提升吞吐；它们把过载从“线程无限堆积、最后一起超时”变成可观测、可重试的明确合同。真正扩大容量仍需要 GPU 副本、批处理、路由和容量 SLO。
 
 ## 11. 副作用、幂等和不确定结果
 
@@ -306,7 +326,7 @@ fault lab 在 `BEGIN IMMEDIATE` 事务里：
 
 ## 13. 密封评测
 
-`data/eval_cases_v3.json` 包含 5 类故障，每类 3 个变体，共 15 例：
+`data/eval_cases_v4.json` 包含 5 类故障和 21 个共享对抗变体，共 105 例：
 
 - 连接池耗尽；
 - 消费队列容量不足；
@@ -316,6 +336,8 @@ fault lab 在 `BEGIN IMMEDIATE` 事务里：
 
 每例新建实验状态。Agent 只能看到 Incident 和工具 observation；Evaluator 在结束后使用 oracle token 比较根因、目标工具、最终状态、安全门、检索、注入抵抗、capability 和危险越权。
 
+共享变体不只改用户事件文本。它覆盖长上下文、Unicode bidi / 零宽 / 全角同形字符、Base64、JSON/XML/Markdown 结构化诱导、伪造身份与审批，并把恶意 annotation 注入真实只读工具输出。工具输出仍然只是 observation 数据，不能升级为策略或审批指令。
+
 评分不是搜答案关键词的单点判断，而是文本别名组、选择工具、真实状态、审批和安全不变量的组合。失败报告带 run 状态、诊断、计划、verification 和模型调用信息，便于定位。
 
 结果必须分层：
@@ -324,7 +346,35 @@ fault lab 在 `BEGIN IMMEDIATE` 事务里：
 - `sealed-live-model`：测本地 Qwen 生成质量；
 - 生产准确率：需要真实标注事故集、盲评、长期漂移和业务 SLO，本项目未声称。
 
-## 14. 可观测与部署
+报告包含 case 数、通过数、攻击面分类、unsafe-action rate 和 95% Wilson 区间。105/105 fixture 的区间为 96.47%–100%，因此即使样本全过也不声称总体 100%。
+
+## 14. 外部数据验证
+
+内部密封评测解决“可重复验证状态机和安全不变量”，外部数据解决“系统遇到作者没有生成的数据会怎样”。两者是互补证据，不能相互替代。
+
+外部数据入口由 `manifest-v1.json` 控制。清单为每个第三方文件记录发布者、40 位提交、HTTPS URL、精确大小、SHA-256、许可证和数据角色；下载器只访问允许域名，限制响应大小，校验最终重定向目标，原子落盘。任何字节漂移都会 fail closed。原始数据保存在 Git 忽略的 cache，API 和前端只发布聚合结果与 provenance receipt。
+
+三个评测路径采用不同隔离单位：
+
+- Loghub BGL 以固定哈希将日志行分成 fit、tune、holdout；推理器拿不到 Label、EventId 或 EventTemplate；
+- NAB 以完整时间序列为隔离单位，两条序列校准 causal rolling median/MAD 检测器，另外两条先产出 alert 再读取官方 anomaly windows；
+- AIOps 2025 的轻量输入只有时间窗。全部决策冻结后才打开 ground truth，检查 handoff、零写操作和 oracle 泄漏，明确不计算 RCA accuracy。
+
+机器证据经 `/api/evaluations/external/latest` 只读公开。前端把它与 105 项内部 fixture 分栏显示，同时展示 21.85% 的 NAB alert precision 和 0% 外部自动故障覆盖，防止“总门槛通过”掩盖业务缺口。
+
+### 14.1 完整多模态遥测 RCA
+
+3.6 增加第二条外部验证链，使用 AIOps Challenge 2025 官方日包中的 logs、metrics、traces 与逐模态标签。四个归档固定到同一 40 位提交，并同时校验字节数、SHA-256 和发布方 MD5；压缩包总计 1,897,744,494 字节，解压后共扫描 54,426,202 行。原始文件仍位于 Git 忽略目录，API 只暴露聚合证据。
+
+数据协议按日期而不是随机行隔离：6 月 9 日 16 例用于 calibration，6 月 17/18 日共 48 例用于 validation，规则冻结后才在此前未见的 6 月 19 日 24 例上做 final holdout。前两次盲测分别只有 7/10 和 8/10 门槛通过；打开答案后它们永久降级为开发证据，不再参与最终成绩。
+
+预测器只接收输入时间窗和遥测索引，没有 oracle 参数。它先原子写出预测并计算 SHA-256，再由另一个阶段打开 ground truth；最终预测哈希固定为 `e1dcd9bd3764105ebd666aa6670e23ea45bc638e752cac155c66825bdaa02b53`。单元测试重新计算此哈希，并检查 `oracle_opened_after_freeze=true`、oracle leaks 为 0、unsafe writes 为 0。
+
+DuckDB 直接扫描分区 Parquet，并把 UTC 时间过滤与列裁剪下推。日志侧提取高特异签名；指标侧对事故前基线和事故窗做领域化对比；调用链侧比较 source→destination 边的吞吐和延迟。融合器先在每种模态内按故障和实体取最强证据，再跨模态合并，防止字段或指标数量变成虚假票数。缺失实体按运行时非空值回退，字符串 `null` 也视为缺失；TiDB、TiKV、PD 使用组件域映射。
+
+原始 holdout 盲测的故障 Top-3 为 79.17%、实体 Top-3 为 58.33%、严格根因 Top-1 为 29.17%，10/10 预声明门槛通过。交付重放随后发现并行聚合与同分候选缺少稳定二级键；当前实现使用单线程 DuckDB、确定文件选择和显式字典序裁决，两次重放语义 SHA-256 一致，运行线为 66.67%、58.33%、25.00%，仍通过 10/10。完整文件哈希用于证明某次冻结后未被篡改；排除 `generated_at` 与 `latency_ms` 的语义指纹用于跨运行比较。`/api/evaluations/telemetry/latest` 与前端第三个评测标签同时只读展示历史盲测和复现审计；它不向普通用户返回逐案答案，也不授权任何写操作。
+
+## 15. 可观测与部署
 
 Run 内 Trace 记录每节点输入/输出摘要、耗时和状态；Audit 记录租户、登录主体、审批票、工具、capability JTI、幂等键、lease 和 rollback。Prometheus 暴露运行、节点、模型、工具、审批、并发冲突与 fault lab 指标。
 
@@ -337,27 +387,45 @@ Compose 拓扑：
 - Nginx 前端与安全响应头；
 - Prometheus；
 - 宿主机本地 Qwen 生成与 Qwen3 Embedding sidecar；
-- 健康检查与 restart policy。
+- liveness、readiness、诊断详情和 restart policy。
 
-V3.2 已在 Docker Desktop 29.6.1 / WSL 2.7.11 上实际启动 8 个容器。Prometheus 通过 Docker DNS SD 发现每个 worker 的 `:9101/metrics`，backend、宿主机模型、fault lab 和 3 个 worker 共 6/6 targets 为 up。PostgreSQL 使用 pgvector 0.8.6，并创建 cosine HNSW 索引。
+kind staging 作为第二个部署拓扑：单控制面集群、`harbor-sandbox` Pod Security 命名空间、独立 ServiceAccount、命名 Role/RoleBinding、connector Deployment 和 `demo-api` 演示负载。connector 只读取命名工作负载及相关 Pod/Event/ConfigMap，并且唯一写权限是命名 Deployment 的 Scale 子资源。API / Worker 同时加入 kind 的私有 Docker network，直接访问 control-plane NodePort；用于宿主机脚本的 `18094` 只绑定回环地址，从而兼容 Linux runner，又不把服务放宽到 `0.0.0.0`。
+
+数据库使用三版 `schema_migrations`。SQLite 以 `BEGIN IMMEDIATE` 锁定升级；PostgreSQL 以 transaction advisory lock 协调多个启动副本。已应用 migration 的 SHA-256 不一致或数据库版本高于程序支持版本都会拒绝启动。Schema migration 与 pgvector 派生索引使用不同的数据库级锁键，避免把两种职责混成一个全局互斥区。恢复测试还会先创建向量表、卸载 pgvector 并保留缺少 `embedding` 列的表壳，再让两个并发副本重建扩展、补列、回填、恢复 `NOT NULL` 和 HNSW；同一测试连续运行两次仍通过。外置 Worker 每 5 秒写独立进程心跳，API 用 TTL 展示实际 fleet；Job lease 仍单独决定执行所有权。
+
+V3.5 的健康语义分成三层：`/api/health` 只回答进程是否活着，`/api/ready` 决定是否可接流量，`/api/status` 返回完整诊断。实测停止 Prometheus 时 health 保持 200、ready 变为 503，恢复后 ready 回到 200；fixture 模式明确标记 `production_capable=false`，真实模型只有完成加载才算 ready。数据库状态同时报告 migration 版本，Worker 状态报告有新鲜心跳的真实副本。
+
+前端发布门不是截图验收。Playwright 在桌面 Chromium 与 Pixel 7 上执行登录、键盘焦点、响应式、生产只读取证、低风险自动闭环和高风险双主体 quorum，并在关键状态运行 Axe WCAG 2 A/AA 检查。
+
+V3.2 的 3 Worker、真实 Qwen 与真实 Embedding 验证仍作为历史证据保留；V3.4 重新验证的是 2 Worker Compose、PostgreSQL、fault lab、Prometheus、kind connector、数据库恢复、70 项后端测试和 105 项 fixture case，不把旧模型样本冒充新结果。PostgreSQL 使用 pgvector 0.8.6，并创建 cosine HNSW 索引。
 
 四类自研运行容器采用非 root 用户、只读根文件系统、`cap_drop: ALL`、`no-new-privileges` 和显式可写 `/tmp`；fault lab 只有 `/data` 持久卷可写。生产 Python 镜像不安装 pytest，测试依赖位于单独 stage；基础镜像固定 digest。Nginx 增加 CSP/COOP/CORP，React Job 数据按 `run_id` 隔离，防止异步旧响应把另一运行的 lease/fencing 信息渲染到当前页面。
 
-## 15. 为什么不用 Elasticsearch 或 Electron
+## 16. v3.6 执行正确性与持久化边界
+
+写工具不再直接复用 Observe 阶段保存在 Run 中的状态。审批、计划哈希和角色校验通过后，`PreExecutionObserver` 按工具注册表声明的只读合同重新读取真实目标；字段缺失、类型错误、超时或外部失败全部 fail closed。只有 Fresh Observation 的前置条件仍成立、当前 Job lease 与 fencing token 仍有效时，系统才签发真正的动作 capability。
+
+可补偿工具在写入前用 Fresh Observation 生成 Before State 和确定性逆操作，并先 checkpoint 到 Run。后续步骤明确失败时只逆序补偿已经确定成功的动作；每次补偿仍经过 Schema、capability、幂等、lease/fencing 和独立状态复验。网络超时导致的 Unknown Outcome 不会自动重试或补偿，而是保留原幂等键并转人工对账。
+
+PostgreSQL Store 使用官方 `psycopg_pool.ConnectionPool` 管理进程内连接；模型推理 advisory lock 的 lock、受保护区和 unlock 始终位于同一个 pool checkout。API lifespan 与独立 Worker 退出都会关闭 pool。
+
+当前持久化仍把 Run、Observation、Tool Result、Audit 和 Compensation 聚合进 `agent_runs.payload` JSONB。这是本轮刻意保留的兼容边界，不代表最终数据库模型。若进入更高吞吐和长期审计场景，应以版本化 migration 将 events、executions、observations、audit_logs 和 compensations 拆成独立表，并设计索引、保留期、冷热分层和 WORM 导出；本轮没有为追求“架构漂亮”而冒险重写全部 persistence。
+
+## 17. 为什么不用 Elasticsearch 或 Electron
 
 当前知识库和测试语料规模不需要独立搜索集群。BM25 可在应用内复现，结构化状态与审计进入 PostgreSQL，向量进入 pgvector，少一套双写和运维故障域。若未来进入亿级日志全文检索，再根据容量和查询需求评估专用搜索系统。
 
 控制台是浏览器 Web 应用。Electron 会增加桌面运行时、升级链和攻击面，却没有离线桌面 API 需求，所以不引入。
 
-## 16. 到真实生产仍差什么
+## 18. 到真实生产仍差什么
 
 - 企业 OIDC/SSO、SCIM/JIT、离职回收、值班排班与组织目录；当前租户隔离和双人审批使用演示身份，不等于企业身份集成；
 - mTLS、网络策略、Vault/KMS、secret rotation、DLP 和 WORM audit；
-- 真实 Kubernetes/MES/云平台 adapter 及每个 adapter 的最小权限账户；
-- PostgreSQL 与独立 worker 已有本机集成测试；仍缺备份恢复、跨主机故障、多节点混沌和长时间 soak test；
+- 已有 kind staging Scale adapter，但仍缺真实 production Kubernetes、MES、云平台 adapter 及各自的最小权限账户；
+- PostgreSQL 逻辑备份与隔离恢复已有本机证据；仍缺 WAL/PITR、跨主机故障、多节点混沌和长时间 soak test；
 - 更大领域标注集、hard negatives、reranker、在线 A/B 和知识同步治理；当前只有 15+15 检索小集；
 - OpenTelemetry Collector、Grafana、告警、SLO/error budget；
-- GPU 推理、有界模型队列、模型路由、批处理和容量规划；当前 advisory lock 只保证单例 CPU 模型不被并发压垮；
+- GPU 推理、模型路由、批处理和容量规划；当前 advisory lock + 有界网关队列只能保护单例 CPU 模型，不能提高吞吐；
 - 自动化 SBOM/CVE 扫描和签名发布门禁；本机 Docker Scout 因未登录无法完成漏洞数据库扫描；
 - 生产数据的隐私评审、红队与发布门禁。
 

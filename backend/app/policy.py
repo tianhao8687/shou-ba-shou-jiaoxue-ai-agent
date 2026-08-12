@@ -6,14 +6,13 @@ from typing import Literal
 from pydantic import ValidationError
 
 from .schemas import PlanStep, PolicyDecision, PolicyIssue, RiskLevel
+from .registry import SERVICE_REGISTRY
 from .security import canonical_json
 from .tools import RISK_WEIGHT, TOOL_REGISTRY, effective_risk
 
 
 class PolicyCompiler:
     """Deterministically compiles an untrusted model plan into an executable plan."""
-
-    automatic_rollback_tools = {"scale_workers"}
 
     def __init__(self, max_steps: int = 12) -> None:
         self.max_steps = max_steps
@@ -26,6 +25,7 @@ class PolicyCompiler:
         allowed_evidence_ids: set[str],
         observation_ids: set[str],
         experiment_id: str | None,
+        service_id: str | None = None,
         observation_context: dict[str, object] | None = None,
     ) -> tuple[list[PlanStep], PolicyDecision]:
         issues: list[PolicyIssue] = []
@@ -44,13 +44,7 @@ class PolicyCompiler:
         required_roles: set[str] = set()
         maximum_risk = RiskLevel.LOW
         observed = observation_context or {}
-        required_observation_fields = {
-            "restart_service": {"pool_waiters", "instances"},
-            "scale_workers": {"queue_depth", "oldest_age_s"},
-            "rotate_credential": {"http_401_rate"},
-            "refresh_cache": {"stale_sample_rate", "cache_version", "db_version"},
-        }
-
+        service = SERVICE_REGISTRY.get(service_id) if service_id else None
         for step in plan:
             spec = TOOL_REGISTRY.get(step.tool_name)
             if spec is None:
@@ -60,6 +54,16 @@ class PolicyCompiler:
                     )
                 )
                 continue
+            if service is not None and step.tool_name not in service.allowed_tools:
+                issues.append(
+                    PolicyIssue(
+                        code="TOOL_NOT_ALLOWED_FOR_SERVICE",
+                        step_id=step.id,
+                        message=(
+                            f"工具 {step.tool_name} 不在服务 {service.service_id} 的注册合同中。"
+                        ),
+                    )
+                )
             try:
                 validated_input = spec.input_model.model_validate(step.tool_input).model_dump()
             except ValidationError as exc:
@@ -104,7 +108,7 @@ class PolicyCompiler:
                         message="写步骤至少需要一条实际工具观测证据。",
                     )
                 )
-            required_fields = required_observation_fields.get(step.tool_name, set())
+            required_fields = spec.required_observation_fields
             if required_fields and not required_fields.intersection(observed):
                 issues.append(
                     PolicyIssue(
@@ -158,12 +162,22 @@ class PolicyCompiler:
                             message="自动回滚只能使用与主动作相同的受控工具，防止借回滚夹带新副作用。",
                         )
                     )
-                if rollback_name not in self.automatic_rollback_tools:
+                if (
+                    spec.rollback_contract != "same-tool"
+                    or rollback_name != step.tool_name
+                    or (
+                        rollback_spec is not None
+                        and rollback_spec.rollback_contract != "same-tool"
+                    )
+                ):
                     issues.append(
                         PolicyIssue(
                             code="AUTOMATIC_ROLLBACK_NOT_ALLOWED",
                             step_id=step.id,
-                            message=f"工具 {rollback_name or '(missing)'} 不在自动补偿白名单内。",
+                            message=(
+                                f"工具 {step.tool_name} 的注册合同不允许自动补偿；"
+                                "仅 same-tool 回滚合同可以进入自动回滚。"
+                            ),
                         )
                     )
                 if rollback_spec is None:

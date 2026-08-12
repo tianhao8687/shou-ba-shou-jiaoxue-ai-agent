@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useMemo, useState } from 'react'
+import { FormEvent, KeyboardEvent as ReactKeyboardEvent, useEffect, useMemo, useRef, useState } from 'react'
 import { Beaker, FileWarning, RefreshCw, ShieldCheck, X } from 'lucide-react'
 import type { DrillTemplate, Incident, UserIdentity } from '../types'
 
@@ -29,12 +29,41 @@ export function IncidentComposer({ user, drills, busy, onClose, onSubmit, onCrea
   const [tags, setTags] = useState(initialIncident.tags.join(', '))
   const [faultKind, setFaultKind] = useState(drills[0]?.id ?? 'connection_pool_exhaustion')
   const [error, setError] = useState<string>()
+  const dialogRef = useRef<HTMLElement>(null)
+  const closeRef = useRef<HTMLButtonElement>(null)
+
+  useEffect(() => {
+    const previousFocus = document.activeElement instanceof HTMLElement
+      ? document.activeElement
+      : null
+    closeRef.current?.focus()
+    return () => previousFocus?.focus()
+  }, [])
 
   useEffect(() => {
     const close = (event: KeyboardEvent) => event.key === 'Escape' && !busy && onClose()
     window.addEventListener('keydown', close)
     return () => window.removeEventListener('keydown', close)
   }, [busy, onClose])
+
+  const keepFocusInside = (event: ReactKeyboardEvent<HTMLElement>) => {
+    if (event.key !== 'Tab' || !dialogRef.current) return
+    const focusable = Array.from(
+      dialogRef.current.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [href], [tabindex]:not([tabindex="-1"])',
+      ),
+    )
+    if (!focusable.length) return
+    const first = focusable[0]
+    const last = focusable.at(-1) ?? first
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault()
+      last.focus()
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault()
+      first.focus()
+    }
+  }
 
   const selectedDrill = useMemo(() => drills.find((item) => item.id === faultKind), [drills, faultKind])
 
@@ -62,10 +91,10 @@ export function IncidentComposer({ user, drills, busy, onClose, onSubmit, onCrea
 
   return (
     <div className="dialog-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && !busy && onClose()}>
-      <section className="incident-dialog" role="dialog" aria-modal="true" aria-labelledby="incident-dialog-title">
+      <section ref={dialogRef} className="incident-dialog" role="dialog" aria-modal="true" aria-labelledby="incident-dialog-title" aria-describedby="incident-dialog-description" onKeyDown={keepFocusInside}>
         <header className="dialog-heading">
-          <div><span className="section-kicker">RUNTIME INPUT</span><h2 id="incident-dialog-title">创建 Agent 运行</h2><p>运行输入不包含标准答案或预写计划，Agent 必须从现场观察中推导。</p></div>
-          <button className="icon-button" type="button" aria-label="关闭" onClick={onClose} disabled={busy}><X size={18} /></button>
+          <div><span className="section-kicker">RUNTIME INPUT</span><h2 id="incident-dialog-title">创建 Agent 运行</h2><p id="incident-dialog-description">运行输入不包含标准答案或预写计划，Agent 必须从现场观察中推导。</p></div>
+          <button ref={closeRef} className="icon-button" type="button" aria-label="关闭" onClick={onClose} disabled={busy}><X size={18} /></button>
         </header>
         <div className="composer-tabs" role="tablist" aria-label="事件来源">
           <button type="button" role="tab" aria-selected={mode === 'freeform'} className={mode === 'freeform' ? 'active' : ''} onClick={() => setMode('freeform')}><FileWarning size={16} />自由事件</button>

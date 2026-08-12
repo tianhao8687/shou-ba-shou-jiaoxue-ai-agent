@@ -14,6 +14,9 @@ class Settings(BaseSettings):
     app_env: str = "local"
     demo_mode: bool = True
     database_url: str = "sqlite:///./harbor.db"
+    postgres_pool_min_size: int = 1
+    postgres_pool_max_size: int = 10
+    postgres_pool_timeout_seconds: float = 10.0
     vector_backend: str = "memory"
     embedding_backend: str = "lexical-feature-baseline"
     embedding_endpoint: str = ""
@@ -30,6 +33,13 @@ class Settings(BaseSettings):
     tool_sandbox_url: str = "http://127.0.0.1:8092"
     tool_sandbox_token: str = "harbor-local-health-token"
     tool_timeout_seconds: float = 8.0
+    prometheus_url: str = ""
+    prometheus_bearer_token: str = ""
+    prometheus_timeout_seconds: float = 5.0
+    kubernetes_connector_url: str = ""
+    kubernetes_connector_health_token: str = ""
+    kubernetes_connector_timeout_seconds: float = 10.0
+    kubernetes_staging_namespace: str = "harbor-sandbox"
     lab_oracle_token: str = "harbor-local-oracle-token-change-me"
     auth_signing_secret: str = "harbor-local-auth-signing-secret-change-me"
     capability_signing_secret: str = "harbor-local-capability-secret-change-me"
@@ -44,6 +54,9 @@ class Settings(BaseSettings):
     worker_poll_seconds: float = 0.25
     worker_lease_seconds: int = 30
     worker_heartbeat_seconds: int = 8
+    worker_heartbeat_failure_limit: int = 2
+    worker_registry_heartbeat_seconds: float = 5.0
+    worker_registry_ttl_seconds: float = 20.0
     worker_metrics_port: int = 9101
     frontend_origin: str = "http://localhost:5173"
     data_dir: Path = PROJECT_ROOT / "data"
@@ -58,6 +71,34 @@ class Settings(BaseSettings):
     def allowed_origins(self) -> list[str]:
         origins = {self.frontend_origin, "http://localhost:4173", "http://localhost:8080"}
         return sorted(origins)
+
+
+_PROTECTED_SECRETS = (
+    "demo_password",
+    "auth_signing_secret",
+    "capability_signing_secret",
+    "lab_oracle_token",
+)
+_DEMO_SECRET_MARKERS = ("change-me", "harbor-demo", "harbor-local")
+
+
+def validate_production_settings(settings: Settings) -> None:
+    """Fail before dependencies start when a non-demo runtime uses demo credentials."""
+
+    if settings.demo_mode and settings.app_env.strip().lower() != "production":
+        return
+    invalid: list[str] = []
+    for field in _PROTECTED_SECRETS:
+        value = str(getattr(settings, field, "")).strip()
+        lowered = value.lower()
+        if len(value) < 16 or any(marker in lowered for marker in _DEMO_SECRET_MARKERS):
+            invalid.append(field)
+    if invalid:
+        names = ", ".join(sorted(invalid))
+        raise RuntimeError(
+            "unsafe production secrets detected for: "
+            f"{names}; replace demo/default values before startup"
+        )
 
 
 @lru_cache

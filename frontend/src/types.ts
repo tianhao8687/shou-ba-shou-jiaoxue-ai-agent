@@ -100,6 +100,7 @@ export interface Observation {
   data: Record<string, unknown>
   captured_at: string
   transport: string
+  source_uri?: string | null
 }
 
 export interface ToolResult {
@@ -280,6 +281,9 @@ export interface DashboardMetrics {
 
 export interface EvaluationCaseResult {
   case_id: string
+  variant_id: string
+  variant_category: string
+  attack_surface: string
   passed: boolean
   fault_kind: string
   expected_tool?: string | null
@@ -297,6 +301,7 @@ export interface EvaluationCaseResult {
 
 export interface EvaluationReport {
   id: string
+  tenant_id: string
   created_at: string
   score: number
   task_success_rate: number
@@ -309,7 +314,192 @@ export interface EvaluationReport {
   capability_enforcement: number
   p95_case_latency_ms: number
   suite_mode: 'sealed-fixture' | 'sealed-live-model'
+  suite_version: string
+  suite_fingerprint: string
+  case_count: number
+  passed_count: number
+  confidence_level: number
+  task_success_ci_lower: number
+  task_success_ci_upper: number
+  category_breakdown: Record<string, {
+    case_count: number
+    passed_count: number
+    pass_rate: number
+    unsafe_action_rate: number
+    ci_lower: number
+    ci_upper: number
+  }>
   cases: EvaluationCaseResult[]
+}
+
+export interface ExternalValidationGate {
+  id: string
+  passed: boolean
+  observed: number | boolean
+  operator: '>=' | '<=' | '=='
+  threshold: number | boolean
+}
+
+export interface ExternalValidationDataset {
+  id: string
+  source_id: string
+  data_class: string
+  evaluation_kind: string
+  record_count: number
+  holdout_count: number
+  metrics: Record<string, unknown>
+  gates: ExternalValidationGate[]
+  passed: boolean
+  limitations: string[]
+}
+
+export interface ExternalValidationProvenance {
+  source_id: string
+  file_id: string
+  url: string
+  revision: string
+  sha256: string
+  bytes: number
+  cache_hit: boolean
+  verified_at: string
+}
+
+export interface ExternalValidationReport {
+  schema: 'harbor-external-validation-evidence/v1'
+  suite_version: string
+  manifest_fingerprint: string
+  generated_at: string
+  verdict: 'pass' | 'fail'
+  production_claim: false
+  sources_verified: number
+  source_files_verified: number
+  raw_data_committed: false
+  aggregate: {
+    dataset_count: number
+    total_external_records: number
+    holdout_records: number
+    passed_dataset_count: number
+    gate_count: number
+    passed_gate_count: number
+    all_source_hashes_verified: boolean
+    unsafe_write_actions: number
+    external_fault_type_count: number
+    autonomous_taxonomy_coverage: number
+  }
+  datasets: ExternalValidationDataset[]
+  provenance: ExternalValidationProvenance[]
+  boundaries: string[]
+}
+
+export interface TelemetryValidationMetrics {
+  case_count: number
+  fault_type_top1_accuracy: number
+  fault_type_top3_accuracy: number
+  entity_top1_accuracy: number
+  entity_top3_accuracy: number
+  exact_rca_top1_accuracy: number
+  evidence_modality_recall: number
+  multimodal_case_coverage: number
+  abstention_rate: number
+  median_case_latency_ms: number
+  p95_case_latency_ms: number
+}
+
+export interface TelemetryValidationGate {
+  id: string
+  passed: boolean
+  observed: number | boolean
+  operator: '>=' | '<=' | '=='
+  threshold: number | boolean
+}
+
+export interface TelemetryCaseScore {
+  uuid: string
+  role: 'calibration' | 'validation' | 'holdout'
+  predicted_fault_type: string
+  predicted_entity: string
+  fault_type_top1: boolean
+  fault_type_top3: boolean
+  entity_top1: boolean
+  entity_top3: boolean
+  network_pair_match?: boolean | null
+  exact_rca_top1: boolean
+  evidence_modality_recall: number
+  evidence_modalities: string[]
+  abstained: boolean
+}
+
+export type TelemetrySemanticMetrics = Omit<
+  TelemetryValidationMetrics,
+  'median_case_latency_ms' | 'p95_case_latency_ms'
+>
+
+export interface TelemetryReplayAudit {
+  schema: 'harbor-telemetry-replay-audit/v1'
+  audited_at: string
+  oracle_status: 'already-opened-no-retuning'
+  tie_break_contract: string
+  replay_count: number
+  semantic_fingerprint: string
+  semantic_match: true
+  full_artifact_hashes: [string, string]
+  volatile_fields_excluded: ['generated_at', 'latency_ms']
+  holdout: TelemetrySemanticMetrics
+  p95_case_latency_ms_range: [number, number]
+  passed_gates: number
+  gate_count: number
+  verdict: 'pass' | 'fail'
+  production_claim: false
+  notes: string[]
+}
+
+export interface TelemetryValidationReport {
+  schema: 'harbor-telemetry-validation-evidence/v2'
+  suite_version: string
+  ruleset_version: string
+  manifest_fingerprint: string
+  prediction_fingerprint: string
+  prediction_semantic_fingerprint?: string | null
+  generated_at: string
+  verdict: 'pass' | 'fail'
+  production_claim: false
+  raw_data_committed: false
+  replay_audit?: TelemetryReplayAudit | null
+  source: {
+    id: string
+    title: string
+    repository_url: string
+    revision: string
+    license: { name: string; url: string; raw_redistribution: 'not-committed' }
+    independence: string
+  }
+  coverage: {
+    by_archive: Record<string, {
+      rows: { logs: number; metrics: number; traces: number }
+      files: { logs: number; metrics: number; traces: number }
+    }>
+    total_rows: { logs: number; metrics: number; traces: number }
+    all_rows: number
+    archive_bytes: number
+    calibration_cases: number
+    validation_cases: number
+    holdout_cases: number
+  }
+  protocol: {
+    prediction_frozen_at: string
+    oracle_opened_at: string
+    oracle_opened_after_freeze: boolean
+    predictor_oracle_access: 'none'
+    prediction_hash_algorithm: 'sha256'
+    unsafe_write_actions: 0
+    timezone_contract: string
+  }
+  calibration: TelemetryValidationMetrics
+  validation: TelemetryValidationMetrics
+  holdout: TelemetryValidationMetrics
+  gates: TelemetryValidationGate[]
+  cases: TelemetryCaseScore[]
+  boundaries: string[]
 }
 
 export interface KnowledgeDoc {
@@ -336,10 +526,13 @@ export interface ToolSpec {
 
 export interface HealthResponse {
   status: string
+  ready: boolean
+  purpose: 'runtime-status' | 'readiness'
   app: string
   version: string
   mode: string
   database: string
+  database_status: Record<string, unknown> & { status?: string; detail?: string }
   vector_backend: string
   vector_quality: 'semantic' | 'lexical-feature-baseline' | 'unavailable'
   knowledge_documents: number
@@ -347,6 +540,7 @@ export interface HealthResponse {
   model_runtime: Record<string, unknown> & { status?: string; provider?: string; model?: string; loaded?: boolean; device?: string | null; detail?: string }
   tool_runtime: Record<string, unknown> & { status?: string; mode?: string; detail?: string }
   worker_runtime: Record<string, unknown> & { status?: string; worker_id?: string; running?: boolean; claims?: number; recoveries?: number }
+  readiness_checks: Record<string, boolean>
 }
 
 export interface DrillTemplate {

@@ -69,6 +69,7 @@ def test_structured_model_output_is_schema_validated() -> None:
 
     def handler(request: httpx.Request) -> httpx.Response:
         assert request.headers["authorization"] == "Bearer test-token"
+        assert json.loads(request.content)["response_format"]["type"] == "json_schema"
         return httpx.Response(200, json={"choices": [{"message": {"content": content}}]})
 
     adapter = OpenAICompatibleModelAdapter(
@@ -86,6 +87,31 @@ def test_structured_model_output_is_schema_validated() -> None:
     assert parsed.plan[0].id == "step-query-metrics-step"
     assert call.status == "succeeded"
     assert call.output_characters == len(content)
+
+
+def test_local_openvino_gateway_is_not_sent_a_false_native_schema_claim() -> None:
+    incident, sources, proposal = fixture_inputs()
+    content = compact_content(proposal)
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        body = json.loads(request.content)
+        assert "response_format" not in body
+        return httpx.Response(200, json={"choices": [{"message": {"content": content}}]})
+
+    adapter = OpenAICompatibleModelAdapter(
+        "http://model.test/v1",
+        "local-qwen",
+        "local-openvino",
+        5,
+        transport=httpx.MockTransport(handler),
+    )
+
+    _, invocation = adapter.propose(
+        phase="investigation", incident=incident, sources=sources, observations=[]
+    )
+
+    assert invocation.status == "succeeded"
+    assert adapter.supports_native_structured_output is False
 
 
 def test_coordinated_adapter_records_queue_wait_and_health_contract() -> None:

@@ -19,12 +19,17 @@ x-agent-environment: &agent-environment
   TOOL_MODE: remote
   TOOL_SANDBOX_URL: http://ops-sandbox:8092
   TOOL_SANDBOX_TOKEN: "${OPS_HEALTH_TOKEN:-harbor-local-health-token}"
+  PROMETHEUS_URL: "${PROMETHEUS_URL:-http://prometheus:9090}"
+  PROMETHEUS_BEARER_TOKEN: "${PROMETHEUS_BEARER_TOKEN:-}"
+  PROMETHEUS_TIMEOUT_SECONDS: "${PROMETHEUS_TIMEOUT_SECONDS:-5}"
   LAB_ORACLE_TOKEN: "${OPS_ORACLE_TOKEN:-harbor-local-oracle-token-change-me}"
   AUTH_SIGNING_SECRET: "${AUTH_SIGNING_SECRET:-harbor-local-auth-signing-secret-change-me}"
   CAPABILITY_SIGNING_SECRET: "${CAPABILITY_SIGNING_SECRET:-harbor-local-capability-secret-change-me}"
   DEMO_PASSWORD: "${DEMO_PASSWORD:-harbor-demo-2026}"
   WORKER_LEASE_SECONDS: "30"
   WORKER_HEARTBEAT_SECONDS: "8"
+  WORKER_REGISTRY_HEARTBEAT_SECONDS: "5"
+  WORKER_REGISTRY_TTL_SECONDS: "20"
   FRONTEND_ORIGIN: http://localhost:8080
 
 services:
@@ -85,8 +90,10 @@ services:
         condition: service_healthy
       ops-sandbox:
         condition: service_healthy
+      prometheus:
+        condition: service_healthy
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health',timeout=2)"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/ready',timeout=2)"]
       interval: 5s
       timeout: 3s
       retries: 20
@@ -116,6 +123,8 @@ services:
       database:
         condition: service_healthy
       ops-sandbox:
+        condition: service_healthy
+      prometheus:
         condition: service_healthy
     expose:
       - "9101"
@@ -165,11 +174,11 @@ services:
     volumes:
       - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - harbor_prometheus:/prometheus
-    depends_on:
-      backend:
-        condition: service_healthy
-      ops-sandbox:
-        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:9090/-/ready"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
     ports:
       - "127.0.0.1:9090:9090"
     restart: unless-stopped

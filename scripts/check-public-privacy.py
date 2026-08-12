@@ -52,12 +52,11 @@ def main() -> int:
             errors.append(f"direct recruitment URL exposed in {path.relative_to(ROOT)}")
 
     report = REPORT.read_text(encoding="utf-8-sig")
+    maturity = MATURITY.read_text(encoding="utf-8-sig")
     if "隐私说明" not in report or "公司名称、招聘直达链接" not in report:
         errors.append("career report is missing its public anonymization notice")
-    if MATURITY.exists():
-        maturity = MATURITY.read_text(encoding="utf-8-sig")
-        if "26 家匿名公司" not in maturity or "C01–C26" not in maturity:
-            errors.append("maturity report is missing its anonymized-sample disclosure")
+    if "26 家匿名公司" not in maturity or "C01–C26" not in maturity:
+        errors.append("maturity report is missing its anonymized-sample disclosure")
 
     if errors:
         print("Public privacy gate failed:", file=sys.stderr)

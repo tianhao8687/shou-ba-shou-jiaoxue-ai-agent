@@ -4,6 +4,8 @@ import type {
   DrillDescriptor,
   DrillTemplate,
   EvaluationReport,
+  ExternalValidationReport,
+  TelemetryValidationReport,
   EvidenceBundle,
   HealthResponse,
   Incident,
@@ -49,7 +51,7 @@ export const api = {
   login: (username: string, password: string) =>
     request<AuthResponse>('/api/auth/login', { method: 'POST', body: JSON.stringify({ username, password }) }, false),
   me: () => request<UserIdentity>('/api/auth/me'),
-  health: () => request<HealthResponse>('/api/health', undefined, false),
+  health: () => request<HealthResponse>('/api/status', undefined, false),
   drills: () => request<DrillTemplate[]>('/api/drills'),
   createDrill: (faultKind: string) =>
     request<DrillDescriptor>('/api/drills', { method: 'POST', body: JSON.stringify({ fault_kind: faultKind }) }),
@@ -61,6 +63,8 @@ export const api = {
   knowledge: () => request<KnowledgeDoc[]>('/api/knowledge'),
   tools: () => request<ToolSpec[]>('/api/tools'),
   latestEvaluation: () => request<EvaluationReport | null>('/api/evaluations/latest'),
+  latestExternalValidation: () => request<ExternalValidationReport | null>('/api/evaluations/external/latest'),
+  latestTelemetryValidation: () => request<TelemetryValidationReport | null>('/api/evaluations/telemetry/latest'),
   startRun: (incident: Incident) =>
     request<RunRecord>('/api/runs', { method: 'POST', body: JSON.stringify({ incident }) }),
   decide: (runId: string, decision: 'approve' | 'deny', note: string, expectedVersion: number) =>

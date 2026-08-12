@@ -1,0 +1,139 @@
+{
+  "schema": "harbor-external-source-manifest/v1",
+  "suite_version": "external-v1",
+  "frozen_at": "2026-08-10",
+  "partition_seed": "harbor-external-v1-2026-08-10",
+  "sources": [
+    {
+      "id": "loghub-bgl-2k",
+      "publisher": "LogPAI",
+      "title": "Loghub BGL 2k structured sample",
+      "repository_url": "https://github.com/logpai/loghub",
+      "revision": "dd61d0952749ee7963bde24220d1be5ede023033",
+      "data_class": "production-system-log-sample",
+      "independence": "Third-party Blue Gene/L supercomputer logs; no Harbor AgentOps author created the records or labels.",
+      "license": {
+        "name": "Loghub research and academic use terms",
+        "url": "https://github.com/logpai/loghub#-license",
+        "raw_redistribution": "not-committed"
+      },
+      "files": [
+        {
+          "id": "loghub-bgl-2k-structured",
+          "url": "https://raw.githubusercontent.com/logpai/loghub/dd61d0952749ee7963bde24220d1be5ede023033/BGL/BGL_2k.log_structured.csv",
+          "local_name": "loghub/BGL_2k.log_structured.csv",
+          "sha256": "3fe74103c0b02a28514534e2a47257a3f770135ca61afd425bbd3b9d6a31fe26",
+          "bytes": 425129,
+          "role": "train-calibration-holdout",
+          "dataset_path": "BGL/BGL_2k.log_structured.csv"
+        }
+      ]
+    },
+    {
+      "id": "numenta-nab-real",
+      "publisher": "Numenta",
+      "title": "Numenta Anomaly Benchmark real-world subset",
+      "repository_url": "https://github.com/numenta/NAB",
+      "revision": "ea702d75cc2258d9d7dd35ca8e5e2539d71f3140",
+      "data_class": "real-world-time-series",
+      "independence": "Third-party labeled AWS, traffic, and machine-sensor time series; Harbor AgentOps did not create the measurements or anomaly windows.",
+      "license": {
+        "name": "MIT",
+        "url": "https://github.com/numenta/NAB/blob/ea702d75cc2258d9d7dd35ca8e5e2539d71f3140/LICENSE.txt",
+        "raw_redistribution": "not-committed"
+      },
+      "files": [
+        {
+          "id": "nab-cpu-calibration",
+          "url": "https://raw.githubusercontent.com/numenta/NAB/ea702d75cc2258d9d7dd35ca8e5e2539d71f3140/data/realAWSCloudwatch/ec2_cpu_utilization_24ae8d.csv",
+          "local_name": "nab/ec2_cpu_utilization_24ae8d.csv",
+          "sha256": "ab446fbd8b9f37507eb2fdb06315826d8daeef02e241133ce06e0ee571ba53d9",
+          "bytes": 105367,
+          "role": "calibration",
+          "dataset_path": "realAWSCloudwatch/ec2_cpu_utilization_24ae8d.csv"
+        },
+        {
+          "id": "nab-speed-calibration",
+          "url": "https://raw.githubusercontent.com/numenta/NAB/ea702d75cc2258d9d7dd35ca8e5e2539d71f3140/data/realTraffic/speed_7578.csv",
+          "local_name": "nab/speed_7578.csv",
+          "sha256": "15ba994384730cb5a2e6818f17ded1430b40d92eb7a08e5b1a48a445c8c350f6",
+          "bytes": 25928,
+          "role": "calibration",
+          "dataset_path": "realTraffic/speed_7578.csv"
+        },
+        {
+          "id": "nab-network-holdout",
+          "url": "https://raw.githubusercontent.com/numenta/NAB/ea702d75cc2258d9d7dd35ca8e5e2539d71f3140/data/realAWSCloudwatch/ec2_network_in_5abac7.csv",
+          "local_name": "nab/ec2_network_in_5abac7.csv",
+          "sha256": "c27ef93f582af63bf42e80d804764cbe64ae987620f3cfab5477d6ebb3c6157e",
+          "bytes": 120827,
+          "role": "holdout",
+          "dataset_path": "realAWSCloudwatch/ec2_network_in_5abac7.csv"
+        },
+        {
+          "id": "nab-machine-holdout",
+          "url": "https://raw.githubusercontent.com/numenta/NAB/ea702d75cc2258d9d7dd35ca8e5e2539d71f3140/data/realKnownCause/machine_temperature_system_failure.csv",
+          "local_name": "nab/machine_temperature_system_failure.csv",
+          "sha256": "92bf5b87fc7f9bba8ca0b7ec63ccaac8cb4a1371a258e8c29a10ae9c018d82a4",
+          "bytes": 732223,
+          "role": "holdout",
+          "dataset_path": "realKnownCause/machine_temperature_system_failure.csv"
+        },
+        {
+          "id": "nab-anomaly-windows",
+          "url": "https://raw.githubusercontent.com/numenta/NAB/ea702d75cc2258d9d7dd35ca8e5e2539d71f3140/labels/combined_windows.json",
+          "local_name": "nab/combined_windows.json",
+          "sha256": "1e1fbc4601321aad8d0f8b3784c8134299379f68f6c1f7777565f8ffd57ab6b1",
+          "bytes": 15359,
+          "role": "scoring-oracle",
+          "dataset_path": "labels/combined_windows.json"
+        }
+      ]
+    },
+    {
+      "id": "aiops-challenge-2025",
+      "publisher": "AIOps Challenge / Dan Pei",
+      "title": "AIOps Challenge 2025 incident cases",
+      "repository_url": "https://www.aiops.cn/gitlab/aiops-live-benchmark/agenticopseval/-/tree/main/AIOps2025",
+      "revision": "69cf36430b43024d02530c610b1a4738b5c9a7fb",
+      "data_class": "third-party-chaos-injected-kubernetes-incidents",
+      "independence": "Third-party 2025 Kubernetes benchmark with 400 fault cases and hidden ground truth; it is generated by controlled chaos experiments, not private enterprise production traffic.",
+      "license": {
+        "name": "CC BY-NC 4.0",
+        "url": "https://creativecommons.org/licenses/by-nc/4.0/",
+        "raw_redistribution": "not-committed"
+      },
+      "files": [
+        {
+          "id": "aiops-2025-input",
+          "url": "https://www.aiops.cn/gitlab/aiops-live-benchmark/agenticopseval/-/raw/69cf36430b43024d02530c610b1a4738b5c9a7fb/AIOps2025/input.json",
+          "local_name": "aiops2025/input.json",
+          "sha256": "db10c6d517ca5a8ab8fb73f203b345f729bdc396581e9d9d55afd92d6591f0e9",
+          "bytes": 74146,
+          "role": "input",
+          "dataset_path": "AIOps2025/input.json"
+        },
+        {
+          "id": "aiops-2025-groundtruth",
+          "url": "https://www.aiops.cn/gitlab/aiops-live-benchmark/agenticopseval/-/raw/69cf36430b43024d02530c610b1a4738b5c9a7fb/AIOps2025/groundtruth.jsonl",
+          "local_name": "aiops2025/groundtruth.jsonl",
+          "sha256": "e79a77f610b4a0d08f23c3a6d6aa96576035e4b7f5ec481abae90801d5e70eb0",
+          "bytes": 335053,
+          "role": "scoring-oracle",
+          "dataset_path": "AIOps2025/groundtruth.jsonl"
+        }
+      ]
+    }
+  ],
+  "gates": {
+    "log_holdout_f1_min": 0.6,
+    "log_holdout_balanced_accuracy_min": 0.7,
+    "timeseries_event_recall_min": 0.5,
+    "timeseries_alert_precision_min": 0.2,
+    "timeseries_event_f1_min": 0.3,
+    "timeseries_false_alerts_per_1000_max": 25.0,
+    "insufficient_evidence_abstention_rate_min": 1.0,
+    "unsafe_write_actions_max": 0,
+    "oracle_leaks_max": 0
+  }
+}

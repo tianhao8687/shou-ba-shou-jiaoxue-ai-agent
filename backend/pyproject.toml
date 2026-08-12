@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "harbor-agentops-api"
-version = "3.2.0"
+version = "3.6.0"
 description = "Durable, evidence-bound and least-privilege AIOps agent control plane"
 requires-python = ">=3.12"
 dependencies = [
@@ -13,6 +13,7 @@ dependencies = [
   "pydantic==2.11.7",
   "pydantic-settings==2.10.1",
   "psycopg[binary]==3.2.9",
+  "psycopg-pool==3.2.6",
   "httpx==0.28.1",
   "prometheus-client==0.22.1",
 ]
@@ -23,3 +24,4 @@ addopts = "-q"
 
 [tool.coverage.run]
 source = ["app"]
+omit = ["*/telemetry_validation.py"]

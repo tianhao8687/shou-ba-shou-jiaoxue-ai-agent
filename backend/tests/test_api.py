@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from fastapi.testclient import TestClient
 
+from app.schemas import EvaluationReport, RunStatus
 from app.tools import ToolCallResponse
 
 
@@ -48,15 +49,48 @@ def test_observer_cannot_start_or_cancel_operational_work(
 
 
 def test_health_exposes_truthful_vector_and_worker_contract(client: TestClient) -> None:
-    response = client.get("/api/health")
+    liveness = client.get("/api/health")
+    assert liveness.status_code == 200
+    assert liveness.json() == {
+        "status": "alive",
+        "app": "Harbor AgentOps",
+        "version": "3.6.0",
+    }
+
+    response = client.get("/api/status")
     assert response.status_code == 200
     payload = response.json()
-    assert payload["version"] == "3.2.0"
+    assert payload["version"] == "3.6.0"
+    assert payload["ready"] is True
     assert payload["vector_quality"] == "lexical-feature-baseline"
     assert "feature-hashing" in payload["vector_backend"]
     assert payload["worker_runtime"]["status"] == "external"
     assert payload["worker_runtime"]["mode"] == "standalone-process"
     assert payload["model_runtime"]["status"] == "fixture"
+    assert payload["model_runtime"]["production_capable"] is False
+    assert client.get("/api/ready").status_code == 200
+
+
+def test_readiness_returns_503_without_hiding_dependency_diagnostics(
+    client: TestClient, monkeypatch
+) -> None:
+    monkeypatch.setattr(
+        client.app.state.model_adapter,
+        "health",
+        lambda: {
+            "status": "unavailable",
+            "provider": "local-openvino",
+            "loaded": False,
+        },
+    )
+
+    response = client.get("/api/ready")
+
+    assert response.status_code == 503
+    payload = response.json()
+    assert payload["status"] == "not_ready"
+    assert payload["readiness_checks"]["model_contract"] is False
+    assert payload["model_runtime"]["loaded"] is False
 
 
 def test_high_risk_run_is_queued_gated_authorized_and_verified(
@@ -207,6 +241,43 @@ def test_low_risk_cache_fix_executes_without_human_approval(
     ] == ["refresh_cache"]
 
 
+def test_failed_run_retry_requires_current_version_and_queues_same_checkpoint(
+    client: TestClient,
+    admin_headers: dict[str, str],
+    lead_headers: dict[str, str],
+) -> None:
+    """Backend counterpart to the browser retry contract (no test-only API hook)."""
+    drill = create_drill(client, admin_headers, "stale_cache")
+    created = start(client, admin_headers, drill["incident"])
+    record = client.app.state.store.get_run(created["id"])
+    assert record is not None
+    record.status = RunStatus.FAILED
+    record.current_node = "diagnose"
+    record.attempt = 1
+    record.error_code = "INJECTED_TEST_FAILURE"
+    record.error_detail = "state fixture created directly in the test store"
+    failed = client.app.state.store.save_run(record)
+
+    stale = client.post(
+        f"/api/runs/{record.id}/retry?expected_version={created['version']}",
+        headers=lead_headers,
+    )
+    assert stale.status_code == 409
+
+    retried = client.post(
+        f"/api/runs/{record.id}/retry?expected_version={failed.version}",
+        headers=lead_headers,
+    )
+    assert retried.status_code == 200, retried.text
+    payload = retried.json()
+    assert payload["status"] == "queued"
+    assert payload["current_node"] == "diagnose"
+    assert payload["error_code"] is None
+    assert any(event["action"] == "run.retry_queued" for event in payload["audit"])
+    jobs = client.get(f"/api/runs/{record.id}/jobs", headers=lead_headers).json()
+    assert any(job["stage"] == "retry" and job["status"] == "queued" for job in jobs)
+
+
 def test_failed_outcome_triggers_hash_bound_compensation_and_independent_recheck(
     client: TestClient,
     admin_headers: dict[str, str],
@@ -351,10 +422,89 @@ def test_sealed_evaluation_reports_real_cases_not_canned_scenario_scores(
     assert response.status_code == 200, response.text
     report = response.json()
     assert report["suite_mode"] == "sealed-fixture"
-    assert len(report["cases"]) == 15
+    assert report["suite_version"] == "incident-120-v1"
+    assert report["dataset_split"] == "development"
+    assert report["case_count"] == 40
+    assert len(report["cases"]) == 40
+    assert report["passed_count"] == 40
+    assert report["task_success_ci_lower"] < 100.0
+    assert report["task_success_ci_upper"] == 100.0
+    assert "queue_backlog" in report["category_breakdown"]
     assert report["unsafe_action_rate"] == 0.0
+    assert report["unsupported_claim_rate"] == 0.0
+    assert report["unnecessary_action_rate"] == 0.0
+    assert report["recovery_success_rate"] == 100.0
     assert report["capability_enforcement"] == 100.0
+    assert len(report["dataset_hash"]) == 64
     assert all("fault_kind" in case for case in report["cases"])
+
+
+def test_external_validation_endpoint_exposes_pinned_evidence_without_production_claim(
+    client: TestClient, viewer_headers: dict[str, str]
+) -> None:
+    response = client.get(
+        "/api/evaluations/external/latest", headers=viewer_headers
+    )
+    assert response.status_code == 200, response.text
+    report = response.json()
+    assert report["schema"] == "harbor-external-validation-evidence/v1"
+    assert report["sources_verified"] == 3
+    assert report["source_files_verified"] == 8
+    assert report["aggregate"]["all_source_hashes_verified"] is True
+    assert report["aggregate"]["autonomous_taxonomy_coverage"] == 0
+    assert report["production_claim"] is False
+
+
+def test_telemetry_validation_endpoint_exposes_frozen_multimodal_holdout(
+    client, viewer_headers
+) -> None:
+    assert client.get("/api/evaluations/telemetry/latest").status_code == 401
+    response = client.get(
+        "/api/evaluations/telemetry/latest", headers=viewer_headers
+    )
+
+    assert response.status_code == 200
+    report = response.json()
+    assert report["schema"] == "harbor-telemetry-validation-evidence/v2"
+    assert report["verdict"] == "pass"
+    assert report["production_claim"] is False
+    assert report["coverage"]["all_rows"] == 54_426_202
+    assert report["holdout"]["case_count"] == 24
+    assert report["replay_audit"]["semantic_match"] is True
+    assert len(report["prediction_semantic_fingerprint"]) == 64
+    assert report["replay_audit"]["holdout"]["fault_type_top3_accuracy"] == 0.6667
+    assert report["replay_audit"]["oracle_status"] == "already-opened-no-retuning"
+    assert report["protocol"]["oracle_opened_after_freeze"] is True
+    assert report["protocol"]["unsafe_write_actions"] == 0
+
+
+def test_evaluation_reports_are_isolated_by_tenant(
+    client: TestClient,
+    admin_headers: dict[str, str],
+    other_tenant_headers: dict[str, str],
+) -> None:
+    response = client.post(
+        "/api/evaluations/run?case_limit=1", headers=admin_headers
+    )
+    assert response.status_code == 200, response.text
+    primary = EvaluationReport.model_validate(response.json())
+    assert primary.tenant_id == "xm-ops"
+
+    other = primary.model_copy(
+        update={"id": "EVAL-OTHER-TENANT", "tenant_id": "other-tenant"}
+    )
+    client.app.state.store.save_evaluation(other)
+
+    primary_latest = client.get(
+        "/api/evaluations/latest", headers=admin_headers
+    ).json()
+    other_latest = client.get(
+        "/api/evaluations/latest", headers=other_tenant_headers
+    ).json()
+    assert primary_latest["id"] == primary.id
+    assert primary_latest["tenant_id"] == "xm-ops"
+    assert other_latest["id"] == other.id
+    assert other_latest["tenant_id"] == "other-tenant"
 
 
 def test_prometheus_metrics_are_exposed(client: TestClient) -> None:

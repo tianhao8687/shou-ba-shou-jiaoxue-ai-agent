@@ -1,0 +1,66 @@
+{
+  "format": "harbor-crash-window-evidence/v1",
+  "generated_at": "2026-08-12T08:52:26.406358+00:00",
+  "git_commit": "e3959c7ea63d3b2a40448b3d2031133838dd83da",
+  "status": "passed",
+  "passed": 7,
+  "skipped": 1,
+  "cases": [
+    {
+      "id": "case-1",
+      "test": "test_case_1_side_effect_committed_before_worker_checkpoint_is_not_repeated",
+      "invariant": "A committed tool side effect is not executed again when the worker dies before checkpointing its result.",
+      "status": "passed",
+      "detail": ""
+    },
+    {
+      "id": "case-2",
+      "test": "test_case_2_commit_ack_loss_returns_first_result_on_same_key_retry",
+      "invariant": "A same-key retry returns the first committed result after the acknowledgement is lost.",
+      "status": "passed",
+      "detail": ""
+    },
+    {
+      "id": "case-3",
+      "test": "test_case_3_stale_worker_commit_is_rejected_after_lease_recovery",
+      "invariant": "A stale fencing token cannot mutate Run state after a new worker owns the lease.",
+      "status": "passed",
+      "detail": ""
+    },
+    {
+      "id": "case-4",
+      "test": "test_case_4_concurrent_workers_have_exactly_one_claim_winner",
+      "invariant": "Concurrent claimers produce exactly one winner.",
+      "status": "passed",
+      "detail": ""
+    },
+    {
+      "id": "case-5-critical",
+      "test": "test_case_5_claimed_run_survives_store_process_restart",
+      "invariant": "The always-on critical subset preserves Run and fencing state across a fresh connection epoch.",
+      "status": "passed",
+      "detail": ""
+    },
+    {
+      "id": "case-5-postgres",
+      "test": "test_case_5_postgres_claimed_run_survives_database_connection_loss",
+      "invariant": "PostgreSQL preserves a claimed Run after the database connection is terminated before node execution.",
+      "status": "skipped",
+      "detail": "set HARBOR_TEST_POSTGRES_URL to a dedicated PostgreSQL test database"
+    },
+    {
+      "id": "case-6",
+      "test": "test_failed_outcome_triggers_hash_bound_compensation_and_independent_recheck",
+      "invariant": "A successful write response cannot complete a Run when independent verification fails.",
+      "status": "passed",
+      "detail": ""
+    },
+    {
+      "id": "case-7",
+      "test": "test_case_7_compensation_commit_ack_loss_does_not_repeat_side_effect",
+      "invariant": "Compensation uses one hash-bound idempotency key and cannot repeat after acknowledgement loss.",
+      "status": "passed",
+      "detail": ""
+    }
+  ]
+}

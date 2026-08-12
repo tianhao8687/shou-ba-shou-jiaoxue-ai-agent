@@ -115,8 +115,10 @@ def run_smoke(args: argparse.Namespace) -> dict[str, Any]:
     )
     checks.append("frontend-and-security-headers")
 
-    health = client.request("GET", "/api/health").json()
-    require(health.get("status") == "ok", "API health status is not ok")
+    liveness = client.request("GET", "/api/health").json()
+    require(liveness.get("status") == "alive", "API process is not alive")
+    health = client.request("GET", "/api/ready").json()
+    require(health.get("status") == "ready", "API dependencies are not ready")
     if args.expect_database:
         require(
             health.get("database") == args.expect_database,

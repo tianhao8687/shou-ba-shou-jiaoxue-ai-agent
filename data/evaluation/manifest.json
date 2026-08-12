@@ -1,0 +1,48 @@
+{
+  "schema": "harbor-evaluation-manifest/v1",
+  "dataset_version": "incident-120-v1",
+  "created_at": "2026-08-12T08:18:26.928117+00:00",
+  "total_case_count": 120,
+  "taxonomy": [
+    "latency",
+    "timeout",
+    "dependency_failure",
+    "authentication_failure",
+    "connection_pool_exhaustion",
+    "queue_backlog",
+    "stale_cache",
+    "partial_outage",
+    "configuration_drift",
+    "bad_deployment",
+    "resource_pressure",
+    "misleading_symptoms",
+    "multiple_plausible_causes",
+    "insufficient_evidence"
+  ],
+  "default_split": "development",
+  "splits": {
+    "calibration": {
+      "path": "calibration/cases.json",
+      "case_count": 30,
+      "sha256": "2047c2302090401b5f199a79ee649a9daebe977fe3589ddc2b11802167b7ed85",
+      "oracle_access": "allowed-for-calibration"
+    },
+    "development": {
+      "path": "development/cases.json",
+      "case_count": 40,
+      "sha256": "ea6750b704a9bab623404f72df9fb61d2d4409c987e581e63d804bfde75a1de3",
+      "oracle_access": "allowed-for-development-observation"
+    },
+    "holdout": {
+      "path": "holdout/cases.json",
+      "case_count": 50,
+      "sha256": "a575739345f150616e0e9ecbb2eae0742cbe82280f15239936a25d363de8ace3",
+      "oracle_access": "forbidden-during-development"
+    }
+  },
+  "holdout_protocol": {
+    "frozen": true,
+    "tuning_allowed": false,
+    "unlock_requires_explicit_final_evaluation_flag": true
+  }
+}

@@ -1,0 +1,24 @@
+services:
+  backend:
+    environment:
+      KUBERNETES_CONNECTOR_URL: http://harbor-agentops-control-plane:30094
+      KUBERNETES_CONNECTOR_HEALTH_TOKEN: "${KUBERNETES_CONNECTOR_HEALTH_TOKEN:-harbor-local-kubernetes-health-token-change-me}"
+      KUBERNETES_CONNECTOR_TIMEOUT_SECONDS: "35"
+      KUBERNETES_STAGING_NAMESPACE: harbor-sandbox
+    networks:
+      - default
+      - kind
+  worker:
+    environment:
+      KUBERNETES_CONNECTOR_URL: http://harbor-agentops-control-plane:30094
+      KUBERNETES_CONNECTOR_HEALTH_TOKEN: "${KUBERNETES_CONNECTOR_HEALTH_TOKEN:-harbor-local-kubernetes-health-token-change-me}"
+      KUBERNETES_CONNECTOR_TIMEOUT_SECONDS: "35"
+      KUBERNETES_STAGING_NAMESPACE: harbor-sandbox
+    networks:
+      - default
+      - kind
+
+networks:
+  kind:
+    name: kind
+    external: true

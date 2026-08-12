@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from .agent import AgentEngine
-from .config import Settings
+from .config import Settings, validate_production_settings
 from .model_adapter import (
     CoordinatedModelAdapter,
     HeuristicModelAdapter,
@@ -33,7 +33,13 @@ class AgentRuntime:
 def build_agent_runtime(settings: Settings, *, worker_id: str | None = None) -> AgentRuntime:
     """Build the same execution boundary for API-embedded and standalone workers."""
 
-    store = create_store(settings.database_url)
+    validate_production_settings(settings)
+    store = create_store(
+        settings.database_url,
+        postgres_pool_min_size=settings.postgres_pool_min_size,
+        postgres_pool_max_size=settings.postgres_pool_max_size,
+        postgres_pool_timeout_seconds=settings.postgres_pool_timeout_seconds,
+    )
     store.initialize()
     retriever = create_retriever(
         settings.data_dir,
@@ -74,6 +80,12 @@ def build_agent_runtime(settings: Settings, *, worker_id: str | None = None) -> 
         health_token=settings.tool_sandbox_token,
         timeout_seconds=settings.tool_timeout_seconds,
         capabilities=capabilities,
+        prometheus_url=settings.prometheus_url,
+        prometheus_bearer_token=settings.prometheus_bearer_token,
+        prometheus_timeout_seconds=settings.prometheus_timeout_seconds,
+        kubernetes_connector_url=settings.kubernetes_connector_url,
+        kubernetes_connector_health_token=settings.kubernetes_connector_health_token,
+        kubernetes_connector_timeout_seconds=settings.kubernetes_connector_timeout_seconds,
     )
     engine = AgentEngine(
         store,
@@ -91,6 +103,9 @@ def build_agent_runtime(settings: Settings, *, worker_id: str | None = None) -> 
             if settings.model_enabled
             else "model-degraded"
         ),
+        production_observation_enabled=bool(settings.prometheus_url),
+        kubernetes_connector_enabled=bool(settings.kubernetes_connector_url),
+        kubernetes_staging_namespace=settings.kubernetes_staging_namespace,
     )
     worker = AgentWorker(
         store,
@@ -98,6 +113,8 @@ def build_agent_runtime(settings: Settings, *, worker_id: str | None = None) -> 
         worker_id=worker_id or settings.worker_id,
         lease_seconds=settings.worker_lease_seconds,
         heartbeat_seconds=settings.worker_heartbeat_seconds,
+        heartbeat_failure_limit=settings.worker_heartbeat_failure_limit,
+        registry_heartbeat_seconds=settings.worker_registry_heartbeat_seconds,
         poll_seconds=settings.worker_poll_seconds,
     )
     return AgentRuntime(

@@ -31,10 +31,41 @@ jobs:
         run: |
           python scripts/check-portability.py
           python scripts/check-public-privacy.py
-          python -m compileall -q backend/app ops_sandbox local_model_service local_embedding_service scripts
+          python -m compileall -q backend/app ops_sandbox kubernetes_connector local_model_service local_embedding_service scripts
 
       - name: Validate Compose configuration
-        run: docker compose config --quiet
+        run: |
+          docker compose config --quiet
+          docker compose -f docker-compose.yml -f kubernetes/kind/docker-compose.kind.yml config --quiet
+
+  external-validation:
+    name: Pinned external data validation
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install runtime dependencies
+        run: python -m pip install -r backend/requirements.txt
+
+      - name: Fetch pinned third-party bytes and enforce declared gates
+        run: >-
+          python scripts/run-external-validation.py
+          --output "${RUNNER_TEMP}/external-validation-online.json"
+
+      - name: Prove the verified cache is reproducible without network
+        run: >-
+          python scripts/run-external-validation.py
+          --offline
+          --output "${RUNNER_TEMP}/external-validation-offline.json"
 
   backend:
     name: Backend tests
@@ -78,6 +109,18 @@ jobs:
       - name: Install backend test dependencies
         run: python -m pip install -r backend/requirements-dev.txt
 
+      - name: Run crash-window reliability gate and emit machine evidence
+        working-directory: backend
+        run: |
+          pytest \
+            tests/test_crash_windows.py \
+            tests/test_api.py::test_failed_outcome_triggers_hash_bound_compensation_and_independent_recheck \
+            tests/test_postgres_store.py::test_case_5_postgres_claimed_run_survives_database_connection_loss \
+            --junitxml="${RUNNER_TEMP}/crash-window-junit.xml"
+          python ../scripts/collect-crash-evidence.py \
+            --junit "${RUNNER_TEMP}/crash-window-junit.xml" \
+            --output "${RUNNER_TEMP}/crash-window-evidence.json"
+
       - name: Start isolated fault lab
         run: |
           python -m uvicorn ops_sandbox.app:app --host 127.0.0.1 --port 8092 >"${RUNNER_TEMP}/ops-sandbox.log" 2>&1 &
@@ -94,7 +137,18 @@ jobs:
 
       - name: Run all backend tests with coverage
         working-directory: backend
-        run: pytest --cov=app --cov-report=term-missing --cov-fail-under=80
+        run: |
+          pytest --cov=app --cov-report=term-missing --cov-report=json:coverage.json --cov-fail-under=82
+          python ../scripts/check-coverage.py coverage.json
+
+      - name: Enforce telemetry validator coverage separately
+        working-directory: backend
+        run: >-
+          pytest tests/test_telemetry_validation.py
+          --cov=app.telemetry_validation
+          --cov-config=.coveragerc-telemetry
+          --cov-report=term-missing
+          --cov-fail-under=50
 
       - name: Show fault-lab log on failure
         if: failure()
@@ -133,9 +187,9 @@ jobs:
           pnpm build
 
   compose-smoke:
-    name: Compose smoke
+    name: Compose smoke and browser E2E
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - name: Check out repository
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
@@ -145,8 +199,62 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Set up pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5
+        with:
+          version: 11.20.0
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: "24"
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: Install browser test dependencies
+        working-directory: frontend
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm exec playwright install --with-deps chromium
+
+      - name: Verify runtime image retrieval configuration contract
+        run: python scripts/test-runtime-image.py --tag harbor-agentops-runtime-contract:ci
+
       - name: Build, start and verify the complete stack
         run: python scripts/quickstart.py up --workers 2 --timeout 240
+
+      - name: Run Chromium critical browser gate
+        if: github.event_name != 'workflow_dispatch'
+        working-directory: frontend
+        env:
+          PLAYWRIGHT_BASE_URL: http://127.0.0.1:8080
+          DEMO_PASSWORD: harbor-demo-2026
+        run: pnpm e2e:critical
+
+      - name: Run full browser matrix on manual dispatch
+        if: github.event_name == 'workflow_dispatch'
+        working-directory: frontend
+        env:
+          PLAYWRIGHT_BASE_URL: http://127.0.0.1:8080
+          DEMO_PASSWORD: harbor-demo-2026
+        run: pnpm e2e
+
+      - name: Prove PostgreSQL backup and isolated restore
+        run: |
+          python scripts/database-ops.py backup --output "${RUNNER_TEMP}/harbor-ci.dump"
+          python scripts/database-ops.py verify "${RUNNER_TEMP}/harbor-ci.dump"
+
+      - name: Run bounded dependency-fault reliability checks
+        run: |
+          python scripts/reliability-lab.py \
+            --duration-seconds 0 \
+            --min-runs 3 \
+            --worker-restart-every 2 \
+            --database-restart-every 3 \
+            --database-restart-after-claim \
+            --prometheus-outage-once \
+            --output "${RUNNER_TEMP}/harbor-reliability.json"
 
       - name: Show service logs on failure
         if: failure()
@@ -155,3 +263,53 @@ jobs:
       - name: Stop stack and remove CI volumes
         if: always()
         run: python scripts/quickstart.py down --volumes
+
+  kind-staging:
+    name: kind least-privilege staging E2E
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.12"
+
+      - name: Create and verify namespace-scoped kind lab
+        run: python scripts/kind-lab.py up
+
+      - name: Start the control plane against the real Kubernetes connector
+        run: |
+          docker compose \
+            -f docker-compose.yml \
+            -f kubernetes/kind/docker-compose.kind.yml \
+            up -d --build --scale worker=2
+          for attempt in {1..90}; do
+            if curl --fail --silent --show-error http://127.0.0.1:8000/api/ready >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          docker compose logs --no-color --tail 200
+          exit 1
+
+      - name: Verify approval, real scale and independent readiness evidence
+        run: python scripts/verify-kind-agent.py
+
+      - name: Show diagnostics on failure
+        if: failure()
+        run: |
+          kubectl get all -n harbor-sandbox -o wide || true
+          kubectl get events -n harbor-sandbox --sort-by=.lastTimestamp || true
+          docker compose logs --no-color --tail 200 || true
+
+      - name: Remove the ephemeral stack and cluster
+        if: always()
+        run: |
+          docker compose \
+            -f docker-compose.yml \
+            -f kubernetes/kind/docker-compose.kind.yml \
+            down --volumes --remove-orphans
+          python scripts/kind-lab.py down

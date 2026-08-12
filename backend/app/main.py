@@ -3,16 +3,18 @@ from __future__ import annotations
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 import json
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 
 import httpx
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import Response
+from fastapi.responses import JSONResponse, Response
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 
 from .config import Settings, get_settings
 from .evaluation import EvaluationService
+from .external_validation import ExternalValidationReport, load_external_report
+from .telemetry_validation import TelemetryValidationReport, load_telemetry_report
 from .metrics import build_metrics
 from .observability import CONCURRENCY_CONFLICTS
 from .runtime import build_agent_runtime
@@ -38,6 +40,9 @@ from .security import (
 )
 from .store import ConcurrencyError, Store
 from .tools import FAULT_DEFINITIONS, TOOL_REGISTRY
+
+
+APP_VERSION = "3.6.0"
 
 
 def _token(authorization: str | None) -> str:
@@ -92,10 +97,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         engine = runtime.engine
         worker = runtime.worker
         evaluator = EvaluationService(
-            resolved.data_dir / "eval_cases_v3.json",
+            resolved.data_dir / "evaluation" / "manifest.json",
             retriever,
             resolved.capability_signing_secret,
             model_adapter,
+        )
+        external_validation = load_external_report(
+            resolved.data_dir / "external" / "evidence-v1.json"
+        )
+        telemetry_validation = load_telemetry_report(
+            resolved.data_dir / "external" / "telemetry-evidence-v4.json"
         )
         app.state.settings = resolved
         app.state.store = store
@@ -105,17 +116,22 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         app.state.engine = engine
         app.state.worker = worker
         app.state.evaluator = evaluator
+        app.state.external_validation = external_validation
+        app.state.telemetry_validation = telemetry_validation
         app.state.model_adapter = model_adapter
         app.state.tool_executor = tool_executor
         app.state.inprocess_lab = inprocess_lab
         if resolved.embedded_worker:
             worker.start()
-        yield
-        worker.stop()
+        try:
+            yield
+        finally:
+            worker.stop()
+            store.close()
 
     app = FastAPI(
         title=resolved.app_name,
-        version="3.2.0",
+        version=APP_VERSION,
         description="证据约束、可恢复、最小权限并由隐藏真值验证的 AIOps Agent。",
         lifespan=lifespan,
     )
@@ -131,7 +147,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     def api_index() -> dict[str, Any]:
         return {
             "name": resolved.app_name,
-            "version": "3.2.0",
+            "version": APP_VERSION,
             "docs": "/docs",
             "runtime_contract": "freeform incident + sealed oracle + durable worker",
         }
@@ -147,13 +163,52 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     def me(user: Annotated[UserIdentity, Depends(current_user)]) -> UserIdentity:
         return user
 
-    @app.get("/api/health", response_model=HealthResponse, tags=["system"])
-    def health(request: Request) -> HealthResponse:
+    def runtime_status(
+        request: Request, *, purpose: Literal["runtime-status", "readiness"]
+    ) -> HealthResponse:
         store_name = "postgresql" if resolved.database_url.startswith("postgres") else "sqlite"
+        try:
+            request.app.state.store.ping()
+            schema_status = request.app.state.store.schema_status()
+            database_status = {"status": "ready", "schema": schema_status}
+            database_ready = schema_status.get("status") == "current"
+        except Exception as exc:
+            database_status = {
+                "status": "unavailable",
+                "detail": f"{type(exc).__name__}: durable store query failed",
+            }
+            database_ready = False
         vector_quality = request.app.state.retriever.vector_quality
+        vector_ready = vector_quality != "unavailable"
+        model_runtime = request.app.state.model_adapter.health()
+        if resolved.model_fixture_mode:
+            model_ready = model_runtime.get("status") == "fixture"
+            model_runtime["production_capable"] = False
+            model_runtime["readiness_contract"] = "explicit-fixture-mode"
+        elif resolved.model_enabled:
+            model_ready = (
+                model_runtime.get("status") == "ready"
+                and model_runtime.get("loaded") is True
+            )
+            model_runtime["production_capable"] = model_ready
+            model_runtime["readiness_contract"] = "live-model-must-be-loaded"
+        else:
+            model_ready = False
+            model_runtime["production_capable"] = False
+            model_runtime["readiness_contract"] = "no-model-configured"
+        tool_runtime = request.app.state.tool_executor.client.health()
+        tool_ready = tool_runtime.get("status") == "ready"
         worker_runtime = request.app.state.worker.health()
+        worker_ready = worker_runtime.get("status") == "running"
         if not resolved.embedded_worker:
-            jobs = request.app.state.store.list_jobs()
+            jobs = request.app.state.store.list_jobs() if database_ready else []
+            live_workers = (
+                request.app.state.store.list_live_workers(
+                    resolved.worker_registry_ttl_seconds
+                )
+                if database_ready
+                else []
+            )
             now = datetime.now(timezone.utc)
             active_leases = sum(
                 1
@@ -163,26 +218,73 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             worker_runtime = {
                 "status": "external",
                 "mode": "standalone-process",
+                "required_for_api_readiness": False,
+                "verified": bool(live_workers),
+                "delivery_status": "ready" if live_workers else "unavailable",
+                "registered_workers": [
+                    {
+                        **worker,
+                        "started_at": worker["started_at"].isoformat(),
+                        "last_seen_at": worker["last_seen_at"].isoformat(),
+                    }
+                    for worker in live_workers
+                ],
+                "registered_worker_count": len(live_workers),
+                "registry_ttl_seconds": resolved.worker_registry_ttl_seconds,
                 "active_leases": active_leases,
                 "queued_jobs": sum(1 for job in jobs if job.status == "queued"),
                 "detail": (
-                    "API reports durable queue/lease state; each worker exports process "
-                    "liveness on :9101 and Prometheus discovers all replicas through DNS SD."
+                    "Durable database heartbeats verify idle and busy worker processes; "
+                    "job leases and fencing still govern execution ownership."
                 ),
             }
+            # The API only accepts into a durable queue; a standalone worker is a
+            # delivery-SLO dependency, not a precondition for accepting the request.
+            worker_ready = True
+        readiness_checks = {
+            "database": database_ready,
+            "retrieval": vector_ready,
+            "model_contract": model_ready,
+            "tool_boundary": tool_ready,
+            "api_queue_acceptance": worker_ready,
+        }
+        ready = all(readiness_checks.values())
         return HealthResponse(
-            status="ok",
+            status="ready" if ready else "not_ready",
+            ready=ready,
+            purpose=purpose,
             app=resolved.app_name,
-            version="3.2.0",
+            version=APP_VERSION,
             mode=resolved.app_env,
             database=store_name,
+            database_status=database_status,
             vector_backend=request.app.state.retriever.backend_name,
             vector_quality=vector_quality,
             knowledge_documents=len(request.app.state.retriever.documents),
             knowledge_chunks=request.app.state.retriever.chunk_count,
-            model_runtime=request.app.state.model_adapter.health(),
-            tool_runtime=request.app.state.tool_executor.client.health(),
+            model_runtime=model_runtime,
+            tool_runtime=tool_runtime,
             worker_runtime=worker_runtime,
+            readiness_checks=readiness_checks,
+        )
+
+    @app.get("/api/health", tags=["system"])
+    def health() -> dict[str, str]:
+        """Process liveness only; never claims that downstream dependencies are ready."""
+        return {"status": "alive", "app": resolved.app_name, "version": APP_VERSION}
+
+    @app.get("/api/status", response_model=HealthResponse, tags=["system"])
+    def status(request: Request) -> HealthResponse:
+        """Detailed diagnostic status for the UI; always returns an inspectable body."""
+        return runtime_status(request, purpose="runtime-status")
+
+    @app.get("/api/ready", tags=["system"])
+    def ready(request: Request) -> JSONResponse:
+        """Traffic readiness; returns 503 whenever a required contract is unavailable."""
+        report = runtime_status(request, purpose="readiness")
+        return JSONResponse(
+            status_code=200 if report.ready else 503,
+            content=report.model_dump(mode="json"),
         )
 
     @app.get("/metrics", include_in_schema=False)
@@ -206,7 +308,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         _authorize(user, ["admin"])
         lab = request.app.state.inprocess_lab
         if lab is not None:
-            experiment_id, incident = lab.create_experiment(payload.fault_kind)
+            try:
+                experiment_id, incident = lab.create_experiment(payload.fault_kind)
+            except KeyError as exc:
+                raise HTTPException(status_code=404, detail="fault kind is not registered") from exc
             return DrillDescriptor(experiment_id=experiment_id, incident=incident)
         try:
             with httpx.Client(timeout=5.0) as client:
@@ -228,11 +333,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         limit: int = Query(default=20, ge=1, le=100),
     ) -> list[RunRecord]:
         _authorize(user, ["observer"])
-        return [
-            run
-            for run in request.app.state.store.list_runs()
-            if run.tenant_id == user.tenant_id
-        ][:limit]
+        return request.app.state.store.list_runs(user.tenant_id, limit)
 
     @app.get("/api/runs/{run_id}", response_model=RunRecord, tags=["runs"])
     def run_detail(
@@ -391,12 +492,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     ) -> DashboardMetrics:
         _authorize(user, ["observer"])
         store: Store = request.app.state.store
-        tenant_runs = [
-            run
-            for run in store.list_runs()
-            if run.tenant_id == user.tenant_id
-        ]
-        return build_metrics(tenant_runs, store.latest_evaluation())
+        tenant_runs = store.list_runs(user.tenant_id)
+        return build_metrics(tenant_runs, store.latest_evaluation(user.tenant_id))
 
     @app.get(
         "/api/evaluations/latest",
@@ -408,19 +505,50 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         user: Annotated[UserIdentity, Depends(current_user)],
     ) -> EvaluationReport | None:
         _authorize(user, ["observer"])
-        return request.app.state.store.latest_evaluation()
+        return request.app.state.store.latest_evaluation(user.tenant_id)
+
+    @app.get(
+        "/api/evaluations/external/latest",
+        response_model=ExternalValidationReport | None,
+        tags=["evaluations"],
+    )
+    def latest_external_validation(
+        request: Request,
+        user: Annotated[UserIdentity, Depends(current_user)],
+    ) -> ExternalValidationReport | None:
+        _authorize(user, ["observer"])
+        return request.app.state.external_validation
+
+    @app.get(
+        "/api/evaluations/telemetry/latest",
+        response_model=TelemetryValidationReport | None,
+        tags=["evaluations"],
+    )
+    def latest_telemetry_validation(
+        request: Request,
+        user: Annotated[UserIdentity, Depends(current_user)],
+    ) -> TelemetryValidationReport | None:
+        _authorize(user, ["observer"])
+        return request.app.state.telemetry_validation
 
     @app.post("/api/evaluations/run", response_model=EvaluationReport, tags=["evaluations"])
     def run_evaluation(
         request: Request,
         user: Annotated[UserIdentity, Depends(current_user)],
         live_model: bool = Query(default=False),
-        case_limit: int | None = Query(default=None, ge=1, le=30),
-        case_offset: int = Query(default=0, ge=0, le=29),
+        case_limit: int | None = Query(default=None, ge=1, le=120),
+        case_offset: int = Query(default=0, ge=0, le=119),
+        split: str = Query(default="development", pattern="^(calibration|development|holdout)$"),
+        final_holdout: bool = Query(default=False),
     ) -> EvaluationReport:
         _authorize(user, ["admin"])
         report = request.app.state.evaluator.run(
-            live_model=live_model, case_limit=case_limit, case_offset=case_offset
+            tenant_id=user.tenant_id,
+            live_model=live_model,
+            case_limit=case_limit,
+            case_offset=case_offset,
+            split=split,
+            allow_frozen_holdout=final_holdout,
         )
         return request.app.state.store.save_evaluation(report)
 

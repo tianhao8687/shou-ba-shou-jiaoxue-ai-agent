@@ -47,12 +47,17 @@ def main() -> None:
         settings.worker_heartbeat_seconds,
         settings.worker_metrics_port,
     )
-    while not stopping.is_set():
-        processed = runtime.worker.run_once()
-        if not processed:
-            stopping.wait(settings.worker_poll_seconds)
-    LOGGER.info("worker %s stopped", worker_id)
-    del metrics_endpoint
+    runtime.worker.start_registry()
+    try:
+        while not stopping.is_set():
+            processed = runtime.worker.run_once()
+            if not processed:
+                stopping.wait(settings.worker_poll_seconds)
+    finally:
+        runtime.worker.stop_registry()
+        runtime.store.close()
+        LOGGER.info("worker %s stopped", worker_id)
+        del metrics_endpoint
 
 
 if __name__ == "__main__":

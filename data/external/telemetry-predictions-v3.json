@@ -1,0 +1,4976 @@
+{
+  "schema": "harbor-telemetry-predictions/v1",
+  "suite_version": "telemetry-v3",
+  "ruleset_version": "deterministic-rca-v2",
+  "manifest_fingerprint": "0813b112fd7cbe198db34e55c8f0d39dfc3854acaa3ec281818d58cae00a501f",
+  "generated_at": "2026-08-10T16:44:31.990507Z",
+  "oracle_access": "none",
+  "unsafe_write_actions": 0,
+  "predictions": [
+    {
+      "uuid": "3600f326-158",
+      "role": "calibration",
+      "window_start": "2025-06-09T00:10:25Z",
+      "window_end": "2025-06-09T00:34:25Z",
+      "fault_type_top3": [
+        "jvm gc",
+        "network loss",
+        "network delay"
+      ],
+      "entity_top3": [
+        "adservice-0",
+        "cartservice",
+        "cartservice-2"
+      ],
+      "source": null,
+      "destination": null,
+      "confidence": 0.725,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "log",
+          "entity": "adservice-0",
+          "signal": "JVM GC injection marker",
+          "score": 141.989,
+          "observation": "287 matching log records in the incident window",
+          "source_file": "log_filebeat-server_2025-06-09_08-00-00.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "cartservice",
+          "signal": "client_error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 1.241; range 0..18",
+          "source_file": "service_cartservice_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "cartservice",
+          "signal": "error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 1.241; range 0..18",
+          "source_file": "service_cartservice_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "cartservice-2",
+          "signal": "error_ratio",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 2.471; range 0..36.36",
+          "source_file": "pod_cartservice-2_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "cartservice-1",
+          "signal": "error_ratio",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 1.381; range 0..20.69",
+          "source_file": "pod_cartservice-1_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "emailservice-2",
+          "signal": "rrt_max",
+          "score": 62.0,
+          "observation": "baseline mean 3297; incident mean 6496; range 2384..7.302e+04",
+          "source_file": "pod_emailservice-2_2025-06-09.parquet"
+        }
+      ],
+      "latency_ms": 52
+    },
+    {
+      "uuid": "a9c6d6c9-159",
+      "role": "calibration",
+      "window_start": "2025-06-09T01:10:27Z",
+      "window_end": "2025-06-09T01:20:27Z",
+      "fault_type_top3": [
+        "network delay"
+      ],
+      "entity_top3": [
+        "frontend",
+        "cartservice",
+        "frontend-2"
+      ],
+      "source": "frontend",
+      "destination": "cartservice",
+      "confidence": 0.7056,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "metric",
+          "entity": "frontend-2",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 1.199e+04; incident mean 1.602e+05; range 1.121e+04..2.84e+05",
+          "source_file": "pod_frontend-2_2025-06-09.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "frontend",
+          "signal": "frontend -> cartservice latency",
+          "score": 110.0,
+          "observation": "mean 4.2ms -> 960.1ms; max 4012.1ms; spans 1529",
+          "source_file": "trace_jaeger-span_2025-06-09_09-00-00.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "cartservice",
+          "signal": "frontend -> cartservice latency",
+          "score": 105.6,
+          "observation": "mean 4.2ms -> 960.1ms; max 4012.1ms",
+          "source_file": "trace_jaeger-span_2025-06-09_09-00-00.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-1",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 1.21e+04; incident mean 1.633e+05; range 1.153e+04..2.697e+05",
+          "source_file": "pod_frontend-1_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "hipstershop",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 7301; incident mean 7.443e+04; range 7036..1.19e+05",
+          "source_file": "pod_ns_hipstershop_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-0",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 1.194e+04; incident mean 1.553e+05; range 1.018e+04..2.923e+05",
+          "source_file": "pod_frontend-0_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 1.201e+04; incident mean 1.601e+05; range 1.144e+04..2.609e+05",
+          "source_file": "service_frontend_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "cartservice-0",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 2062; incident mean 2.301e+05; range 1679..3.752e+05",
+          "source_file": "pod_cartservice-0_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "cartservice",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 2018; incident mean 2.067e+05; range 1646..3.336e+05",
+          "source_file": "service_cartservice_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "cartservice-0",
+          "signal": "rrt_max",
+          "score": 69.909,
+          "observation": "baseline mean 2.092e+04; incident mean 1.462e+06; range 7136..4.011e+06",
+          "source_file": "pod_cartservice-0_2025-06-09.parquet"
+        }
+      ],
+      "latency_ms": 52
+    },
+    {
+      "uuid": "0efb9550-160",
+      "role": "calibration",
+      "window_start": "2025-06-09T02:10:29Z",
+      "window_end": "2025-06-09T02:22:29Z",
+      "fault_type_top3": [
+        "memory stress",
+        "network loss",
+        "network delay"
+      ],
+      "entity_top3": [
+        "productcatalogservice-2",
+        "emailservice-0"
+      ],
+      "source": null,
+      "destination": null,
+      "confidence": 0.5079,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "metric",
+          "entity": "productcatalogservice-2",
+          "signal": "pod_processes",
+          "score": 78.0,
+          "observation": "baseline mean 1; incident mean 1.294; range 1..2",
+          "source_file": "infra_pod_pod_processes_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "productcatalogservice-2",
+          "signal": "error_ratio",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 1.103; range 0..18.75",
+          "source_file": "pod_productcatalogservice-2_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "emailservice-0",
+          "signal": "rrt_max",
+          "score": 62.0,
+          "observation": "baseline mean 4682; incident mean 8811; range 2430..6.882e+04",
+          "source_file": "pod_emailservice-0_2025-06-09.parquet"
+        }
+      ],
+      "latency_ms": 49
+    },
+    {
+      "uuid": "cb5815ce-161",
+      "role": "calibration",
+      "window_start": "2025-06-09T03:10:31Z",
+      "window_end": "2025-06-09T03:29:31Z",
+      "fault_type_top3": [
+        "jvm cpu stress",
+        "cpu stress",
+        "jvm latency"
+      ],
+      "entity_top3": [
+        "adservice-0",
+        "adservice-2",
+        "adservice-1"
+      ],
+      "source": null,
+      "destination": null,
+      "confidence": 0.7921,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "log",
+          "entity": "adservice-0",
+          "signal": "JVM CPU injection marker",
+          "score": 141.301,
+          "observation": "228 matching log records in the incident window",
+          "source_file": "log_filebeat-server_2025-06-09_11-00-00.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "adservice-1",
+          "signal": "pod_cpu_usage",
+          "score": 100.0,
+          "observation": "baseline mean 0; incident mean 0.4646; range 0..0.6",
+          "source_file": "infra_pod_pod_cpu_usage_2025-06-09.parquet"
+        },
+        {
+          "modality": "log",
+          "entity": "adservice-2",
+          "signal": "JVM CPU injection marker",
+          "score": 141.288,
+          "observation": "227 matching log records in the incident window",
+          "source_file": "log_filebeat-server_2025-06-09_11-00-00.parquet"
+        },
+        {
+          "modality": "log",
+          "entity": "adservice-1",
+          "signal": "JVM CPU injection marker",
+          "score": 141.288,
+          "observation": "227 matching log records in the incident window",
+          "source_file": "log_filebeat-server_2025-06-09_11-00-00.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "adservice-2",
+          "signal": "pod_cpu_usage",
+          "score": 100.0,
+          "observation": "baseline mean 0; incident mean 0.4567; range 0..0.6",
+          "source_file": "infra_pod_pod_cpu_usage_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "adservice-0",
+          "signal": "pod_cpu_usage",
+          "score": 100.0,
+          "observation": "baseline mean 0.01; incident mean 0.4771; range 0.01..0.6",
+          "source_file": "infra_pod_pod_cpu_usage_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "adservice",
+          "signal": "rrt",
+          "score": 90.0,
+          "observation": "baseline mean 3374; incident mean 1.677e+04; range 3097..2.743e+04",
+          "source_file": "service_adservice_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "adservice",
+          "signal": "rrt_max",
+          "score": 90.0,
+          "observation": "baseline mean 4.302e+04; incident mean 1.759e+05; range 4.282e+04..3.014e+05",
+          "source_file": "service_adservice_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "adservice-0",
+          "signal": "rrt",
+          "score": 90.0,
+          "observation": "baseline mean 3112; incident mean 1.749e+04; range 3018..2.923e+04",
+          "source_file": "pod_adservice-0_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "adservice-0",
+          "signal": "rrt_max",
+          "score": 90.0,
+          "observation": "baseline mean 4.222e+04; incident mean 1.734e+05; range 1.252e+04..3.014e+05",
+          "source_file": "pod_adservice-0_2025-06-09.parquet"
+        }
+      ],
+      "latency_ms": 49
+    },
+    {
+      "uuid": "89c85406-162",
+      "role": "calibration",
+      "window_start": "2025-06-09T04:10:33Z",
+      "window_end": "2025-06-09T04:28:33Z",
+      "fault_type_top3": [
+        "insufficient evidence"
+      ],
+      "entity_top3": [
+        "unknown"
+      ],
+      "source": null,
+      "destination": null,
+      "confidence": 0.0,
+      "abstained": true,
+      "evidence": [],
+      "latency_ms": 48
+    },
+    {
+      "uuid": "43e1b3bf-163",
+      "role": "calibration",
+      "window_start": "2025-06-09T05:10:35Z",
+      "window_end": "2025-06-09T05:22:35Z",
+      "fault_type_top3": [
+        "network loss",
+        "network delay",
+        "erroneous code"
+      ],
+      "entity_top3": [
+        "checkoutservice",
+        "frontend",
+        "paymentservice"
+      ],
+      "source": "checkoutservice",
+      "destination": "paymentservice",
+      "confidence": 0.7219,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "log",
+          "entity": "frontend-2",
+          "signal": "network availability error",
+          "score": 40.079,
+          "observation": "1 matching log records in the incident window",
+          "source_file": "log_filebeat-server_2025-06-09_13-00-00.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-2",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 1.199e+04; incident mean 1.059e+05; range 1.121e+04..1.98e+05",
+          "source_file": "pod_frontend-2_2025-06-09.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "checkoutservice",
+          "signal": "checkoutservice -> paymentservice latency",
+          "score": 110.0,
+          "observation": "mean 9.7ms -> 14232.8ms; max 59958.8ms; spans 246",
+          "source_file": "trace_jaeger-span_2025-06-09_13-00-00.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "frontend",
+          "signal": "frontend -> checkoutservice latency",
+          "score": 110.0,
+          "observation": "mean 121.5ms -> 14328.9ms; max 60003.2ms; spans 246",
+          "source_file": "trace_jaeger-span_2025-06-09_13-00-00.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "paymentservice",
+          "signal": "checkoutservice -> paymentservice latency",
+          "score": 105.6,
+          "observation": "mean 9.7ms -> 14232.8ms; max 59958.8ms",
+          "source_file": "trace_jaeger-span_2025-06-09_13-00-00.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "checkoutservice",
+          "signal": "frontend -> checkoutservice latency",
+          "score": 105.6,
+          "observation": "mean 121.5ms -> 14328.9ms; max 60003.2ms",
+          "source_file": "trace_jaeger-span_2025-06-09_13-00-00.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "checkoutservice",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 5855; incident mean 5.883e+05; range 5918..1.291e+06",
+          "source_file": "service_checkoutservice_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "checkoutservice",
+          "signal": "rrt_max",
+          "score": 70.0,
+          "observation": "baseline mean 1.866e+05; incident mean 1.702e+07; range 1.828e+05..4.046e+07",
+          "source_file": "service_checkoutservice_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-2",
+          "signal": "rrt_max",
+          "score": 70.0,
+          "observation": "baseline mean 2.353e+05; incident mean 2.294e+07; range 2.34e+05..6e+07",
+          "source_file": "pod_frontend-2_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "paymentservice-2",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 1638; incident mean 5.091e+05; range 1126..5.512e+06",
+          "source_file": "pod_paymentservice-2_2025-06-09.parquet"
+        }
+      ],
+      "latency_ms": 55
+    },
+    {
+      "uuid": "7bdc4b83-164",
+      "role": "calibration",
+      "window_start": "2025-06-09T06:10:36Z",
+      "window_end": "2025-06-09T06:22:36Z",
+      "fault_type_top3": [
+        "jvm latency",
+        "network delay"
+      ],
+      "entity_top3": [
+        "adservice-0",
+        "adservice",
+        "frontend"
+      ],
+      "source": "frontend",
+      "destination": "adservice",
+      "confidence": 0.799,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "log",
+          "entity": "adservice-0",
+          "signal": "JVM latency injection marker",
+          "score": 145.0,
+          "observation": "2578 matching log records in the incident window",
+          "source_file": "log_filebeat-server_2025-06-09_14-00-00.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "adservice",
+          "signal": "rrt",
+          "score": 90.0,
+          "observation": "baseline mean 3352; incident mean 1.438e+05; range 3201..2.135e+05",
+          "source_file": "service_adservice_2025-06-09.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "frontend",
+          "signal": "frontend -> adservice latency",
+          "score": 110.0,
+          "observation": "mean 5.5ms -> 327.2ms; max 504.2ms; spans 3929",
+          "source_file": "trace_jaeger-span_2025-06-09_14-00-00.parquet"
+        },
+        {
+          "modality": "log",
+          "entity": "adservice-2",
+          "signal": "JVM latency injection marker",
+          "score": 127.079,
+          "observation": "1 matching log records in the incident window",
+          "source_file": "log_filebeat-server_2025-06-09_14-00-00.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "adservice",
+          "signal": "frontend -> adservice latency",
+          "score": 105.6,
+          "observation": "mean 5.5ms -> 327.2ms; max 504.2ms",
+          "source_file": "trace_jaeger-span_2025-06-09_14-00-00.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "adservice",
+          "signal": "rrt_max",
+          "score": 90.0,
+          "observation": "baseline mean 4.333e+04; incident mean 3.699e+05; range 4.333e+04..5.332e+05",
+          "source_file": "service_adservice_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "adservice-0",
+          "signal": "rrt",
+          "score": 90.0,
+          "observation": "baseline mean 3118; incident mean 1.587e+05; range 2985..2.335e+05",
+          "source_file": "pod_adservice-0_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "adservice-0",
+          "signal": "rrt_max",
+          "score": 90.0,
+          "observation": "baseline mean 4.261e+04; incident mean 3.696e+05; range 4.154e+04..5.332e+05",
+          "source_file": "pod_adservice-0_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend",
+          "signal": "rrt",
+          "score": 66.697,
+          "observation": "baseline mean 1.18e+04; incident mean 4.29e+04; range 1.093e+04..6.476e+04",
+          "source_file": "service_frontend_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-1",
+          "signal": "rrt",
+          "score": 65.757,
+          "observation": "baseline mean 1.185e+04; incident mean 4.293e+04; range 1.142e+04..6.744e+04",
+          "source_file": "pod_frontend-1_2025-06-09.parquet"
+        }
+      ],
+      "latency_ms": 45
+    },
+    {
+      "uuid": "cebb47f5-165",
+      "role": "calibration",
+      "window_start": "2025-06-09T07:10:38Z",
+      "window_end": "2025-06-09T07:10:39Z",
+      "fault_type_top3": [
+        "pod kill",
+        "pod failure",
+        "network delay"
+      ],
+      "entity_top3": [
+        "paymentservice-1",
+        "redis-cart-0",
+        "currencyservice-1"
+      ],
+      "source": null,
+      "destination": null,
+      "confidence": 0.5667,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "metric",
+          "entity": "paymentservice-1",
+          "signal": "pod_processes",
+          "score": 92.0,
+          "observation": "baseline mean 1; incident mean 2; range 2..2",
+          "source_file": "infra_pod_pod_processes_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "redis-cart-0",
+          "signal": "pod_processes",
+          "score": 92.0,
+          "observation": "baseline mean 1.043; incident mean 1.2; range 1..2",
+          "source_file": "infra_pod_pod_processes_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "currencyservice-1",
+          "signal": "rrt_max",
+          "score": 62.0,
+          "observation": "baseline mean 7572; incident mean 2.488e+04; range 5301..9.249e+04",
+          "source_file": "pod_currencyservice-1_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "currencyservice",
+          "signal": "rrt_max",
+          "score": 62.0,
+          "observation": "baseline mean 1.347e+04; incident mean 2.488e+04; range 5301..9.249e+04",
+          "source_file": "service_currencyservice_2025-06-09.parquet"
+        }
+      ],
+      "latency_ms": 41
+    },
+    {
+      "uuid": "578fce7c-166",
+      "role": "calibration",
+      "window_start": "2025-06-09T08:10:40Z",
+      "window_end": "2025-06-09T08:34:40Z",
+      "fault_type_top3": [
+        "jvm gc"
+      ],
+      "entity_top3": [
+        "adservice-2"
+      ],
+      "source": null,
+      "destination": null,
+      "confidence": 0.725,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "log",
+          "entity": "adservice-2",
+          "signal": "JVM GC injection marker",
+          "score": 141.989,
+          "observation": "287 matching log records in the incident window",
+          "source_file": "log_filebeat-server_2025-06-09_16-00-00.parquet"
+        }
+      ],
+      "latency_ms": 41
+    },
+    {
+      "uuid": "47fe21f6-167",
+      "role": "calibration",
+      "window_start": "2025-06-09T09:10:42Z",
+      "window_end": "2025-06-09T09:25:42Z",
+      "fault_type_top3": [
+        "jvm exception",
+        "network delay"
+      ],
+      "entity_top3": [
+        "adservice-0",
+        "paymentservice-1"
+      ],
+      "source": null,
+      "destination": null,
+      "confidence": 0.7199,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "log",
+          "entity": "adservice-0",
+          "signal": "JVM exception marker",
+          "score": 140.0,
+          "observation": "3897 matching log records in the incident window",
+          "source_file": "log_filebeat-server_2025-06-09_17-00-00.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "paymentservice-1",
+          "signal": "rrt_max",
+          "score": 62.0,
+          "observation": "baseline mean 3221; incident mean 6904; range 2226..7.499e+04",
+          "source_file": "pod_paymentservice-1_2025-06-09.parquet"
+        }
+      ],
+      "latency_ms": 48
+    },
+    {
+      "uuid": "df892932-168",
+      "role": "calibration",
+      "window_start": "2025-06-09T10:10:44Z",
+      "window_end": "2025-06-09T10:23:44Z",
+      "fault_type_top3": [
+        "jvm cpu stress",
+        "cpu stress",
+        "jvm latency"
+      ],
+      "entity_top3": [
+        "adservice-0",
+        "adservice-1",
+        "adservice-2"
+      ],
+      "source": null,
+      "destination": null,
+      "confidence": 0.79,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "log",
+          "entity": "adservice-0",
+          "signal": "JVM CPU injection marker",
+          "score": 140.169,
+          "observation": "156 matching log records in the incident window",
+          "source_file": "log_filebeat-server_2025-06-09_18-00-00.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "adservice-1",
+          "signal": "pod_cpu_usage",
+          "score": 100.0,
+          "observation": "baseline mean 0; incident mean 0.4133; range 0..0.6",
+          "source_file": "infra_pod_pod_cpu_usage_2025-06-09.parquet"
+        },
+        {
+          "modality": "log",
+          "entity": "adservice-1",
+          "signal": "JVM CPU injection marker",
+          "score": 140.15,
+          "observation": "155 matching log records in the incident window",
+          "source_file": "log_filebeat-server_2025-06-09_18-00-00.parquet"
+        },
+        {
+          "modality": "log",
+          "entity": "adservice-2",
+          "signal": "JVM CPU injection marker",
+          "score": 140.15,
+          "observation": "155 matching log records in the incident window",
+          "source_file": "log_filebeat-server_2025-06-09_18-00-00.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "adservice-2",
+          "signal": "pod_cpu_usage",
+          "score": 100.0,
+          "observation": "baseline mean 0; incident mean 0.4333; range 0..0.6",
+          "source_file": "infra_pod_pod_cpu_usage_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "adservice-0",
+          "signal": "pod_cpu_usage",
+          "score": 100.0,
+          "observation": "baseline mean 0.01043; incident mean 0.4594; range 0.01..0.6",
+          "source_file": "infra_pod_pod_cpu_usage_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "adservice-0",
+          "signal": "rrt",
+          "score": 87.416,
+          "observation": "baseline mean 3071; incident mean 1.318e+04; range 2305..2.012e+04",
+          "source_file": "pod_adservice-0_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "adservice",
+          "signal": "rrt",
+          "score": 86.019,
+          "observation": "baseline mean 3299; incident mean 1.278e+04; range 2440..1.938e+04",
+          "source_file": "service_adservice_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "adservice",
+          "signal": "rrt_max",
+          "score": 75.0,
+          "observation": "baseline mean 4.861e+04; incident mean 1.546e+05; range 4.011e+04..3.347e+05",
+          "source_file": "service_adservice_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "adservice-0",
+          "signal": "rrt_max",
+          "score": 75.0,
+          "observation": "baseline mean 4.802e+04; incident mean 1.536e+05; range 2.763e+04..3.347e+05",
+          "source_file": "pod_adservice-0_2025-06-09.parquet"
+        }
+      ],
+      "latency_ms": 39
+    },
+    {
+      "uuid": "51fc47bf-169",
+      "role": "calibration",
+      "window_start": "2025-06-09T11:10:46Z",
+      "window_end": "2025-06-09T11:23:46Z",
+      "fault_type_top3": [
+        "insufficient evidence"
+      ],
+      "entity_top3": [
+        "unknown"
+      ],
+      "source": null,
+      "destination": null,
+      "confidence": 0.0,
+      "abstained": true,
+      "evidence": [],
+      "latency_ms": 39
+    },
+    {
+      "uuid": "046aefa7-170",
+      "role": "calibration",
+      "window_start": "2025-06-09T12:10:48Z",
+      "window_end": "2025-06-09T12:22:48Z",
+      "fault_type_top3": [
+        "cpu stress",
+        "memory stress",
+        "network delay"
+      ],
+      "entity_top3": [
+        "shippingservice-2",
+        "shippingservice-0",
+        "shippingservice-1"
+      ],
+      "source": null,
+      "destination": null,
+      "confidence": 0.5971,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "metric",
+          "entity": "shippingservice-2",
+          "signal": "pod_cpu_usage",
+          "score": 100.0,
+          "observation": "baseline mean 0; incident mean 0.2865; range 0..0.4",
+          "source_file": "infra_pod_pod_cpu_usage_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "shippingservice-0",
+          "signal": "pod_processes",
+          "score": 100.0,
+          "observation": "baseline mean 1; incident mean 9.412; range 1..12",
+          "source_file": "infra_pod_pod_processes_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "shippingservice-1",
+          "signal": "pod_processes",
+          "score": 100.0,
+          "observation": "baseline mean 1; incident mean 9.412; range 1..12",
+          "source_file": "infra_pod_pod_processes_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "shippingservice-0",
+          "signal": "pod_cpu_usage",
+          "score": 100.0,
+          "observation": "baseline mean 0; incident mean 0.2841; range 0..0.4",
+          "source_file": "infra_pod_pod_cpu_usage_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "shippingservice-1",
+          "signal": "pod_cpu_usage",
+          "score": 100.0,
+          "observation": "baseline mean 0; incident mean 0.2888; range 0..0.4",
+          "source_file": "infra_pod_pod_cpu_usage_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "shippingservice-2",
+          "signal": "pod_processes",
+          "score": 100.0,
+          "observation": "baseline mean 1; incident mean 8.765; range 1..12",
+          "source_file": "infra_pod_pod_processes_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "shippingservice",
+          "signal": "rrt",
+          "score": 66.982,
+          "observation": "baseline mean 1029; incident mean 1.215e+04; range 880.1..1.999e+04",
+          "source_file": "service_shippingservice_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "shippingservice-1",
+          "signal": "rrt",
+          "score": 64.397,
+          "observation": "baseline mean 1050; incident mean 1.419e+04; range 873.6..2.125e+04",
+          "source_file": "pod_shippingservice-1_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "shippingservice-2",
+          "signal": "rrt",
+          "score": 62.0,
+          "observation": "baseline mean 879.4; incident mean 5585; range 585.1..1.558e+04",
+          "source_file": "pod_shippingservice-2_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "shippingservice-2",
+          "signal": "rrt_max",
+          "score": 62.0,
+          "observation": "baseline mean 4991; incident mean 8.062e+04; range 1432..1.996e+05",
+          "source_file": "pod_shippingservice-2_2025-06-09.parquet"
+        }
+      ],
+      "latency_ms": 29
+    },
+    {
+      "uuid": "e0a261ce-171",
+      "role": "calibration",
+      "window_start": "2025-06-09T13:11:07Z",
+      "window_end": "2025-06-09T13:36:07Z",
+      "fault_type_top3": [
+        "memory stress",
+        "cpu stress",
+        "network delay"
+      ],
+      "entity_top3": [
+        "recommendationservice-2",
+        "recommendationservice-1",
+        "recommendationservice-0"
+      ],
+      "source": null,
+      "destination": null,
+      "confidence": 0.5971,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "metric",
+          "entity": "recommendationservice-2",
+          "signal": "pod_processes",
+          "score": 100.0,
+          "observation": "baseline mean 1; incident mean 6.833; range 1..8",
+          "source_file": "infra_pod_pod_processes_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "recommendationservice-1",
+          "signal": "pod_cpu_usage",
+          "score": 100.0,
+          "observation": "baseline mean 0.02; incident mean 0.3363; range 0.01..0.4",
+          "source_file": "infra_pod_pod_cpu_usage_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "recommendationservice-0",
+          "signal": "pod_processes",
+          "score": 100.0,
+          "observation": "baseline mean 1; incident mean 6.833; range 1..8",
+          "source_file": "infra_pod_pod_processes_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "recommendationservice-0",
+          "signal": "pod_cpu_usage",
+          "score": 100.0,
+          "observation": "baseline mean 0; incident mean 0.3333; range 0..0.4",
+          "source_file": "infra_pod_pod_cpu_usage_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "recommendationservice-1",
+          "signal": "pod_processes",
+          "score": 100.0,
+          "observation": "baseline mean 1; incident mean 6.833; range 1..8",
+          "source_file": "infra_pod_pod_processes_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "recommendationservice-2",
+          "signal": "pod_cpu_usage",
+          "score": 100.0,
+          "observation": "baseline mean 0; incident mean 0.3333; range 0..0.4",
+          "source_file": "infra_pod_pod_cpu_usage_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "recommendationservice",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 3218; incident mean 4.708e+04; range 3939..9.461e+04",
+          "source_file": "service_recommendationservice_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "recommendationservice-1",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 3218; incident mean 4.708e+04; range 3939..9.461e+04",
+          "source_file": "pod_recommendationservice-1_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "recommendationservice",
+          "signal": "rrt_max",
+          "score": 62.0,
+          "observation": "baseline mean 1.653e+04; incident mean 3.596e+05; range 1.58e+04..7.152e+05",
+          "source_file": "service_recommendationservice_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "recommendationservice-1",
+          "signal": "rrt_max",
+          "score": 62.0,
+          "observation": "baseline mean 1.653e+04; incident mean 3.596e+05; range 1.58e+04..7.152e+05",
+          "source_file": "pod_recommendationservice-1_2025-06-09.parquet"
+        }
+      ],
+      "latency_ms": 27
+    },
+    {
+      "uuid": "a0761b38-172",
+      "role": "calibration",
+      "window_start": "2025-06-09T14:11:10Z",
+      "window_end": "2025-06-09T14:24:10Z",
+      "fault_type_top3": [
+        "network delay"
+      ],
+      "entity_top3": [
+        "frontend-0",
+        "frontend",
+        "frontend-1"
+      ],
+      "source": null,
+      "destination": null,
+      "confidence": 0.4309,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "metric",
+          "entity": "frontend-0",
+          "signal": "rrt",
+          "score": 62.0,
+          "observation": "baseline mean 1.104e+04; incident mean 2.659e+04; range 8101..4.497e+04",
+          "source_file": "pod_frontend-0_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend",
+          "signal": "rrt",
+          "score": 62.0,
+          "observation": "baseline mean 1.142e+04; incident mean 2.728e+04; range 1.051e+04..3.943e+04",
+          "source_file": "service_frontend_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-1",
+          "signal": "rrt",
+          "score": 62.0,
+          "observation": "baseline mean 1.15e+04; incident mean 2.739e+04; range 1.039e+04..4.442e+04",
+          "source_file": "pod_frontend-1_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-2",
+          "signal": "rrt",
+          "score": 62.0,
+          "observation": "baseline mean 1.155e+04; incident mean 2.812e+04; range 9568..4.633e+04",
+          "source_file": "pod_frontend-2_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-0",
+          "signal": "rrt_max",
+          "score": 62.0,
+          "observation": "baseline mean 1.646e+05; incident mean 4.818e+05; range 1.125e+05..6.289e+05",
+          "source_file": "pod_frontend-0_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "hipstershop",
+          "signal": "rrt_max",
+          "score": 62.0,
+          "observation": "baseline mean 2.329e+05; incident mean 5.104e+05; range 1.988e+05..6.423e+05",
+          "source_file": "pod_ns_hipstershop_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend",
+          "signal": "rrt_max",
+          "score": 62.0,
+          "observation": "baseline mean 2.329e+05; incident mean 5.104e+05; range 1.988e+05..6.423e+05",
+          "source_file": "service_frontend_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-1",
+          "signal": "rrt_max",
+          "score": 62.0,
+          "observation": "baseline mean 1.89e+05; incident mean 4.937e+05; range 1.574e+05..6.192e+05",
+          "source_file": "pod_frontend-1_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-2",
+          "signal": "rrt_max",
+          "score": 62.0,
+          "observation": "baseline mean 2.021e+05; incident mean 4.928e+05; range 1.151e+05..6.423e+05",
+          "source_file": "pod_frontend-2_2025-06-09.parquet"
+        }
+      ],
+      "latency_ms": 26
+    },
+    {
+      "uuid": "e6c9989b-173",
+      "role": "calibration",
+      "window_start": "2025-06-09T15:11:12Z",
+      "window_end": "2025-06-09T15:22:12Z",
+      "fault_type_top3": [
+        "network delay"
+      ],
+      "entity_top3": [
+        "checkoutservice",
+        "paymentservice-2",
+        "paymentservice"
+      ],
+      "source": null,
+      "destination": null,
+      "confidence": 0.4708,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "metric",
+          "entity": "checkoutservice",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 4245; incident mean 8.685e+04; range 4654..1.543e+05",
+          "source_file": "service_checkoutservice_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "paymentservice-2",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 1264; incident mean 3.337e+05; range 1130..5.797e+05",
+          "source_file": "pod_paymentservice-2_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "paymentservice-2",
+          "signal": "rrt_max",
+          "score": 70.0,
+          "observation": "baseline mean 1647; incident mean 7.151e+05; range 1220..1.159e+06",
+          "source_file": "pod_paymentservice-2_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "paymentservice",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 1319; incident mean 3.378e+05; range 1240..5.452e+05",
+          "source_file": "service_paymentservice_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "paymentservice",
+          "signal": "rrt_max",
+          "score": 70.0,
+          "observation": "baseline mean 2145; incident mean 7.682e+05; range 1719..1.161e+06",
+          "source_file": "service_paymentservice_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "paymentservice-1",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 1440; incident mean 3.506e+05; range 1387..5.596e+05",
+          "source_file": "pod_paymentservice-1_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "paymentservice-1",
+          "signal": "rrt_max",
+          "score": 70.0,
+          "observation": "baseline mean 1787; incident mean 7.468e+05; range 1517..1.161e+06",
+          "source_file": "pod_paymentservice-1_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "checkoutservice-2",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 4245; incident mean 8.685e+04; range 4654..1.543e+05",
+          "source_file": "pod_checkoutservice-2_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "paymentservice-0",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 1329; incident mean 3.286e+05; range 825.5..5.753e+05",
+          "source_file": "pod_paymentservice-0_2025-06-09.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "paymentservice-0",
+          "signal": "rrt_max",
+          "score": 70.0,
+          "observation": "baseline mean 1460; incident mean 6.748e+05; range 856..1.158e+06",
+          "source_file": "pod_paymentservice-0_2025-06-09.parquet"
+        }
+      ],
+      "latency_ms": 27
+    },
+    {
+      "uuid": "50bce1c4-311",
+      "role": "validation",
+      "window_start": "2025-06-16T16:10:02Z",
+      "window_end": "2025-06-16T16:26:02Z",
+      "fault_type_top3": [
+        "memory stress",
+        "network delay",
+        "network loss"
+      ],
+      "entity_top3": [
+        "cartservice-0",
+        "cartservice-2",
+        "cartservice-1"
+      ],
+      "source": null,
+      "destination": null,
+      "confidence": 0.5079,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "metric",
+          "entity": "cartservice-2",
+          "signal": "pod_processes",
+          "score": 78.0,
+          "observation": "baseline mean 1; incident mean 1.381; range 1..2",
+          "source_file": "infra_pod_pod_processes_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "cartservice-0",
+          "signal": "pod_processes",
+          "score": 78.0,
+          "observation": "baseline mean 1; incident mean 1.192; range 1..2",
+          "source_file": "infra_pod_pod_processes_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "cartservice-1",
+          "signal": "pod_processes",
+          "score": 78.0,
+          "observation": "baseline mean 1; incident mean 1.429; range 1..2",
+          "source_file": "infra_pod_pod_processes_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "checkoutservice",
+          "signal": "rrt",
+          "score": 65.433,
+          "observation": "baseline mean 6857; incident mean 1.522e+04; range 3475..1.808e+05",
+          "source_file": "service_checkoutservice_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "hipstershop",
+          "signal": "server_error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 15.62; range 0..36",
+          "source_file": "pod_ns_hipstershop_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-0",
+          "signal": "server_error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 4.381; range 0..8",
+          "source_file": "pod_frontend-0_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-2",
+          "signal": "error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 6.19; range 0..16",
+          "source_file": "pod_frontend-2_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "cartservice-0",
+          "signal": "error_ratio",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 2.095; range 0..24",
+          "source_file": "pod_cartservice-0_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend",
+          "signal": "server_error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 15.14; range 0..34",
+          "source_file": "service_frontend_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-1",
+          "signal": "server_error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 4.571; range 0..12",
+          "source_file": "pod_frontend-1_2025-06-17.parquet"
+        }
+      ],
+      "latency_ms": 40
+    },
+    {
+      "uuid": "b78dafc3-312",
+      "role": "validation",
+      "window_start": "2025-06-16T17:10:02Z",
+      "window_end": "2025-06-16T17:29:02Z",
+      "fault_type_top3": [
+        "network loss",
+        "network delay",
+        "erroneous code"
+      ],
+      "entity_top3": [
+        "frontend",
+        "recommendationservice",
+        "hipstershop"
+      ],
+      "source": "frontend",
+      "destination": "recommendationservice",
+      "confidence": 0.7254,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "log",
+          "entity": "recommendationservice-2",
+          "signal": "network availability error",
+          "score": 47.134,
+          "observation": "20 matching log records in the incident window",
+          "source_file": "log_filebeat-server_2025-06-17_01-00-00.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "hipstershop",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 7632; incident mean 1.533e+06; range 7459..2.834e+06",
+          "source_file": "pod_ns_hipstershop_2025-06-17.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "frontend",
+          "signal": "frontend -> recommendationservice latency",
+          "score": 110.0,
+          "observation": "mean 7.5ms -> 16934.6ms; max 59996.1ms; spans 631",
+          "source_file": "trace_jaeger-span_2025-06-17_01-00-00.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "recommendationservice",
+          "signal": "frontend -> recommendationservice latency",
+          "score": 105.6,
+          "observation": "mean 7.5ms -> 16934.6ms; max 59996.1ms",
+          "source_file": "trace_jaeger-span_2025-06-17_01-00-00.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "hipstershop",
+          "signal": "rrt_max",
+          "score": 70.0,
+          "observation": "baseline mean 2.542e+05; incident mean 5.642e+07; range 2.228e+05..2.13e+08",
+          "source_file": "pod_ns_hipstershop_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-0",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 1.267e+04; incident mean 7.57e+06; range 1.168e+04..1.385e+07",
+          "source_file": "pod_frontend-0_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-0",
+          "signal": "rrt_max",
+          "score": 70.0,
+          "observation": "baseline mean 1.988e+05; incident mean 5.004e+07; range 1.985e+05..6e+07",
+          "source_file": "pod_frontend-0_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 1.252e+04; incident mean 6.017e+06; range 1.214e+04..1.305e+07",
+          "source_file": "service_frontend_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend",
+          "signal": "rrt_max",
+          "score": 70.0,
+          "observation": "baseline mean 2.542e+05; incident mean 5.004e+07; range 2.228e+05..6.001e+07",
+          "source_file": "service_frontend_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "productcatalogservice",
+          "signal": "rrt_max",
+          "score": 70.0,
+          "observation": "baseline mean 3.411e+04; incident mean 8.894e+06; range 1.127e+04..2.13e+08",
+          "source_file": "service_productcatalogservice_2025-06-17.parquet"
+        }
+      ],
+      "latency_ms": 45
+    },
+    {
+      "uuid": "009be6db-313",
+      "role": "validation",
+      "window_start": "2025-06-16T18:10:05Z",
+      "window_end": "2025-06-16T18:24:05Z",
+      "fault_type_top3": [
+        "network delay",
+        "memory stress",
+        "network loss"
+      ],
+      "entity_top3": [
+        "checkoutservice",
+        "cartservice-2",
+        "cartservice-1"
+      ],
+      "source": "checkoutservice",
+      "destination": "cartservice",
+      "confidence": 0.5968,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "metric",
+          "entity": "cartservice-2",
+          "signal": "pod_processes",
+          "score": 78.0,
+          "observation": "baseline mean 1; incident mean 1.421; range 1..2",
+          "source_file": "infra_pod_pod_processes_2025-06-17.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "checkoutservice",
+          "signal": "checkoutservice -> cartservice latency",
+          "score": 75.496,
+          "observation": "mean 10.1ms -> 96.2ms; max 3185.7ms; spans 200",
+          "source_file": "trace_jaeger-span_2025-06-17_01-00-00.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "cartservice-1",
+          "signal": "pod_processes",
+          "score": 78.0,
+          "observation": "baseline mean 1; incident mean 1.526; range 1..2",
+          "source_file": "infra_pod_pod_processes_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "cartservice-0",
+          "signal": "pod_processes",
+          "score": 78.0,
+          "observation": "baseline mean 1; incident mean 1.474; range 1..2",
+          "source_file": "infra_pod_pod_processes_2025-06-17.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "cartservice",
+          "signal": "checkoutservice -> cartservice latency",
+          "score": 72.476,
+          "observation": "mean 10.1ms -> 96.2ms; max 3185.7ms",
+          "source_file": "trace_jaeger-span_2025-06-17_01-00-00.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "hipstershop",
+          "signal": "rrt_max",
+          "score": 69.79,
+          "observation": "baseline mean 2.46e+05; incident mean 6.16e+05; range 1.248e+05..6.078e+06",
+          "source_file": "pod_ns_hipstershop_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend",
+          "signal": "rrt_max",
+          "score": 69.79,
+          "observation": "baseline mean 2.46e+05; incident mean 6.16e+05; range 1.248e+05..6.078e+06",
+          "source_file": "service_frontend_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-0",
+          "signal": "rrt_max",
+          "score": 68.965,
+          "observation": "baseline mean 2.048e+05; incident mean 5.92e+05; range 1.202e+05..6.078e+06",
+          "source_file": "pod_frontend-0_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-1",
+          "signal": "error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 5.895; range 0..14",
+          "source_file": "pod_frontend-1_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-0",
+          "signal": "server_error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 4.105; range 0..12",
+          "source_file": "pod_frontend-0_2025-06-17.parquet"
+        }
+      ],
+      "latency_ms": 38
+    },
+    {
+      "uuid": "c0cdda5e-314",
+      "role": "validation",
+      "window_start": "2025-06-16T19:10:06Z",
+      "window_end": "2025-06-16T19:20:06Z",
+      "fault_type_top3": [
+        "network loss",
+        "erroneous code",
+        "pod failure"
+      ],
+      "entity_top3": [
+        "adservice-1",
+        "adservice"
+      ],
+      "source": null,
+      "destination": null,
+      "confidence": 0.4462,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "metric",
+          "entity": "adservice-1",
+          "signal": "client_error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 1.6; range 0..12",
+          "source_file": "pod_adservice-1_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "adservice-1",
+          "signal": "error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 1.6; range 0..12",
+          "source_file": "pod_adservice-1_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "adservice",
+          "signal": "client_error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 1.6; range 0..12",
+          "source_file": "service_adservice_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "adservice",
+          "signal": "error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 1.6; range 0..12",
+          "source_file": "service_adservice_2025-06-17.parquet"
+        }
+      ],
+      "latency_ms": 42
+    },
+    {
+      "uuid": "a482d876-315",
+      "role": "validation",
+      "window_start": "2025-06-16T20:10:10Z",
+      "window_end": "2025-06-16T20:34:10Z",
+      "fault_type_top3": [
+        "memory stress",
+        "cpu stress",
+        "network delay"
+      ],
+      "entity_top3": [
+        "shippingservice-0",
+        "shippingservice-1",
+        "shippingservice-2"
+      ],
+      "source": null,
+      "destination": null,
+      "confidence": 0.5971,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "metric",
+          "entity": "shippingservice-0",
+          "signal": "pod_processes",
+          "score": 100.0,
+          "observation": "baseline mean 1; incident mean 7.621; range 1..9",
+          "source_file": "infra_pod_pod_processes_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "shippingservice-1",
+          "signal": "pod_processes",
+          "score": 100.0,
+          "observation": "baseline mean 1; incident mean 7.621; range 1..9",
+          "source_file": "infra_pod_pod_processes_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "shippingservice-2",
+          "signal": "pod_cpu_usage",
+          "score": 100.0,
+          "observation": "baseline mean 0; incident mean 0.331; range 0..0.4",
+          "source_file": "infra_pod_pod_cpu_usage_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "shippingservice-2",
+          "signal": "pod_processes",
+          "score": 100.0,
+          "observation": "baseline mean 1; incident mean 7.621; range 1..9",
+          "source_file": "infra_pod_pod_processes_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "shippingservice-0",
+          "signal": "pod_cpu_usage",
+          "score": 100.0,
+          "observation": "baseline mean 0; incident mean 0.331; range 0..0.4",
+          "source_file": "infra_pod_pod_cpu_usage_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "shippingservice-1",
+          "signal": "pod_cpu_usage",
+          "score": 100.0,
+          "observation": "baseline mean 0; incident mean 0.331; range 0..0.4",
+          "source_file": "infra_pod_pod_cpu_usage_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "shippingservice-1",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 1021; incident mean 1.321e+04; range 919.4..2.036e+04",
+          "source_file": "pod_shippingservice-1_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "shippingservice-2",
+          "signal": "rrt",
+          "score": 67.395,
+          "observation": "baseline mean 1087; incident mean 6264; range 788.7..2.483e+04",
+          "source_file": "pod_shippingservice-2_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "cartservice-0",
+          "signal": "error_ratio",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 1.831; range 0..30",
+          "source_file": "pod_cartservice-0_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "shippingservice",
+          "signal": "rrt",
+          "score": 64.272,
+          "observation": "baseline mean 1069; incident mean 1.159e+04; range 962.3..1.802e+04",
+          "source_file": "service_shippingservice_2025-06-17.parquet"
+        }
+      ],
+      "latency_ms": 32
+    },
+    {
+      "uuid": "3260fa48-316",
+      "role": "validation",
+      "window_start": "2025-06-16T21:10:11Z",
+      "window_end": "2025-06-16T21:29:11Z",
+      "fault_type_top3": [
+        "network delay",
+        "network loss",
+        "erroneous code"
+      ],
+      "entity_top3": [
+        "hipstershop",
+        "productcatalogservice-0",
+        "frontend-0"
+      ],
+      "source": null,
+      "destination": null,
+      "confidence": 0.4708,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "metric",
+          "entity": "productcatalogservice-0",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 7918; incident mean 8.108e+05; range 7670..1.676e+06",
+          "source_file": "pod_productcatalogservice-0_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "productcatalogservice-0",
+          "signal": "rrt_max",
+          "score": 70.0,
+          "observation": "baseline mean 3.482e+04; incident mean 2.109e+07; range 2.61e+04..3.203e+07",
+          "source_file": "pod_productcatalogservice-0_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-1",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 1.236e+04; incident mean 6.014e+05; range 1.142e+04..1.926e+06",
+          "source_file": "pod_frontend-1_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-1",
+          "signal": "rrt_max",
+          "score": 70.0,
+          "observation": "baseline mean 2.144e+05; incident mean 2.751e+07; range 2.476e+05..6e+07",
+          "source_file": "pod_frontend-1_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-2",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 1.249e+04; incident mean 1.364e+06; range 2791..9.248e+06",
+          "source_file": "pod_frontend-2_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-2",
+          "signal": "rrt_max",
+          "score": 70.0,
+          "observation": "baseline mean 2.105e+05; incident mean 3.024e+07; range 7530..6e+07",
+          "source_file": "pod_frontend-2_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "hipstershop",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 7525; incident mean 3.22e+05; range 7267..8.254e+05",
+          "source_file": "pod_ns_hipstershop_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "hipstershop",
+          "signal": "rrt_max",
+          "score": 70.0,
+          "observation": "baseline mean 2.608e+05; incident mean 3.982e+07; range 2.476e+05..6e+07",
+          "source_file": "pod_ns_hipstershop_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-0",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 1.238e+04; incident mean 6.541e+05; range 1.131e+04..5.129e+06",
+          "source_file": "pod_frontend-0_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-0",
+          "signal": "rrt_max",
+          "score": 70.0,
+          "observation": "baseline mean 1.951e+05; incident mean 2.456e+07; range 1.368e+05..6e+07",
+          "source_file": "pod_frontend-0_2025-06-17.parquet"
+        }
+      ],
+      "latency_ms": 29
+    },
+    {
+      "uuid": "332adc3a-317",
+      "role": "validation",
+      "window_start": "2025-06-16T22:10:12Z",
+      "window_end": "2025-06-16T22:15:12Z",
+      "fault_type_top3": [
+        "network delay"
+      ],
+      "entity_top3": [
+        "paymentservice",
+        "paymentservice-0"
+      ],
+      "source": null,
+      "destination": null,
+      "confidence": 0.4309,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "metric",
+          "entity": "paymentservice",
+          "signal": "rrt_max",
+          "score": 62.0,
+          "observation": "baseline mean 2535; incident mean 5829; range 1475..2.987e+04",
+          "source_file": "service_paymentservice_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "paymentservice-0",
+          "signal": "rrt_max",
+          "score": 62.0,
+          "observation": "baseline mean 2327; incident mean 4414; range 943..2.987e+04",
+          "source_file": "pod_paymentservice-0_2025-06-17.parquet"
+        }
+      ],
+      "latency_ms": 30
+    },
+    {
+      "uuid": "18b8cf77-318",
+      "role": "validation",
+      "window_start": "2025-06-16T23:10:14Z",
+      "window_end": "2025-06-16T23:26:14Z",
+      "fault_type_top3": [
+        "network delay",
+        "network loss",
+        "erroneous code"
+      ],
+      "entity_top3": [
+        "checkoutservice-0",
+        "hipstershop",
+        "checkoutservice"
+      ],
+      "source": null,
+      "destination": null,
+      "confidence": 0.4708,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "metric",
+          "entity": "checkoutservice-0",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 6726; incident mean 1.549e+05; range 5724..4.008e+05",
+          "source_file": "pod_checkoutservice-0_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "hipstershop",
+          "signal": "rrt_max",
+          "score": 70.0,
+          "observation": "baseline mean 2.552e+05; incident mean 2.211e+06; range 2.242e+05..6.107e+06",
+          "source_file": "pod_ns_hipstershop_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend",
+          "signal": "rrt_max",
+          "score": 70.0,
+          "observation": "baseline mean 2.552e+05; incident mean 2.211e+06; range 2.242e+05..6.107e+06",
+          "source_file": "service_frontend_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "checkoutservice",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 6432; incident mean 1.788e+05; range 5754..6.804e+05",
+          "source_file": "service_checkoutservice_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "checkoutservice",
+          "signal": "rrt_max",
+          "score": 70.0,
+          "observation": "baseline mean 1.791e+05; incident mean 2.187e+06; range 1.421e+05..6.103e+06",
+          "source_file": "service_checkoutservice_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "checkoutservice-2",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 5429; incident mean 2.07e+05; range 1275..8.613e+05",
+          "source_file": "pod_checkoutservice-2_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "checkoutservice-2",
+          "signal": "rrt_max",
+          "score": 65.584,
+          "observation": "baseline mean 1.244e+05; incident mean 1.842e+06; range 1365..6.103e+06",
+          "source_file": "pod_checkoutservice-2_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-0",
+          "signal": "error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 2.19; range 0..6",
+          "source_file": "pod_frontend-0_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "checkoutservice-0",
+          "signal": "error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 79.24; range 0..192",
+          "source_file": "pod_checkoutservice-0_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "shippingservice-2",
+          "signal": "client_error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 1.2; range 0..12",
+          "source_file": "pod_shippingservice-2_2025-06-17.parquet"
+        }
+      ],
+      "latency_ms": 31
+    },
+    {
+      "uuid": "a42d2eb4-319",
+      "role": "validation",
+      "window_start": "2025-06-17T00:10:15Z",
+      "window_end": "2025-06-17T00:32:15Z",
+      "fault_type_top3": [
+        "insufficient evidence"
+      ],
+      "entity_top3": [
+        "unknown"
+      ],
+      "source": null,
+      "destination": null,
+      "confidence": 0.0,
+      "abstained": true,
+      "evidence": [],
+      "latency_ms": 30
+    },
+    {
+      "uuid": "fc3737af-320",
+      "role": "validation",
+      "window_start": "2025-06-17T01:10:16Z",
+      "window_end": "2025-06-17T01:23:16Z",
+      "fault_type_top3": [
+        "memory stress",
+        "network delay"
+      ],
+      "entity_top3": [
+        "productcatalogservice-2",
+        "productcatalogservice-0",
+        "productcatalogservice-1"
+      ],
+      "source": null,
+      "destination": null,
+      "confidence": 0.5079,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "metric",
+          "entity": "productcatalogservice-2",
+          "signal": "pod_processes",
+          "score": 78.0,
+          "observation": "baseline mean 1; incident mean 1.278; range 1..2",
+          "source_file": "infra_pod_pod_processes_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "productcatalogservice-0",
+          "signal": "pod_processes",
+          "score": 78.0,
+          "observation": "baseline mean 1; incident mean 1.278; range 1..2",
+          "source_file": "infra_pod_pod_processes_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "productcatalogservice-1",
+          "signal": "pod_processes",
+          "score": 78.0,
+          "observation": "baseline mean 1; incident mean 1.222; range 1..2",
+          "source_file": "infra_pod_pod_processes_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "productcatalogservice-2",
+          "signal": "rrt",
+          "score": 62.0,
+          "observation": "baseline mean 1251; incident mean 6964; range 5070..9387",
+          "source_file": "pod_productcatalogservice-2_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "shippingservice-0",
+          "signal": "rrt_max",
+          "score": 62.0,
+          "observation": "baseline mean 1851; incident mean 3344; range 1251..1.469e+04",
+          "source_file": "pod_shippingservice-0_2025-06-17.parquet"
+        }
+      ],
+      "latency_ms": 30
+    },
+    {
+      "uuid": "bbfefe10-321",
+      "role": "validation",
+      "window_start": "2025-06-17T02:10:17Z",
+      "window_end": "2025-06-17T02:33:17Z",
+      "fault_type_top3": [
+        "insufficient evidence"
+      ],
+      "entity_top3": [
+        "unknown"
+      ],
+      "source": null,
+      "destination": null,
+      "confidence": 0.0,
+      "abstained": true,
+      "evidence": [],
+      "latency_ms": 35
+    },
+    {
+      "uuid": "e539dea4-322",
+      "role": "validation",
+      "window_start": "2025-06-17T03:10:20Z",
+      "window_end": "2025-06-17T03:35:20Z",
+      "fault_type_top3": [
+        "network loss",
+        "cpu stress",
+        "memory stress"
+      ],
+      "entity_top3": [
+        "frontend",
+        "checkoutservice",
+        "frontend-2"
+      ],
+      "source": "frontend",
+      "destination": "checkoutservice",
+      "confidence": 0.7219,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "log",
+          "entity": "frontend-2",
+          "signal": "network availability error",
+          "score": 40.079,
+          "observation": "1 matching log records in the incident window",
+          "source_file": "log_filebeat-server_2025-06-17_11-00-00.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "checkoutservice-2",
+          "signal": "pod_cpu_usage",
+          "score": 82.0,
+          "observation": "baseline mean 0.004348; incident mean 0.1676; range 0.01..0.2",
+          "source_file": "infra_pod_pod_cpu_usage_2025-06-17.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "frontend",
+          "signal": "frontend -> checkoutservice latency",
+          "score": 110.0,
+          "observation": "mean 122.0ms -> 43451.2ms; max 60010.7ms; spans 330",
+          "source_file": "trace_jaeger-span_2025-06-17_11-00-00.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "checkoutservice",
+          "signal": "frontend -> checkoutservice latency",
+          "score": 105.6,
+          "observation": "mean 122.0ms -> 43451.2ms; max 60010.7ms",
+          "source_file": "trace_jaeger-span_2025-06-17_11-00-00.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "checkoutservice-1",
+          "signal": "pod_processes",
+          "score": 78.0,
+          "observation": "baseline mean 1; incident mean 1.333; range 1..2",
+          "source_file": "infra_pod_pod_processes_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "checkoutservice-0",
+          "signal": "pod_processes",
+          "score": 78.0,
+          "observation": "baseline mean 1; incident mean 1.333; range 1..2",
+          "source_file": "infra_pod_pod_processes_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-2",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 1.201e+04; incident mean 1.7e+05; range 1.141e+04..4.602e+05",
+          "source_file": "pod_frontend-2_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-2",
+          "signal": "rrt_max",
+          "score": 70.0,
+          "observation": "baseline mean 2.304e+05; incident mean 5.004e+07; range 1.553e+05..6.001e+07",
+          "source_file": "pod_frontend-2_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-1",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 1.149e+04; incident mean 1.716e+05; range 1.07e+04..6.16e+05",
+          "source_file": "pod_frontend-1_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-1",
+          "signal": "rrt_max",
+          "score": 70.0,
+          "observation": "baseline mean 2.582e+05; incident mean 4.605e+07; range 1.225e+05..6.001e+07",
+          "source_file": "pod_frontend-1_2025-06-17.parquet"
+        }
+      ],
+      "latency_ms": 40
+    },
+    {
+      "uuid": "83524cef-323",
+      "role": "validation",
+      "window_start": "2025-06-17T04:10:20Z",
+      "window_end": "2025-06-17T04:15:20Z",
+      "fault_type_top3": [
+        "network delay"
+      ],
+      "entity_top3": [
+        "shippingservice-2"
+      ],
+      "source": null,
+      "destination": null,
+      "confidence": 0.4309,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "metric",
+          "entity": "shippingservice-2",
+          "signal": "rrt_max",
+          "score": 62.0,
+          "observation": "baseline mean 5027; incident mean 9358; range 1413..3.276e+04",
+          "source_file": "pod_shippingservice-2_2025-06-17.parquet"
+        }
+      ],
+      "latency_ms": 45
+    },
+    {
+      "uuid": "ed40c5a3-324",
+      "role": "validation",
+      "window_start": "2025-06-17T05:10:21Z",
+      "window_end": "2025-06-17T05:21:21Z",
+      "fault_type_top3": [
+        "network delay"
+      ],
+      "entity_top3": [
+        "frontend",
+        "recommendationservice",
+        "recommendationservice-2"
+      ],
+      "source": "frontend",
+      "destination": "recommendationservice",
+      "confidence": 0.7056,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "metric",
+          "entity": "recommendationservice-2",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 4266; incident mean 1.216e+05; range 4232..1.872e+05",
+          "source_file": "pod_recommendationservice-2_2025-06-17.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "frontend",
+          "signal": "frontend -> recommendationservice latency",
+          "score": 110.0,
+          "observation": "mean 7.4ms -> 360.2ms; max 1632.9ms; spans 4403",
+          "source_file": "trace_jaeger-span_2025-06-17_13-00-00.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "recommendationservice",
+          "signal": "frontend -> recommendationservice latency",
+          "score": 105.6,
+          "observation": "mean 7.4ms -> 360.2ms; max 1632.9ms",
+          "source_file": "trace_jaeger-span_2025-06-17_13-00-00.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "recommendationservice",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 4266; incident mean 1.216e+05; range 4232..1.872e+05",
+          "source_file": "service_recommendationservice_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-1",
+          "signal": "rrt",
+          "score": 65.86,
+          "observation": "baseline mean 1.149e+04; incident mean 5.269e+04; range 1.068e+04..7.957e+04",
+          "source_file": "pod_frontend-1_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend",
+          "signal": "rrt",
+          "score": 65.078,
+          "observation": "baseline mean 1.204e+04; incident mean 5.297e+04; range 1.136e+04..7.955e+04",
+          "source_file": "service_frontend_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-2",
+          "signal": "rrt",
+          "score": 63.958,
+          "observation": "baseline mean 1.208e+04; incident mean 5.302e+04; range 1.153e+04..8.13e+04",
+          "source_file": "pod_frontend-2_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "hipstershop",
+          "signal": "rrt",
+          "score": 63.52,
+          "observation": "baseline mean 7336; incident mean 2.635e+04; range 7064..3.82e+04",
+          "source_file": "pod_ns_hipstershop_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "recommendationservice-2",
+          "signal": "rrt_max",
+          "score": 62.0,
+          "observation": "baseline mean 2.387e+04; incident mean 5.269e+05; range 1.453e+04..1.632e+06",
+          "source_file": "pod_recommendationservice-2_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "recommendationservice",
+          "signal": "rrt_max",
+          "score": 62.0,
+          "observation": "baseline mean 2.387e+04; incident mean 5.269e+05; range 1.453e+04..1.632e+06",
+          "source_file": "service_recommendationservice_2025-06-17.parquet"
+        }
+      ],
+      "latency_ms": 38
+    },
+    {
+      "uuid": "55b23e04-325",
+      "role": "validation",
+      "window_start": "2025-06-17T06:10:38Z",
+      "window_end": "2025-06-17T06:28:38Z",
+      "fault_type_top3": [
+        "network delay",
+        "network loss",
+        "erroneous code"
+      ],
+      "entity_top3": [
+        "checkoutservice",
+        "frontend",
+        "productcatalogservice"
+      ],
+      "source": "checkoutservice",
+      "destination": "productcatalogservice",
+      "confidence": 0.7056,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "metric",
+          "entity": "checkoutservice",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 5974; incident mean 1.596e+05; range 5666..2.706e+05",
+          "source_file": "service_checkoutservice_2025-06-17.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "checkoutservice",
+          "signal": "checkoutservice -> productcatalogservice latency",
+          "score": 110.0,
+          "observation": "mean 14.6ms -> 861.2ms; max 3204.1ms; spans 448",
+          "source_file": "trace_jaeger-span_2025-06-17_13-00-00.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "productcatalogservice",
+          "signal": "checkoutservice -> productcatalogservice latency",
+          "score": 105.6,
+          "observation": "mean 14.6ms -> 861.2ms; max 3204.1ms",
+          "source_file": "trace_jaeger-span_2025-06-17_13-00-00.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "frontend",
+          "signal": "frontend -> checkoutservice latency",
+          "score": 95.993,
+          "observation": "mean 125.8ms -> 1108.1ms; max 3421.3ms; spans 358",
+          "source_file": "trace_jaeger-span_2025-06-17_13-00-00.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "checkoutservice",
+          "signal": "frontend -> checkoutservice latency",
+          "score": 92.154,
+          "observation": "mean 125.8ms -> 1108.1ms; max 3421.3ms",
+          "source_file": "trace_jaeger-span_2025-06-17_13-00-00.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "checkoutservice-2",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 5974; incident mean 1.596e+05; range 5666..2.706e+05",
+          "source_file": "pod_checkoutservice-2_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-1",
+          "signal": "server_error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 7.652; range 0..14",
+          "source_file": "pod_frontend-1_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "shippingservice-0",
+          "signal": "error_ratio",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 3.636; range 0..40",
+          "source_file": "pod_shippingservice-0_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "checkoutservice",
+          "signal": "error_ratio",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 51.41; range 0..71.64",
+          "source_file": "service_checkoutservice_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "checkoutservice-2",
+          "signal": "server_error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 256.3; range 0..448",
+          "source_file": "pod_checkoutservice-2_2025-06-17.parquet"
+        }
+      ],
+      "latency_ms": 47
+    },
+    {
+      "uuid": "53ab3ccb-326",
+      "role": "validation",
+      "window_start": "2025-06-17T07:10:39Z",
+      "window_end": "2025-06-17T07:30:39Z",
+      "fault_type_top3": [
+        "network loss",
+        "erroneous code",
+        "pod failure"
+      ],
+      "entity_top3": [
+        "frontend-1",
+        "shippingservice-2",
+        "hipstershop"
+      ],
+      "source": null,
+      "destination": null,
+      "confidence": 0.5144,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "log",
+          "entity": "frontend-1",
+          "signal": "network availability error",
+          "score": 41.296,
+          "observation": "2 matching log records in the incident window",
+          "source_file": "log_filebeat-server_2025-06-17_15-00-00.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "shippingservice-2",
+          "signal": "error_ratio",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 5.455; range 0..60",
+          "source_file": "pod_shippingservice-2_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "hipstershop",
+          "signal": "error_ratio",
+          "score": 65.0,
+          "observation": "baseline mean 0.0008696; incident mean 2.181; range 0..3.95",
+          "source_file": "pod_ns_hipstershop_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-0",
+          "signal": "error_ratio",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 3.026; range 0..15.13",
+          "source_file": "pod_frontend-0_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-1",
+          "signal": "client_error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 110.4; range 0..180",
+          "source_file": "pod_frontend-1_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-1",
+          "signal": "error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 110.4; range 0..180",
+          "source_file": "pod_frontend-1_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "productcatalogservice-2",
+          "signal": "client_error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 1; range 0..12",
+          "source_file": "pod_productcatalogservice-2_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "productcatalogservice-2",
+          "signal": "error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 1; range 0..12",
+          "source_file": "pod_productcatalogservice-2_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend",
+          "signal": "error_ratio",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 7.384; range 0..40.45",
+          "source_file": "service_frontend_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "shippingservice-1",
+          "signal": "client_error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 1.091; range 0..12",
+          "source_file": "pod_shippingservice-1_2025-06-17.parquet"
+        }
+      ],
+      "latency_ms": 45
+    },
+    {
+      "uuid": "4fd42adb-327",
+      "role": "validation",
+      "window_start": "2025-06-17T08:10:39Z",
+      "window_end": "2025-06-17T08:22:39Z",
+      "fault_type_top3": [
+        "target port misconfig",
+        "network loss",
+        "memory stress"
+      ],
+      "entity_top3": [
+        "frontend-0",
+        "frontend-2",
+        "frontend-1"
+      ],
+      "source": null,
+      "destination": null,
+      "confidence": 0.5863,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "log",
+          "entity": "frontend-0",
+          "signal": "connection refused / port mismatch",
+          "score": 97.079,
+          "observation": "1 matching log records in the incident window",
+          "source_file": "log_filebeat-server_2025-06-17_16-00-00.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "adservice-1",
+          "signal": "pod_processes",
+          "score": 78.0,
+          "observation": "baseline mean 1; incident mean 1.294; range 1..2",
+          "source_file": "infra_pod_pod_processes_2025-06-17.parquet"
+        },
+        {
+          "modality": "log",
+          "entity": "frontend-2",
+          "signal": "connection refused / port mismatch",
+          "score": 97.079,
+          "observation": "1 matching log records in the incident window",
+          "source_file": "log_filebeat-server_2025-06-17_16-00-00.parquet"
+        },
+        {
+          "modality": "log",
+          "entity": "frontend-1",
+          "signal": "connection refused / port mismatch",
+          "score": 97.079,
+          "observation": "1 matching log records in the incident window",
+          "source_file": "log_filebeat-server_2025-06-17_16-00-00.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "adservice-2",
+          "signal": "pod_processes",
+          "score": 78.0,
+          "observation": "baseline mean 1; incident mean 1.294; range 1..2",
+          "source_file": "infra_pod_pod_processes_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "adservice-0",
+          "signal": "pod_processes",
+          "score": 78.0,
+          "observation": "baseline mean 1; incident mean 1.294; range 1..2",
+          "source_file": "infra_pod_pod_processes_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "adservice-0",
+          "signal": "error_ratio",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 1.681; range 0..28.57",
+          "source_file": "pod_adservice-0_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "adservice-2",
+          "signal": "error_ratio",
+          "score": 65.0,
+          "observation": "baseline mean 0.07565; incident mean 1.961; range 0..33.33",
+          "source_file": "pod_adservice-2_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "adservice",
+          "signal": "error_ratio",
+          "score": 65.0,
+          "observation": "baseline mean 0.06957; incident mean 2.033; range 0..30.77",
+          "source_file": "service_adservice_2025-06-17.parquet"
+        },
+        {
+          "modality": "log",
+          "entity": "frontend-0",
+          "signal": "network availability error",
+          "score": 40.079,
+          "observation": "1 matching log records in the incident window",
+          "source_file": "log_filebeat-server_2025-06-17_16-00-00.parquet"
+        }
+      ],
+      "latency_ms": 45
+    },
+    {
+      "uuid": "d44478e6-328",
+      "role": "validation",
+      "window_start": "2025-06-17T09:10:41Z",
+      "window_end": "2025-06-17T09:35:41Z",
+      "fault_type_top3": [
+        "memory stress",
+        "network loss",
+        "erroneous code"
+      ],
+      "entity_top3": [
+        "adservice-0",
+        "adservice-2"
+      ],
+      "source": null,
+      "destination": null,
+      "confidence": 0.5079,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "metric",
+          "entity": "adservice-0",
+          "signal": "pod_processes",
+          "score": 78.0,
+          "observation": "baseline mean 1; incident mean 1.172; range 1..2",
+          "source_file": "infra_pod_pod_processes_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "adservice-2",
+          "signal": "error_ratio",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 1.379; range 0..40",
+          "source_file": "pod_adservice-2_2025-06-17.parquet"
+        }
+      ],
+      "latency_ms": 42
+    },
+    {
+      "uuid": "70d3b8b0-329",
+      "role": "validation",
+      "window_start": "2025-06-17T10:10:43Z",
+      "window_end": "2025-06-17T10:28:43Z",
+      "fault_type_top3": [
+        "memory stress",
+        "jvm latency",
+        "network delay"
+      ],
+      "entity_top3": [
+        "adservice-0",
+        "adservice-2",
+        "frontend-2"
+      ],
+      "source": null,
+      "destination": null,
+      "confidence": 0.5079,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "metric",
+          "entity": "adservice-0",
+          "signal": "pod_processes",
+          "score": 78.0,
+          "observation": "baseline mean 1; incident mean 1.217; range 1..2",
+          "source_file": "infra_pod_pod_processes_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "adservice-2",
+          "signal": "rrt_max",
+          "score": 75.0,
+          "observation": "baseline mean 3579; incident mean 2.772e+04; range 2429..4.285e+04",
+          "source_file": "pod_adservice-2_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "adservice-2",
+          "signal": "rrt",
+          "score": 75.0,
+          "observation": "baseline mean 1595; incident mean 3886; range 1342..5673",
+          "source_file": "pod_adservice-2_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-2",
+          "signal": "rrt_max",
+          "score": 70.0,
+          "observation": "baseline mean 2.882e+05; incident mean 1.151e+06; range 1.905e+05..2.007e+07",
+          "source_file": "pod_frontend-2_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "checkoutservice",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 6615; incident mean 1.237e+04; range 5519..1.406e+05",
+          "source_file": "service_checkoutservice_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "checkoutservice",
+          "signal": "rrt_max",
+          "score": 70.0,
+          "observation": "baseline mean 2.272e+05; incident mean 1.103e+06; range 1.538e+05..2.012e+07",
+          "source_file": "service_checkoutservice_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "recommendationservice",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 4272; incident mean 1.174e+04; range 3844..1.774e+05",
+          "source_file": "service_recommendationservice_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "recommendationservice",
+          "signal": "rrt_max",
+          "score": 70.0,
+          "observation": "baseline mean 2.183e+04; incident mean 1.727e+06; range 1.578e+04..3.924e+07",
+          "source_file": "service_recommendationservice_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "hipstershop",
+          "signal": "rrt_max",
+          "score": 70.0,
+          "observation": "baseline mean 2.983e+05; incident mean 2.005e+06; range 2.28e+05..3.935e+07",
+          "source_file": "pod_ns_hipstershop_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "checkoutservice-1",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 6615; incident mean 1.237e+04; range 5519..1.406e+05",
+          "source_file": "pod_checkoutservice-1_2025-06-17.parquet"
+        }
+      ],
+      "latency_ms": 42
+    },
+    {
+      "uuid": "c3f4fde9-330",
+      "role": "validation",
+      "window_start": "2025-06-17T11:10:44Z",
+      "window_end": "2025-06-17T11:33:44Z",
+      "fault_type_top3": [
+        "network delay"
+      ],
+      "entity_top3": [
+        "checkoutservice",
+        "emailservice",
+        "frontend"
+      ],
+      "source": "checkoutservice",
+      "destination": "emailservice",
+      "confidence": 0.7056,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "metric",
+          "entity": "emailservice-0",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 1828; incident mean 9.291e+04; range 1736..1.485e+05",
+          "source_file": "pod_emailservice-0_2025-06-17.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "checkoutservice",
+          "signal": "checkoutservice -> emailservice latency",
+          "score": 110.0,
+          "observation": "mean 18.5ms -> 1489.9ms; max 2978.7ms; spans 542",
+          "source_file": "trace_jaeger-span_2025-06-17_19-00-00.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "emailservice",
+          "signal": "checkoutservice -> emailservice latency",
+          "score": 105.6,
+          "observation": "mean 18.5ms -> 1489.9ms; max 2978.7ms",
+          "source_file": "trace_jaeger-span_2025-06-17_19-00-00.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "frontend",
+          "signal": "frontend -> checkoutservice latency",
+          "score": 104.541,
+          "observation": "mean 140.2ms -> 1611.9ms; max 3100.8ms; spans 540",
+          "source_file": "trace_jaeger-span_2025-06-17_19-00-00.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "checkoutservice",
+          "signal": "frontend -> checkoutservice latency",
+          "score": 100.359,
+          "observation": "mean 140.2ms -> 1611.9ms; max 3100.8ms",
+          "source_file": "trace_jaeger-span_2025-06-17_19-00-00.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "emailservice-0",
+          "signal": "rrt_max",
+          "score": 70.0,
+          "observation": "baseline mean 5804; incident mean 5.502e+05; range 3883..6.863e+05",
+          "source_file": "pod_emailservice-0_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "emailservice-2",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 1744; incident mean 9.079e+04; range 1545..1.265e+05",
+          "source_file": "pod_emailservice-2_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "emailservice",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 1779; incident mean 9.169e+04; range 1795..1.284e+05",
+          "source_file": "service_emailservice_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "emailservice-1",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 1775; incident mean 9.274e+04; range 1514..1.328e+05",
+          "source_file": "pod_emailservice-1_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "emailservice-1",
+          "signal": "rrt_max",
+          "score": 70.0,
+          "observation": "baseline mean 5940; incident mean 5.832e+05; range 3279..1.571e+06",
+          "source_file": "pod_emailservice-1_2025-06-17.parquet"
+        }
+      ],
+      "latency_ms": 44
+    },
+    {
+      "uuid": "76222cb2-331",
+      "role": "validation",
+      "window_start": "2025-06-17T12:10:46Z",
+      "window_end": "2025-06-17T12:34:46Z",
+      "fault_type_top3": [
+        "network loss",
+        "network delay",
+        "erroneous code"
+      ],
+      "entity_top3": [
+        "frontend",
+        "checkoutservice",
+        "currencyservice"
+      ],
+      "source": "frontend",
+      "destination": "checkoutservice",
+      "confidence": 0.7219,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "log",
+          "entity": "frontend-1",
+          "signal": "network availability error",
+          "score": 40.079,
+          "observation": "1 matching log records in the incident window",
+          "source_file": "log_filebeat-server_2025-06-17_20-00-00.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-1",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 1.156e+04; incident mean 9.135e+05; range 1.143e+04..2.519e+06",
+          "source_file": "pod_frontend-1_2025-06-17.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "frontend",
+          "signal": "frontend -> checkoutservice latency",
+          "score": 110.0,
+          "observation": "mean 142.1ms -> 7815.2ms; max 60000.9ms; spans 216",
+          "source_file": "trace_jaeger-span_2025-06-17_19-00-00.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "checkoutservice",
+          "signal": "checkoutservice -> currencyservice latency",
+          "score": 110.0,
+          "observation": "mean 10.0ms -> 35871.6ms; max 1367829.8ms; spans 582",
+          "source_file": "trace_jaeger-span_2025-06-17_19-00-00.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "frontend",
+          "signal": "frontend -> currencyservice latency",
+          "score": 110.0,
+          "observation": "mean 2.4ms -> 1848.6ms; max 59993.5ms; spans 17151",
+          "source_file": "trace_jaeger-span_2025-06-17_19-00-00.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "checkoutservice",
+          "signal": "frontend -> checkoutservice latency",
+          "score": 105.6,
+          "observation": "mean 142.1ms -> 7815.2ms; max 60000.9ms",
+          "source_file": "trace_jaeger-span_2025-06-17_19-00-00.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "currencyservice",
+          "signal": "checkoutservice -> currencyservice latency",
+          "score": 105.6,
+          "observation": "mean 10.0ms -> 35871.6ms; max 1367829.8ms",
+          "source_file": "trace_jaeger-span_2025-06-17_19-00-00.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "currencyservice",
+          "signal": "frontend -> currencyservice latency",
+          "score": 105.6,
+          "observation": "mean 2.4ms -> 1848.6ms; max 59993.5ms",
+          "source_file": "trace_jaeger-span_2025-06-17_19-00-00.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-1",
+          "signal": "rrt_max",
+          "score": 70.0,
+          "observation": "baseline mean 2.569e+05; incident mean 4.97e+07; range 1.998e+05..6.001e+07",
+          "source_file": "pod_frontend-1_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "checkoutservice",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 6697; incident mean 2.283e+04; range 2872..4.831e+05",
+          "source_file": "service_checkoutservice_2025-06-17.parquet"
+        }
+      ],
+      "latency_ms": 45
+    },
+    {
+      "uuid": "68bbf4fd-332",
+      "role": "validation",
+      "window_start": "2025-06-17T13:10:47Z",
+      "window_end": "2025-06-17T13:27:47Z",
+      "fault_type_top3": [
+        "network delay"
+      ],
+      "entity_top3": [
+        "paymentservice-2"
+      ],
+      "source": null,
+      "destination": null,
+      "confidence": 0.4309,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "metric",
+          "entity": "paymentservice-2",
+          "signal": "rrt_max",
+          "score": 62.0,
+          "observation": "baseline mean 2705; incident mean 4950; range 1359..6.287e+04",
+          "source_file": "pod_paymentservice-2_2025-06-17.parquet"
+        }
+      ],
+      "latency_ms": 40
+    },
+    {
+      "uuid": "3d284cf0-333",
+      "role": "validation",
+      "window_start": "2025-06-17T14:10:48Z",
+      "window_end": "2025-06-17T14:20:48Z",
+      "fault_type_top3": [
+        "network loss",
+        "erroneous code",
+        "pod failure"
+      ],
+      "entity_top3": [
+        "hipstershop"
+      ],
+      "source": null,
+      "destination": null,
+      "confidence": 0.3494,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "metric",
+          "entity": "hipstershop",
+          "signal": "client_error",
+          "score": 47.284,
+          "observation": "baseline mean 0.2609; incident mean 1.2; range 0..12",
+          "source_file": "pod_ns_hipstershop_2025-06-17.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "hipstershop",
+          "signal": "error",
+          "score": 47.284,
+          "observation": "baseline mean 0.2609; incident mean 1.2; range 0..12",
+          "source_file": "pod_ns_hipstershop_2025-06-17.parquet"
+        }
+      ],
+      "latency_ms": 40
+    },
+    {
+      "uuid": "985de575-334",
+      "role": "validation",
+      "window_start": "2025-06-17T15:10:50Z",
+      "window_end": "2025-06-17T15:23:50Z",
+      "fault_type_top3": [
+        "insufficient evidence"
+      ],
+      "entity_top3": [
+        "unknown"
+      ],
+      "source": null,
+      "destination": null,
+      "confidence": 0.0,
+      "abstained": true,
+      "evidence": [],
+      "latency_ms": 41
+    },
+    {
+      "uuid": "e1562aa2-335",
+      "role": "holdout",
+      "window_start": "2025-06-17T16:10:02Z",
+      "window_end": "2025-06-17T16:29:02Z",
+      "fault_type_top3": [
+        "network loss",
+        "network delay",
+        "erroneous code"
+      ],
+      "entity_top3": [
+        "adservice-1",
+        "currencyservice",
+        "adservice"
+      ],
+      "source": null,
+      "destination": null,
+      "confidence": 0.4462,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "metric",
+          "entity": "adservice-1",
+          "signal": "client_error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 1.25; range 0..6",
+          "source_file": "pod_adservice-1_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "adservice-1",
+          "signal": "error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 1.25; range 0..6",
+          "source_file": "pod_adservice-1_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "currencyservice",
+          "signal": "rrt_max",
+          "score": 62.0,
+          "observation": "baseline mean 7311; incident mean 1.341e+04; range 4521..1.193e+05",
+          "source_file": "service_currencyservice_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "adservice",
+          "signal": "client_error",
+          "score": 32.143,
+          "observation": "baseline mean 0.4444; incident mean 1.25; range 0..6",
+          "source_file": "service_adservice_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "adservice",
+          "signal": "error",
+          "score": 32.143,
+          "observation": "baseline mean 0.4444; incident mean 1.25; range 0..6",
+          "source_file": "service_adservice_2025-06-18.parquet"
+        }
+      ],
+      "latency_ms": 36
+    },
+    {
+      "uuid": "8e7a3965-336",
+      "role": "holdout",
+      "window_start": "2025-06-17T17:10:03Z",
+      "window_end": "2025-06-17T17:15:03Z",
+      "fault_type_top3": [
+        "network loss",
+        "network delay",
+        "erroneous code"
+      ],
+      "entity_top3": [
+        "checkoutservice",
+        "productcatalogservice",
+        "currencyservice-2"
+      ],
+      "source": "checkoutservice",
+      "destination": "productcatalogservice",
+      "confidence": 0.5419,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "metric",
+          "entity": "currencyservice-2",
+          "signal": "rrt_max",
+          "score": 62.0,
+          "observation": "baseline mean 6556; incident mean 1.347e+04; range 4028..6.872e+04",
+          "source_file": "pod_currencyservice-2_2025-06-18.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "checkoutservice",
+          "signal": "checkoutservice -> productcatalogservice latency",
+          "score": 76.069,
+          "observation": "mean 14.6ms -> 129.0ms; max 12141.8ms; spans 106",
+          "source_file": "trace_jaeger-span_2025-06-18_01-00-00.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "productcatalogservice",
+          "signal": "checkoutservice -> productcatalogservice latency",
+          "score": 73.026,
+          "observation": "mean 14.6ms -> 129.0ms; max 12141.8ms",
+          "source_file": "trace_jaeger-span_2025-06-18_01-00-00.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "currencyservice",
+          "signal": "rrt_max",
+          "score": 62.0,
+          "observation": "baseline mean 7600; incident mean 1.544e+04; range 6887..6.872e+04",
+          "source_file": "service_currencyservice_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "adservice-1",
+          "signal": "error_ratio",
+          "score": 28.039,
+          "observation": "baseline mean 0.3687; incident mean 1.003; range 0..3.57",
+          "source_file": "pod_adservice-1_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "adservice",
+          "signal": "client_error",
+          "score": 27.407,
+          "observation": "baseline mean 1.304; incident mean 3.6; range 0..12",
+          "source_file": "service_adservice_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "adservice",
+          "signal": "error",
+          "score": 27.407,
+          "observation": "baseline mean 1.304; incident mean 3.6; range 0..12",
+          "source_file": "service_adservice_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "adservice-1",
+          "signal": "client_error",
+          "score": 27.407,
+          "observation": "baseline mean 1.304; incident mean 3.6; range 0..12",
+          "source_file": "pod_adservice-1_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "adservice-1",
+          "signal": "error",
+          "score": 27.407,
+          "observation": "baseline mean 1.304; incident mean 3.6; range 0..12",
+          "source_file": "pod_adservice-1_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "hipstershop",
+          "signal": "client_error",
+          "score": 25.155,
+          "observation": "baseline mean 1.565; incident mean 3.6; range 0..12",
+          "source_file": "pod_ns_hipstershop_2025-06-18.parquet"
+        }
+      ],
+      "latency_ms": 36
+    },
+    {
+      "uuid": "c3377c5c-337",
+      "role": "holdout",
+      "window_start": "2025-06-17T18:10:04Z",
+      "window_end": "2025-06-17T18:29:04Z",
+      "fault_type_top3": [
+        "network delay",
+        "network loss",
+        "erroneous code"
+      ],
+      "entity_top3": [
+        "frontend",
+        "adservice",
+        "frontend-2"
+      ],
+      "source": "frontend",
+      "destination": "adservice",
+      "confidence": 0.7056,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "metric",
+          "entity": "frontend-2",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 1.206e+04; incident mean 2.698e+05; range 1.006e+04..3.03e+06",
+          "source_file": "pod_frontend-2_2025-06-18.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "frontend",
+          "signal": "frontend -> adservice latency",
+          "score": 110.0,
+          "observation": "mean 5.8ms -> 407.0ms; max 507.0ms; spans 1805",
+          "source_file": "trace_jaeger-span_2025-06-18_02-00-00.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "adservice",
+          "signal": "frontend -> adservice latency",
+          "score": 105.6,
+          "observation": "mean 5.8ms -> 407.0ms; max 507.0ms",
+          "source_file": "trace_jaeger-span_2025-06-18_02-00-00.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-2",
+          "signal": "rrt_max",
+          "score": 70.0,
+          "observation": "baseline mean 2.03e+05; incident mean 5.094e+07; range 1.579e+05..5.926e+08",
+          "source_file": "pod_frontend-2_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-0",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 1.248e+04; incident mean 1.024e+05; range 1.179e+04..1.277e+06",
+          "source_file": "pod_frontend-0_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-0",
+          "signal": "rrt_max",
+          "score": 70.0,
+          "observation": "baseline mean 2.319e+05; incident mean 5.004e+07; range 1.946e+05..5.997e+08",
+          "source_file": "pod_frontend-0_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "hipstershop",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 7347; incident mean 4.575e+04; range 7139..4.422e+05",
+          "source_file": "pod_ns_hipstershop_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "hipstershop",
+          "signal": "rrt_max",
+          "score": 70.0,
+          "observation": "baseline mean 2.618e+05; incident mean 7.589e+07; range 2.383e+05..5.997e+08",
+          "source_file": "pod_ns_hipstershop_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 1.211e+04; incident mean 1.255e+05; range 1.185e+04..1.379e+06",
+          "source_file": "service_frontend_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend",
+          "signal": "rrt_max",
+          "score": 70.0,
+          "observation": "baseline mean 2.618e+05; incident mean 7.589e+07; range 2.383e+05..5.997e+08",
+          "source_file": "service_frontend_2025-06-18.parquet"
+        }
+      ],
+      "latency_ms": 41
+    },
+    {
+      "uuid": "8c61bc09-338",
+      "role": "holdout",
+      "window_start": "2025-06-17T19:10:05Z",
+      "window_end": "2025-06-17T19:25:05Z",
+      "fault_type_top3": [
+        "network loss",
+        "erroneous code",
+        "pod failure"
+      ],
+      "entity_top3": [
+        "frontend-0",
+        "frontend-2",
+        "cartservice-1"
+      ],
+      "source": null,
+      "destination": null,
+      "confidence": 0.4462,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "metric",
+          "entity": "frontend-0",
+          "signal": "timeout",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 81.35; range 0..541",
+          "source_file": "pod_frontend-0_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-2",
+          "signal": "client_error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 48; range 0..88",
+          "source_file": "pod_frontend-2_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-2",
+          "signal": "error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 48; range 0..88",
+          "source_file": "pod_frontend-2_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "cartservice-1",
+          "signal": "error_ratio",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 1.647; range 0..17.14",
+          "source_file": "pod_cartservice-1_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "shippingservice-0",
+          "signal": "client_error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 1.091; range 0..12",
+          "source_file": "pod_shippingservice-0_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "shippingservice-0",
+          "signal": "error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 1.091; range 0..12",
+          "source_file": "pod_shippingservice-0_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend",
+          "signal": "timeout",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 96.1; range 0..1906",
+          "source_file": "service_frontend_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "shippingservice",
+          "signal": "error_ratio",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 2.156; range 0..14.46",
+          "source_file": "service_shippingservice_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-0",
+          "signal": "client_error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 14.8; range 0..38",
+          "source_file": "pod_frontend-0_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-0",
+          "signal": "error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 14.8; range 0..38",
+          "source_file": "pod_frontend-0_2025-06-18.parquet"
+        }
+      ],
+      "latency_ms": 39
+    },
+    {
+      "uuid": "0b81a605-339",
+      "role": "holdout",
+      "window_start": "2025-06-17T20:10:05Z",
+      "window_end": "2025-06-17T20:24:05Z",
+      "fault_type_top3": [
+        "memory stress",
+        "cpu stress",
+        "network delay"
+      ],
+      "entity_top3": [
+        "paymentservice-2",
+        "paymentservice",
+        "hipstershop"
+      ],
+      "source": null,
+      "destination": null,
+      "confidence": 0.5971,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "metric",
+          "entity": "paymentservice-2",
+          "signal": "pod_processes",
+          "score": 100.0,
+          "observation": "baseline mean 1; incident mean 9.842; range 1..13",
+          "source_file": "infra_pod_pod_processes_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "paymentservice-2",
+          "signal": "pod_cpu_usage",
+          "score": 100.0,
+          "observation": "baseline mean 0; incident mean 0.2947; range 0..0.4",
+          "source_file": "infra_pod_pod_cpu_usage_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "paymentservice-2",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 1407; incident mean 5.094e+04; range 1419..1.448e+05",
+          "source_file": "pod_paymentservice-2_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "paymentservice",
+          "signal": "rrt",
+          "score": 68.337,
+          "observation": "baseline mean 1442; incident mean 1.824e+04; range 1090..5.028e+04",
+          "source_file": "service_paymentservice_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "paymentservice-2",
+          "signal": "rrt_max",
+          "score": 64.811,
+          "observation": "baseline mean 1880; incident mean 8.32e+04; range 1542..1.991e+05",
+          "source_file": "pod_paymentservice-2_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "paymentservice",
+          "signal": "rrt_max",
+          "score": 63.768,
+          "observation": "baseline mean 2661; incident mean 8.318e+04; range 1579..1.991e+05",
+          "source_file": "service_paymentservice_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "hipstershop",
+          "signal": "client_error",
+          "score": 30.163,
+          "observation": "baseline mean 1.043; incident mean 2.842; range 0..12",
+          "source_file": "pod_ns_hipstershop_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "hipstershop",
+          "signal": "error",
+          "score": 30.163,
+          "observation": "baseline mean 1.043; incident mean 2.842; range 0..12",
+          "source_file": "pod_ns_hipstershop_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "adservice",
+          "signal": "client_error",
+          "score": 30.163,
+          "observation": "baseline mean 1.043; incident mean 2.842; range 0..12",
+          "source_file": "service_adservice_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "adservice",
+          "signal": "error",
+          "score": 30.163,
+          "observation": "baseline mean 1.043; incident mean 2.842; range 0..12",
+          "source_file": "service_adservice_2025-06-18.parquet"
+        }
+      ],
+      "latency_ms": 40
+    },
+    {
+      "uuid": "0a9fce75-340",
+      "role": "holdout",
+      "window_start": "2025-06-17T21:10:07Z",
+      "window_end": "2025-06-17T21:28:07Z",
+      "fault_type_top3": [
+        "network loss",
+        "network delay",
+        "erroneous code"
+      ],
+      "entity_top3": [
+        "frontend-1",
+        "frontend-2",
+        "frontend-0"
+      ],
+      "source": null,
+      "destination": null,
+      "confidence": 0.5125,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "log",
+          "entity": "productcatalogservice-2",
+          "signal": "network availability error",
+          "score": 40.079,
+          "observation": "1 matching log records in the incident window",
+          "source_file": "log_filebeat-server_2025-06-18_05-00-00.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "hipstershop",
+          "signal": "server_error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 138.7; range 0..212",
+          "source_file": "pod_ns_hipstershop_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "productcatalogservice-1",
+          "signal": "client_error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 1; range 0..12",
+          "source_file": "pod_productcatalogservice-1_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "productcatalogservice-1",
+          "signal": "error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 1; range 0..12",
+          "source_file": "pod_productcatalogservice-1_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-0",
+          "signal": "server_error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 14.61; range 0..30",
+          "source_file": "pod_frontend-0_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-2",
+          "signal": "error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 82.78; range 0..126",
+          "source_file": "pod_frontend-2_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend",
+          "signal": "server_error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 138.7; range 0..212",
+          "source_file": "service_frontend_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "hipstershop",
+          "signal": "error_ratio",
+          "score": 65.0,
+          "observation": "baseline mean 0.01348; incident mean 4.177; range 0..8.05",
+          "source_file": "pod_ns_hipstershop_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-0",
+          "signal": "error_ratio",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 12.88; range 0..33.33",
+          "source_file": "pod_frontend-0_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-1",
+          "signal": "error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 41.3; range 0..64",
+          "source_file": "pod_frontend-1_2025-06-18.parquet"
+        }
+      ],
+      "latency_ms": 48
+    },
+    {
+      "uuid": "b9319370-341",
+      "role": "holdout",
+      "window_start": "2025-06-17T22:10:08Z",
+      "window_end": "2025-06-17T22:34:08Z",
+      "fault_type_top3": [
+        "network loss",
+        "cpu stress",
+        "target port misconfig"
+      ],
+      "entity_top3": [
+        "frontend",
+        "checkoutservice",
+        "productcatalogservice"
+      ],
+      "source": "checkoutservice",
+      "destination": "productcatalogservice",
+      "confidence": 0.7225,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "log",
+          "entity": "frontend-2",
+          "signal": "connection refused / port mismatch",
+          "score": 97.079,
+          "observation": "1 matching log records in the incident window",
+          "source_file": "log_filebeat-server_2025-06-18_06-00-00.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "productcatalogservice-1",
+          "signal": "pod_cpu_usage",
+          "score": 100.0,
+          "observation": "baseline mean 0; incident mean 0.3276; range 0..0.4",
+          "source_file": "infra_pod_pod_cpu_usage_2025-06-18.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "checkoutservice",
+          "signal": "checkoutservice -> productcatalogservice latency",
+          "score": 110.0,
+          "observation": "mean 14.6ms -> 5185.8ms; max 59996.4ms; spans 58",
+          "source_file": "trace_jaeger-span_2025-06-18_06-00-00.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "frontend",
+          "signal": "frontend -> checkoutservice latency",
+          "score": 110.0,
+          "observation": "mean 136.1ms -> 6620.7ms; max 60001.0ms; spans 46",
+          "source_file": "trace_jaeger-span_2025-06-18_06-00-00.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "frontend",
+          "signal": "frontend -> productcatalogservice latency",
+          "score": 110.0,
+          "observation": "mean 11.0ms -> 3165.4ms; max 60008.9ms; spans 3969",
+          "source_file": "trace_jaeger-span_2025-06-18_06-00-00.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "productcatalogservice",
+          "signal": "checkoutservice -> productcatalogservice latency",
+          "score": 105.6,
+          "observation": "mean 14.6ms -> 5185.8ms; max 59996.4ms",
+          "source_file": "trace_jaeger-span_2025-06-18_06-00-00.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "checkoutservice",
+          "signal": "frontend -> checkoutservice latency",
+          "score": 105.6,
+          "observation": "mean 136.1ms -> 6620.7ms; max 60001.0ms",
+          "source_file": "trace_jaeger-span_2025-06-18_06-00-00.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "productcatalogservice",
+          "signal": "frontend -> productcatalogservice latency",
+          "score": 105.6,
+          "observation": "mean 11.0ms -> 3165.4ms; max 60008.9ms",
+          "source_file": "trace_jaeger-span_2025-06-18_06-00-00.parquet"
+        },
+        {
+          "modality": "log",
+          "entity": "frontend-0",
+          "signal": "connection refused / port mismatch",
+          "score": 97.079,
+          "observation": "1 matching log records in the incident window",
+          "source_file": "log_filebeat-server_2025-06-18_06-00-00.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-0",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 1.173e+04; incident mean 1.421e+07; range 1.148e+04..3e+07",
+          "source_file": "pod_frontend-0_2025-06-18.parquet"
+        }
+      ],
+      "latency_ms": 43
+    },
+    {
+      "uuid": "b96848a5-342",
+      "role": "holdout",
+      "window_start": "2025-06-17T23:10:08Z",
+      "window_end": "2025-06-17T23:32:08Z",
+      "fault_type_top3": [
+        "network loss",
+        "erroneous code",
+        "pod failure"
+      ],
+      "entity_top3": [
+        "frontend-1",
+        "cartservice",
+        "frontend-0"
+      ],
+      "source": null,
+      "destination": null,
+      "confidence": 0.4462,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "metric",
+          "entity": "frontend-1",
+          "signal": "error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 8; range 4..12",
+          "source_file": "pod_frontend-1_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-1",
+          "signal": "server_error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 8; range 4..12",
+          "source_file": "pod_frontend-1_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "cartservice",
+          "signal": "client_error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 1.333; range 0..18",
+          "source_file": "service_cartservice_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "cartservice",
+          "signal": "error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 1.333; range 0..18",
+          "source_file": "service_cartservice_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-0",
+          "signal": "error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 6.148; range 0..12",
+          "source_file": "pod_frontend-0_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-2",
+          "signal": "server_error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 6.074; range 0..12",
+          "source_file": "pod_frontend-2_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend",
+          "signal": "error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 20.22; range 10..30",
+          "source_file": "service_frontend_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-0",
+          "signal": "server_error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 6.148; range 0..12",
+          "source_file": "pod_frontend-0_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-2",
+          "signal": "error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 6.074; range 0..12",
+          "source_file": "pod_frontend-2_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "hipstershop",
+          "signal": "server_error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 20.52; range 10..30",
+          "source_file": "pod_ns_hipstershop_2025-06-18.parquet"
+        }
+      ],
+      "latency_ms": 38
+    },
+    {
+      "uuid": "88b7daff-343",
+      "role": "holdout",
+      "window_start": "2025-06-18T00:10:09Z",
+      "window_end": "2025-06-18T00:24:09Z",
+      "fault_type_top3": [
+        "network delay",
+        "network loss",
+        "erroneous code"
+      ],
+      "entity_top3": [
+        "frontend",
+        "checkoutservice",
+        "cartservice"
+      ],
+      "source": "frontend",
+      "destination": "cartservice",
+      "confidence": 0.7056,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "log",
+          "entity": "cartservice-2",
+          "signal": "network availability error",
+          "score": 40.079,
+          "observation": "1 matching log records in the incident window",
+          "source_file": "log_filebeat-server_2025-06-18_08-00-00.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "checkoutservice",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 6249; incident mean 2.119e+05; range 2216..4.232e+05",
+          "source_file": "service_checkoutservice_2025-06-18.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "frontend",
+          "signal": "frontend -> cartservice latency",
+          "score": 110.0,
+          "observation": "mean 4.3ms -> 1825.8ms; max 6531.3ms; spans 1642",
+          "source_file": "trace_jaeger-span_2025-06-18_07-00-00.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "checkoutservice",
+          "signal": "checkoutservice -> cartservice latency",
+          "score": 110.0,
+          "observation": "mean 10.2ms -> 1533.9ms; max 3083.4ms; spans 148",
+          "source_file": "trace_jaeger-span_2025-06-18_07-00-00.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "frontend",
+          "signal": "frontend -> checkoutservice latency",
+          "score": 110.0,
+          "observation": "mean 129.4ms -> 3174.2ms; max 6189.2ms; spans 74",
+          "source_file": "trace_jaeger-span_2025-06-18_07-00-00.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "cartservice",
+          "signal": "frontend -> cartservice latency",
+          "score": 105.6,
+          "observation": "mean 4.3ms -> 1825.8ms; max 6531.3ms",
+          "source_file": "trace_jaeger-span_2025-06-18_07-00-00.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "cartservice",
+          "signal": "checkoutservice -> cartservice latency",
+          "score": 105.6,
+          "observation": "mean 10.2ms -> 1533.9ms; max 3083.4ms",
+          "source_file": "trace_jaeger-span_2025-06-18_07-00-00.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "checkoutservice",
+          "signal": "frontend -> checkoutservice latency",
+          "score": 105.6,
+          "observation": "mean 129.4ms -> 3174.2ms; max 6189.2ms",
+          "source_file": "trace_jaeger-span_2025-06-18_07-00-00.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "checkoutservice",
+          "signal": "rrt_max",
+          "score": 70.0,
+          "observation": "baseline mean 1.657e+05; incident mean 3.631e+06; range 2580..6.188e+06",
+          "source_file": "service_checkoutservice_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-2",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 1.22e+04; incident mean 3.189e+05; range 1.129e+04..5.343e+05",
+          "source_file": "pod_frontend-2_2025-06-18.parquet"
+        }
+      ],
+      "latency_ms": 36
+    },
+    {
+      "uuid": "09b7c00b-344",
+      "role": "holdout",
+      "window_start": "2025-06-18T01:10:10Z",
+      "window_end": "2025-06-18T01:27:10Z",
+      "fault_type_top3": [
+        "memory stress",
+        "network loss",
+        "erroneous code"
+      ],
+      "entity_top3": [
+        "cartservice-1",
+        "cartservice-2",
+        "cartservice-0"
+      ],
+      "source": null,
+      "destination": null,
+      "confidence": 0.5079,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "metric",
+          "entity": "cartservice-2",
+          "signal": "pod_processes",
+          "score": 78.0,
+          "observation": "baseline mean 1; incident mean 1.364; range 1..2",
+          "source_file": "infra_pod_pod_processes_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "cartservice-1",
+          "signal": "pod_processes",
+          "score": 78.0,
+          "observation": "baseline mean 1; incident mean 1.455; range 1..2",
+          "source_file": "infra_pod_pod_processes_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "cartservice-0",
+          "signal": "pod_processes",
+          "score": 78.0,
+          "observation": "baseline mean 1; incident mean 1.455; range 1..2",
+          "source_file": "infra_pod_pod_processes_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "hipstershop",
+          "signal": "server_error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 16.18; range 0..28",
+          "source_file": "pod_ns_hipstershop_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-0",
+          "signal": "server_error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 4.909; range 0..14",
+          "source_file": "pod_frontend-0_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-2",
+          "signal": "error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 4.545; range 0..12",
+          "source_file": "pod_frontend-2_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend",
+          "signal": "server_error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 15.82; range 0..28",
+          "source_file": "service_frontend_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "cartservice-1",
+          "signal": "timeout",
+          "score": 65.0,
+          "observation": "baseline mean 0.04348; incident mean 1.545; range 0..17",
+          "source_file": "pod_cartservice-1_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "cartservice",
+          "signal": "timeout",
+          "score": 65.0,
+          "observation": "baseline mean 0.04348; incident mean 1.682; range 0..17",
+          "source_file": "service_cartservice_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "productcatalogservice-0",
+          "signal": "client_error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 1.091; range 0..12",
+          "source_file": "pod_productcatalogservice-0_2025-06-18.parquet"
+        }
+      ],
+      "latency_ms": 40
+    },
+    {
+      "uuid": "b9539d8e-345",
+      "role": "holdout",
+      "window_start": "2025-06-18T02:10:11Z",
+      "window_end": "2025-06-18T02:30:11Z",
+      "fault_type_top3": [
+        "target port misconfig",
+        "network loss",
+        "erroneous code"
+      ],
+      "entity_top3": [
+        "frontend-1",
+        "hipstershop",
+        "frontend-0"
+      ],
+      "source": null,
+      "destination": null,
+      "confidence": 0.5908,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "log",
+          "entity": "frontend-1",
+          "signal": "connection refused / port mismatch",
+          "score": 98.296,
+          "observation": "2 matching log records in the incident window",
+          "source_file": "log_filebeat-server_2025-06-18_10-00-00.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "hipstershop",
+          "signal": "error_ratio",
+          "score": 65.0,
+          "observation": "baseline mean 0.005652; incident mean 14.13; range 0..27.12",
+          "source_file": "pod_ns_hipstershop_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-0",
+          "signal": "error_ratio",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 33.76; range 0..49.41",
+          "source_file": "pod_frontend-0_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-1",
+          "signal": "error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 143.8; range 0..210",
+          "source_file": "pod_frontend-1_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "productcatalogservice-0",
+          "signal": "client_error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 1.2; range 0..12",
+          "source_file": "pod_productcatalogservice-0_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "productcatalogservice-0",
+          "signal": "error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 1.2; range 0..12",
+          "source_file": "pod_productcatalogservice-0_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "productcatalogservice-2",
+          "signal": "client_error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 1.2; range 0..12",
+          "source_file": "pod_productcatalogservice-2_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "productcatalogservice-2",
+          "signal": "error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 1.2; range 0..12",
+          "source_file": "pod_productcatalogservice-2_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend",
+          "signal": "error_ratio",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 33.61; range 0..52.49",
+          "source_file": "service_frontend_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-1",
+          "signal": "server_error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 143.8; range 0..210",
+          "source_file": "pod_frontend-1_2025-06-18.parquet"
+        }
+      ],
+      "latency_ms": 53
+    },
+    {
+      "uuid": "76937ba4-346",
+      "role": "holdout",
+      "window_start": "2025-06-18T03:10:11Z",
+      "window_end": "2025-06-18T03:26:11Z",
+      "fault_type_top3": [
+        "network loss",
+        "network delay",
+        "erroneous code"
+      ],
+      "entity_top3": [
+        "frontend",
+        "productcatalogservice",
+        "frontend-1"
+      ],
+      "source": "frontend",
+      "destination": "productcatalogservice",
+      "confidence": 0.7219,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "log",
+          "entity": "frontend-1",
+          "signal": "network availability error",
+          "score": 40.079,
+          "observation": "1 matching log records in the incident window",
+          "source_file": "log_filebeat-server_2025-06-18_11-00-00.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-2",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 1.196e+04; incident mean 1.666e+07; range 1.033e+04..7.742e+07",
+          "source_file": "pod_frontend-2_2025-06-18.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "frontend",
+          "signal": "frontend -> productcatalogservice latency",
+          "score": 110.0,
+          "observation": "mean 11.2ms -> 2803.2ms; max 60015.1ms; spans 9446",
+          "source_file": "trace_jaeger-span_2025-06-18_11-00-00.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "productcatalogservice",
+          "signal": "frontend -> productcatalogservice latency",
+          "score": 105.6,
+          "observation": "mean 11.2ms -> 2803.2ms; max 60015.1ms",
+          "source_file": "trace_jaeger-span_2025-06-18_11-00-00.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-2",
+          "signal": "rrt_max",
+          "score": 70.0,
+          "observation": "baseline mean 2.469e+05; incident mean 9.072e+07; range 1.965e+05..8.309e+08",
+          "source_file": "pod_frontend-2_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "productcatalogservice-1",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 7271; incident mean 1.072e+08; range 642.7..3.394e+08",
+          "source_file": "pod_productcatalogservice-1_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "productcatalogservice-1",
+          "signal": "rrt_max",
+          "score": 70.0,
+          "observation": "baseline mean 3.104e+04; incident mean 1.163e+08; range 798..3.394e+08",
+          "source_file": "pod_productcatalogservice-1_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-0",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 1.169e+04; incident mean 1.853e+07; range 1.067e+04..3.273e+07",
+          "source_file": "pod_frontend-0_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-0",
+          "signal": "rrt_max",
+          "score": 70.0,
+          "observation": "baseline mean 2.537e+05; incident mean 4.788e+07; range 1.613e+05..6.001e+07",
+          "source_file": "pod_frontend-0_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "hipstershop",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 7301; incident mean 4.666e+06; range 7037..1.095e+07",
+          "source_file": "pod_ns_hipstershop_2025-06-18.parquet"
+        }
+      ],
+      "latency_ms": 48
+    },
+    {
+      "uuid": "1d868f8e-347",
+      "role": "holdout",
+      "window_start": "2025-06-18T04:10:12Z",
+      "window_end": "2025-06-18T04:33:12Z",
+      "fault_type_top3": [
+        "network delay",
+        "network loss",
+        "erroneous code"
+      ],
+      "entity_top3": [
+        "frontend",
+        "checkoutservice",
+        "adservice-1"
+      ],
+      "source": "frontend",
+      "destination": "checkoutservice",
+      "confidence": 0.6957,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "metric",
+          "entity": "adservice-1",
+          "signal": "client_error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 1.071; range 0..6",
+          "source_file": "pod_adservice-1_2025-06-18.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "frontend",
+          "signal": "frontend -> checkoutservice latency",
+          "score": 108.26,
+          "observation": "mean 134.2ms -> 1793.9ms; max 4342.3ms; spans 436",
+          "source_file": "trace_jaeger-span_2025-06-18_11-00-00.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "checkoutservice",
+          "signal": "frontend -> checkoutservice latency",
+          "score": 103.929,
+          "observation": "mean 134.2ms -> 1793.9ms; max 4342.3ms",
+          "source_file": "trace_jaeger-span_2025-06-18_11-00-00.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "adservice-1",
+          "signal": "error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 1.071; range 0..6",
+          "source_file": "pod_adservice-1_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "hipstershop",
+          "signal": "client_error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 1.071; range 0..6",
+          "source_file": "pod_ns_hipstershop_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "hipstershop",
+          "signal": "error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 1.071; range 0..6",
+          "source_file": "pod_ns_hipstershop_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "adservice",
+          "signal": "client_error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 1.071; range 0..6",
+          "source_file": "service_adservice_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "adservice",
+          "signal": "error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 1.071; range 0..6",
+          "source_file": "service_adservice_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "hipstershop",
+          "signal": "rrt_max",
+          "score": 64.607,
+          "observation": "baseline mean 2.857e+05; incident mean 2.194e+06; range 2.634e+05..4.41e+06",
+          "source_file": "pod_ns_hipstershop_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend",
+          "signal": "rrt_max",
+          "score": 64.607,
+          "observation": "baseline mean 2.857e+05; incident mean 2.194e+06; range 2.634e+05..4.41e+06",
+          "source_file": "service_frontend_2025-06-18.parquet"
+        }
+      ],
+      "latency_ms": 46
+    },
+    {
+      "uuid": "4b225f4a-348",
+      "role": "holdout",
+      "window_start": "2025-06-18T05:10:14Z",
+      "window_end": "2025-06-18T05:15:14Z",
+      "fault_type_top3": [
+        "network loss",
+        "network delay"
+      ],
+      "entity_top3": [
+        "checkoutservice",
+        "productcatalogservice",
+        "currencyservice-2"
+      ],
+      "source": "checkoutservice",
+      "destination": "productcatalogservice",
+      "confidence": 0.462,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "metric",
+          "entity": "currencyservice-2",
+          "signal": "rrt_max",
+          "score": 62.0,
+          "observation": "baseline mean 1.406e+04; incident mean 2.818e+04; range 6626..7.802e+04",
+          "source_file": "pod_currencyservice-2_2025-06-18.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "checkoutservice",
+          "signal": "checkoutservice -> productcatalogservice latency",
+          "score": 68.182,
+          "observation": "mean 15.2ms -> 92.9ms; max 12926.0ms; spans 321",
+          "source_file": "trace_jaeger-span_2025-06-18_13-00-00.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "productcatalogservice",
+          "signal": "checkoutservice -> productcatalogservice latency",
+          "score": 65.455,
+          "observation": "mean 15.2ms -> 92.9ms; max 12926.0ms",
+          "source_file": "trace_jaeger-span_2025-06-18_13-00-00.parquet"
+        }
+      ],
+      "latency_ms": 37
+    },
+    {
+      "uuid": "0a4c5c18-349",
+      "role": "holdout",
+      "window_start": "2025-06-18T06:10:15Z",
+      "window_end": "2025-06-18T06:15:15Z",
+      "fault_type_top3": [
+        "network loss",
+        "erroneous code",
+        "pod failure"
+      ],
+      "entity_top3": [
+        "checkoutservice-0",
+        "checkoutservice",
+        "hipstershop"
+      ],
+      "source": null,
+      "destination": null,
+      "confidence": 0.4462,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "metric",
+          "entity": "checkoutservice-0",
+          "signal": "client_error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 1.2; range 0..12",
+          "source_file": "pod_checkoutservice-0_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "checkoutservice-0",
+          "signal": "error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 1.2; range 0..12",
+          "source_file": "pod_checkoutservice-0_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "checkoutservice",
+          "signal": "client_error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 1.2; range 0..12",
+          "source_file": "service_checkoutservice_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "checkoutservice",
+          "signal": "error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 1.2; range 0..12",
+          "source_file": "service_checkoutservice_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "hipstershop",
+          "signal": "client_error",
+          "score": 40.975,
+          "observation": "baseline mean 0.4348; incident mean 1.2; range 0..12",
+          "source_file": "pod_ns_hipstershop_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "hipstershop",
+          "signal": "error",
+          "score": 40.975,
+          "observation": "baseline mean 0.4348; incident mean 1.2; range 0..12",
+          "source_file": "pod_ns_hipstershop_2025-06-18.parquet"
+        }
+      ],
+      "latency_ms": 44
+    },
+    {
+      "uuid": "fb20d6d2-350",
+      "role": "holdout",
+      "window_start": "2025-06-18T07:10:16Z",
+      "window_end": "2025-06-18T07:25:16Z",
+      "fault_type_top3": [
+        "memory stress",
+        "network loss",
+        "erroneous code"
+      ],
+      "entity_top3": [
+        "adservice-2"
+      ],
+      "source": null,
+      "destination": null,
+      "confidence": 0.5079,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "metric",
+          "entity": "adservice-2",
+          "signal": "pod_processes",
+          "score": 78.0,
+          "observation": "baseline mean 1; incident mean 1.2; range 1..2",
+          "source_file": "infra_pod_pod_processes_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "adservice-2",
+          "signal": "error_ratio",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 1.666; range 0..33.33",
+          "source_file": "pod_adservice-2_2025-06-18.parquet"
+        }
+      ],
+      "latency_ms": 44
+    },
+    {
+      "uuid": "a87be781-351",
+      "role": "holdout",
+      "window_start": "2025-06-18T08:10:17Z",
+      "window_end": "2025-06-18T08:15:17Z",
+      "fault_type_top3": [
+        "network loss",
+        "jvm latency",
+        "network delay"
+      ],
+      "entity_top3": [
+        "checkoutservice",
+        "productcatalogservice",
+        "adservice-2"
+      ],
+      "source": "checkoutservice",
+      "destination": "productcatalogservice",
+      "confidence": 0.5343,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "metric",
+          "entity": "adservice-2",
+          "signal": "rrt_max",
+          "score": 75.0,
+          "observation": "baseline mean 4065; incident mean 2.492e+04; range 3776..4.242e+04",
+          "source_file": "pod_adservice-2_2025-06-18.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "checkoutservice",
+          "signal": "checkoutservice -> productcatalogservice latency",
+          "score": 84.063,
+          "observation": "mean 16.0ms -> 192.0ms; max 17178.8ms; spans 331",
+          "source_file": "trace_jaeger-span_2025-06-18_15-00-00.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "productcatalogservice",
+          "signal": "checkoutservice -> productcatalogservice latency",
+          "score": 80.701,
+          "observation": "mean 16.0ms -> 192.0ms; max 17178.8ms",
+          "source_file": "trace_jaeger-span_2025-06-18_15-00-00.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "adservice-2",
+          "signal": "rrt",
+          "score": 75.0,
+          "observation": "baseline mean 1660; incident mean 3505; range 1579..4956",
+          "source_file": "pod_adservice-2_2025-06-18.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "frontend",
+          "signal": "frontend -> checkoutservice latency",
+          "score": 71.675,
+          "observation": "mean 152.9ms -> 480.2ms; max 17374.3ms; spans 173",
+          "source_file": "trace_jaeger-span_2025-06-18_16-00-00.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "checkoutservice",
+          "signal": "frontend -> checkoutservice latency",
+          "score": 68.808,
+          "observation": "mean 152.9ms -> 480.2ms; max 17374.3ms",
+          "source_file": "trace_jaeger-span_2025-06-18_16-00-00.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "cartservice-1",
+          "signal": "rrt_max",
+          "score": 62.0,
+          "observation": "baseline mean 6208; incident mean 1.201e+04; range 2543..6.745e+04",
+          "source_file": "pod_cartservice-1_2025-06-18.parquet"
+        }
+      ],
+      "latency_ms": 41
+    },
+    {
+      "uuid": "1ef94bd7-352",
+      "role": "holdout",
+      "window_start": "2025-06-18T09:10:19Z",
+      "window_end": "2025-06-18T09:32:19Z",
+      "fault_type_top3": [
+        "jvm latency",
+        "network delay"
+      ],
+      "entity_top3": [
+        "adservice-2"
+      ],
+      "source": null,
+      "destination": null,
+      "confidence": 0.4943,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "metric",
+          "entity": "adservice-2",
+          "signal": "rrt_max",
+          "score": 75.0,
+          "observation": "baseline mean 4266; incident mean 1.223e+04; range 1856..4.484e+04",
+          "source_file": "pod_adservice-2_2025-06-18.parquet"
+        }
+      ],
+      "latency_ms": 37
+    },
+    {
+      "uuid": "178aa45f-353",
+      "role": "holdout",
+      "window_start": "2025-06-18T10:10:20Z",
+      "window_end": "2025-06-18T10:23:20Z",
+      "fault_type_top3": [
+        "network delay",
+        "network loss",
+        "erroneous code"
+      ],
+      "entity_top3": [
+        "checkoutservice",
+        "cartservice",
+        "frontend"
+      ],
+      "source": "checkoutservice",
+      "destination": "cartservice",
+      "confidence": 0.7056,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "log",
+          "entity": "frontend-0",
+          "signal": "network availability error",
+          "score": 40.079,
+          "observation": "1 matching log records in the incident window",
+          "source_file": "log_filebeat-server_2025-06-18_18-00-00.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "checkoutservice",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 6695; incident mean 1.832e+05; range 6190..3.181e+05",
+          "source_file": "service_checkoutservice_2025-06-18.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "checkoutservice",
+          "signal": "checkoutservice -> cartservice latency",
+          "score": 110.0,
+          "observation": "mean 12.6ms -> 777.7ms; max 3176.9ms; spans 452",
+          "source_file": "trace_jaeger-span_2025-06-18_18-00-00.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "cartservice",
+          "signal": "checkoutservice -> cartservice latency",
+          "score": 105.6,
+          "observation": "mean 12.6ms -> 777.7ms; max 3176.9ms",
+          "source_file": "trace_jaeger-span_2025-06-18_18-00-00.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "frontend",
+          "signal": "frontend -> checkoutservice latency",
+          "score": 92.294,
+          "observation": "mean 144.2ms -> 1047.5ms; max 3179.6ms; spans 348",
+          "source_file": "trace_jaeger-span_2025-06-18_18-00-00.parquet"
+        },
+        {
+          "modality": "trace",
+          "entity": "checkoutservice",
+          "signal": "frontend -> checkoutservice latency",
+          "score": 88.602,
+          "observation": "mean 144.2ms -> 1047.5ms; max 3179.6ms",
+          "source_file": "trace_jaeger-span_2025-06-18_18-00-00.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "checkoutservice-0",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 6695; incident mean 1.832e+05; range 6190..3.181e+05",
+          "source_file": "pod_checkoutservice-0_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "shippingservice-0",
+          "signal": "client_error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 1.091; range 0..12",
+          "source_file": "pod_shippingservice-0_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "shippingservice-0",
+          "signal": "error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 1.091; range 0..12",
+          "source_file": "pod_shippingservice-0_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "hipstershop",
+          "signal": "server_error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 296.2; range 0..486",
+          "source_file": "pod_ns_hipstershop_2025-06-18.parquet"
+        }
+      ],
+      "latency_ms": 39
+    },
+    {
+      "uuid": "ad030412-354",
+      "role": "holdout",
+      "window_start": "2025-06-18T11:10:23Z",
+      "window_end": "2025-06-18T11:29:23Z",
+      "fault_type_top3": [
+        "insufficient evidence"
+      ],
+      "entity_top3": [
+        "unknown"
+      ],
+      "source": null,
+      "destination": null,
+      "confidence": 0.0,
+      "abstained": true,
+      "evidence": [],
+      "latency_ms": 39
+    },
+    {
+      "uuid": "b168261d-355",
+      "role": "holdout",
+      "window_start": "2025-06-18T12:10:24Z",
+      "window_end": "2025-06-18T12:23:24Z",
+      "fault_type_top3": [
+        "target port misconfig",
+        "jvm latency",
+        "network loss"
+      ],
+      "entity_top3": [
+        "frontend-1",
+        "frontend-2",
+        "frontend-0"
+      ],
+      "source": null,
+      "destination": null,
+      "confidence": 0.5863,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "log",
+          "entity": "frontend-1",
+          "signal": "connection refused / port mismatch",
+          "score": 97.079,
+          "observation": "1 matching log records in the incident window",
+          "source_file": "log_filebeat-server_2025-06-18_20-00-00.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "adservice",
+          "signal": "rrt_max",
+          "score": 90.0,
+          "observation": "baseline mean 4.453e+04; incident mean 1.471e+05; range 3.948e+04..1.909e+06",
+          "source_file": "service_adservice_2025-06-18.parquet"
+        },
+        {
+          "modality": "log",
+          "entity": "frontend-2",
+          "signal": "connection refused / port mismatch",
+          "score": 97.079,
+          "observation": "1 matching log records in the incident window",
+          "source_file": "log_filebeat-server_2025-06-18_20-00-00.parquet"
+        },
+        {
+          "modality": "log",
+          "entity": "frontend-0",
+          "signal": "connection refused / port mismatch",
+          "score": 97.079,
+          "observation": "1 matching log records in the incident window",
+          "source_file": "log_filebeat-server_2025-06-18_20-00-00.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "adservice-0",
+          "signal": "rrt_max",
+          "score": 90.0,
+          "observation": "baseline mean 4.251e+04; incident mean 1.449e+05; range 3.772e+04..1.892e+06",
+          "source_file": "pod_adservice-0_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "adservice-1",
+          "signal": "rrt_max",
+          "score": 90.0,
+          "observation": "baseline mean 4.388e+04; incident mean 1.467e+05; range 3.938e+04..1.909e+06",
+          "source_file": "pod_adservice-1_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "adservice-2",
+          "signal": "rrt_max",
+          "score": 90.0,
+          "observation": "baseline mean 4.265e+04; incident mean 1.446e+05; range 3.814e+04..1.903e+06",
+          "source_file": "pod_adservice-2_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "adservice",
+          "signal": "client_error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 1; range 0..12",
+          "source_file": "service_adservice_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "adservice",
+          "signal": "error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 1; range 0..12",
+          "source_file": "service_adservice_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-2",
+          "signal": "server_error",
+          "score": 65.0,
+          "observation": "baseline mean 0; incident mean 5.667; range 0..16",
+          "source_file": "pod_frontend-2_2025-06-18.parquet"
+        }
+      ],
+      "latency_ms": 40
+    },
+    {
+      "uuid": "ac95d601-356",
+      "role": "holdout",
+      "window_start": "2025-06-18T13:10:25Z",
+      "window_end": "2025-06-18T13:15:25Z",
+      "fault_type_top3": [
+        "insufficient evidence"
+      ],
+      "entity_top3": [
+        "unknown"
+      ],
+      "source": null,
+      "destination": null,
+      "confidence": 0.0,
+      "abstained": true,
+      "evidence": [],
+      "latency_ms": 37
+    },
+    {
+      "uuid": "b9e3efbd-357",
+      "role": "holdout",
+      "window_start": "2025-06-18T14:10:27Z",
+      "window_end": "2025-06-18T14:22:27Z",
+      "fault_type_top3": [
+        "network loss",
+        "network delay",
+        "erroneous code"
+      ],
+      "entity_top3": [
+        "productcatalogservice-1",
+        "productcatalogservice-2",
+        "frontend-1"
+      ],
+      "source": null,
+      "destination": null,
+      "confidence": 0.5125,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "log",
+          "entity": "productcatalogservice-1",
+          "signal": "network availability error",
+          "score": 40.079,
+          "observation": "1 matching log records in the incident window",
+          "source_file": "log_filebeat-server_2025-06-18_22-00-00.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "hipstershop",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 7561; incident mean 4.317e+06; range 7381..1.203e+07",
+          "source_file": "pod_ns_hipstershop_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "checkoutservice-0",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 6760; incident mean 6.333e+06; range 4265..2.689e+07",
+          "source_file": "pod_checkoutservice-0_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "checkoutservice-0",
+          "signal": "rrt_max",
+          "score": 70.0,
+          "observation": "baseline mean 1.943e+05; incident mean 9.591e+06; range 6.558e+04..4.035e+07",
+          "source_file": "pod_checkoutservice-0_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-0",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 1.193e+04; incident mean 1.27e+07; range 1.11e+04..2.691e+07",
+          "source_file": "pod_frontend-0_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-0",
+          "signal": "rrt_max",
+          "score": 70.0,
+          "observation": "baseline mean 1.992e+05; incident mean 2.856e+07; range 1.196e+05..4.05e+07",
+          "source_file": "pod_frontend-0_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 1.231e+04; incident mean 1.087e+07; range 1.219e+04..2.559e+07",
+          "source_file": "service_frontend_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend",
+          "signal": "rrt_max",
+          "score": 70.0,
+          "observation": "baseline mean 2.677e+05; incident mean 2.861e+07; range 2.017e+05..4.05e+07",
+          "source_file": "service_frontend_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "productcatalogservice",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 6903; incident mean 1.037e+07; range 6733..2.082e+07",
+          "source_file": "service_productcatalogservice_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "productcatalogservice",
+          "signal": "rrt_max",
+          "score": 70.0,
+          "observation": "baseline mean 3.295e+04; incident mean 2.853e+07; range 3.128e+04..4.044e+07",
+          "source_file": "service_productcatalogservice_2025-06-18.parquet"
+        }
+      ],
+      "latency_ms": 48
+    },
+    {
+      "uuid": "7bd681bb-358",
+      "role": "holdout",
+      "window_start": "2025-06-18T15:10:30Z",
+      "window_end": "2025-06-18T15:31:30Z",
+      "fault_type_top3": [
+        "cpu stress",
+        "network loss",
+        "memory stress"
+      ],
+      "entity_top3": [
+        "checkoutservice-2",
+        "frontend-1",
+        "frontend-2"
+      ],
+      "source": null,
+      "destination": null,
+      "confidence": 0.5971,
+      "abstained": false,
+      "evidence": [
+        {
+          "modality": "log",
+          "entity": "frontend-1",
+          "signal": "network availability error",
+          "score": 40.079,
+          "observation": "1 matching log records in the incident window",
+          "source_file": "log_filebeat-server_2025-06-18_23-00-00.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "checkoutservice-2",
+          "signal": "pod_cpu_usage",
+          "score": 100.0,
+          "observation": "baseline mean 0; incident mean 0.168; range 0..0.2",
+          "source_file": "infra_pod_pod_cpu_usage_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "checkoutservice-1",
+          "signal": "pod_processes",
+          "score": 78.0,
+          "observation": "baseline mean 1; incident mean 1.161; range 1..2",
+          "source_file": "infra_pod_pod_processes_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "checkoutservice-0",
+          "signal": "pod_processes",
+          "score": 78.0,
+          "observation": "baseline mean 1; incident mean 1.346; range 1..2",
+          "source_file": "infra_pod_pod_processes_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "checkoutservice-2",
+          "signal": "pod_processes",
+          "score": 78.0,
+          "observation": "baseline mean 1; incident mean 1.161; range 1..2",
+          "source_file": "infra_pod_pod_processes_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-0",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 1.209e+04; incident mean 2.02e+05; range 1.099e+04..1.143e+06",
+          "source_file": "pod_frontend-0_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend-0",
+          "signal": "rrt_max",
+          "score": 70.0,
+          "observation": "baseline mean 1.798e+05; incident mean 3.611e+07; range 1.13e+05..6.001e+07",
+          "source_file": "pod_frontend-0_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "hipstershop",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 7575; incident mean 6.653e+04; range 6953..1.903e+05",
+          "source_file": "pod_ns_hipstershop_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend",
+          "signal": "rrt",
+          "score": 70.0,
+          "observation": "baseline mean 1.246e+04; incident mean 1.626e+05; range 1.144e+04..4.609e+05",
+          "source_file": "service_frontend_2025-06-18.parquet"
+        },
+        {
+          "modality": "metric",
+          "entity": "frontend",
+          "signal": "rrt_max",
+          "score": 70.0,
+          "observation": "baseline mean 2.658e+05; incident mean 4.361e+07; range 2.024e+05..6.001e+07",
+          "source_file": "service_frontend_2025-06-18.parquet"
+        }
+      ],
+      "latency_ms": 39
+    }
+  ]
+}
