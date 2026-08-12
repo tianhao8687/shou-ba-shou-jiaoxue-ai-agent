@@ -81,6 +81,10 @@ class EnginePort(Protocol):
 
     def lease_guard(self, lease: LeaseContext) -> Callable[[], None]: ...
 
+    def observe_before_execution(
+        self, record: RunRecord, step: PlanStep, lease: LeaseContext
+    ) -> Any: ...
+
 
 NodeHandler = Callable[[EnginePort, RunRecord, LeaseContext], NodeOutcome]
 

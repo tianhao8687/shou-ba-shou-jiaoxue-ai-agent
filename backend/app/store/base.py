@@ -15,6 +15,9 @@ class LeaseLostError(ConcurrencyError):
 
 
 class Store(ABC):
+    def close(self) -> None:
+        """Release process-scoped resources; stateless stores need no action."""
+
     @abstractmethod
     def initialize(self) -> None: ...
 

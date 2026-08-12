@@ -10,6 +10,29 @@ from app.security import AuthService, CapabilityService
 import ops_sandbox.app as sandbox
 
 
+def test_remote_status_snapshot_contains_fresh_write_guard_fields() -> None:
+    state = {
+        "instances": {"catalog-api-1": "healthy"},
+        "metrics": {"stale_sample_rate": 22.0, "p95_ms": 180},
+        "cache_version": "v452",
+        "db_version": "v453",
+    }
+
+    status, _summary, output, effects = sandbox._apply_tool(
+        "get_service_status",
+        {"service": "catalog-api"},
+        "stale_cache",
+        state,
+    )
+
+    assert status == "succeeded"
+    assert effects == 0
+    assert output["stale_sample_rate"] == 22.0
+    assert output["cache_version"] == "v452"
+    assert output["db_version"] == "v453"
+    assert output["instances"] == {"catalog-api-1": "healthy"}
+
+
 def test_http_lab_persists_idempotency_enforces_capability_and_hides_oracle(
     tmp_path: Path, monkeypatch
 ) -> None:

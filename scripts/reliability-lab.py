@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 import json
 import os
 from pathlib import Path
+import re
 import subprocess
 import sys
 import tempfile
@@ -47,8 +48,9 @@ def http_json(
     except HTTPError as exc:
         raw = exc.read()
         status = exc.code
-    except URLError as exc:
-        raise ReliabilityFailure(f"{method} {path} failed: {exc.reason}") from exc
+    except (TimeoutError, URLError) as exc:
+        reason = getattr(exc, "reason", str(exc))
+        raise ReliabilityFailure(f"{method} {path} failed: {reason}") from exc
     if status != expected:
         raise ReliabilityFailure(
             f"{method} {path} returned {status}, expected {expected}: "
@@ -242,32 +244,45 @@ def restart_database(args: argparse.Namespace) -> dict[str, Any]:
     }
 
 
+def _claimed_job_query(run_id: str) -> str:
+    if re.fullmatch(r"RUN-[A-Z0-9]+", run_id) is None:
+        raise ReliabilityFailure(f"unsafe generated run id for database probe: {run_id!r}")
+    return (
+        "SELECT json_build_object("
+        "'id',id,'status',status,'fencing_token',fencing_token,'owner',owner"
+        ")::text FROM agent_jobs "
+        f"WHERE run_id='{run_id}' AND status='claimed' "
+        "ORDER BY updated_at DESC LIMIT 1"
+    )
+
+
 def poll_claimed_job(
-    args: argparse.Namespace, token: str, run_id: str, timeout: float = 30
+    args: argparse.Namespace, run_id: str, timeout: float = 30
 ) -> dict[str, Any]:
+    """Observe the claim without touching the intentionally locked agent_runs table."""
     deadline = time.monotonic() + timeout
-    last: list[dict[str, Any]] = []
+    last = ""
+    query = _claimed_job_query(run_id)
     while time.monotonic() < deadline:
-        request = Request(
-            f"{args.base_url.rstrip('/')}/api/runs/{run_id}/jobs",
-            headers={
-                "Accept": "application/json",
-                "Authorization": f"Bearer {token}",
-            },
-            method="GET",
-        )
         try:
-            with urlopen(request, timeout=5) as response:
-                payload = json.loads(response.read().decode("utf-8"))
-            if isinstance(payload, list):
-                last = payload
-                claimed = next(
-                    (item for item in payload if item.get("status") == "claimed"),
-                    None,
-                )
-                if claimed is not None:
-                    return claimed
-        except (URLError, HTTPError, json.JSONDecodeError):
+            last = compose(
+                args,
+                "exec",
+                "-T",
+                "database",
+                "psql",
+                "-U",
+                "harbor",
+                "-d",
+                "harbor",
+                "-Atc",
+                query,
+            )
+            if last:
+                payload = json.loads(last)
+                if isinstance(payload, dict) and payload.get("status") == "claimed":
+                    return payload
+        except (ReliabilityFailure, json.JSONDecodeError):
             pass
         time.sleep(0.1)
     raise ReliabilityFailure(
@@ -311,6 +326,8 @@ def restart_database_after_claim(
         args,
         "exec",
         "-T",
+        "-e",
+        "PGAPPNAME=harbor-reliability-crash-window",
         "database",
         "psql",
         "-U",
@@ -333,7 +350,7 @@ def restart_database_after_claim(
     try:
         wait_agent_runs_lock(args)
         compose(args, "start", "worker")
-        claimed = poll_claimed_job(args, token, run_id)
+        claimed = poll_claimed_job(args, run_id)
         started = time.monotonic()
         compose(args, "restart", "database")
         wait_ready(args, ready=True)
@@ -358,6 +375,21 @@ def restart_database_after_claim(
                 lock_process.wait(timeout=3)
             except subprocess.TimeoutExpired:
                 lock_process.kill()
+        compose(
+            args,
+            "exec",
+            "-T",
+            "database",
+            "psql",
+            "-U",
+            "harbor",
+            "-d",
+            "harbor",
+            "-Atc",
+            "SELECT pg_terminate_backend(pid) FROM pg_stat_activity "
+            "WHERE pid<>pg_backend_pid() "
+            "AND application_name='harbor-reliability-crash-window'",
+        )
         compose(args, "start", "worker")
 
 

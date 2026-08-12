@@ -165,13 +165,25 @@ def _apply_tool(
         ]
         return "succeeded", "已读取并脱敏日志样本。", {"matches": len(samples), "samples": samples}, 0
     if tool_name == "get_service_status":
+        snapshot = {
+            "instances": deepcopy(state["instances"]),
+            "replicas": state.get("replicas", len(state["instances"])),
+            **deepcopy(state.get("metrics", {})),
+        }
+        for field in (
+            "credential_version",
+            "cache_version",
+            "db_version",
+            "partition",
+            "applied_checkpoint",
+            "expected_checkpoint",
+        ):
+            if field in state:
+                snapshot[field] = deepcopy(state[field])
         return (
             "succeeded",
             "已读取服务实例状态。",
-            {
-                "instances": deepcopy(state["instances"]),
-                "replicas": state.get("replicas", len(state["instances"])),
-            },
+            snapshot,
             0,
         )
     if tool_name == "restart_service":

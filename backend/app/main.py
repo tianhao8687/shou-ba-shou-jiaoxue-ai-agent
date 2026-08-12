@@ -123,8 +123,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         app.state.inprocess_lab = inprocess_lab
         if resolved.embedded_worker:
             worker.start()
-        yield
-        worker.stop()
+        try:
+            yield
+        finally:
+            worker.stop()
+            store.close()
 
     app = FastAPI(
         title=resolved.app_name,

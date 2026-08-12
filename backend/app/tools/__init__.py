@@ -11,6 +11,7 @@ from .contracts import (
     InspectLogsInput,
     KubernetesTargetInput,
     LabTargetInput,
+    PreExecutionObservationSpec,
     PrometheusServiceInput,
     QueryMetricsInput,
     RefreshCacheInput,
@@ -21,6 +22,7 @@ from .contracts import (
     StrictToolInput,
     ToolCallResponse,
     ToolClient,
+    ToolCompensation,
     ToolSpec,
 )
 from .executor import ToolExecutor

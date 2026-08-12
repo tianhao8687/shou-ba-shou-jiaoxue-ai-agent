@@ -43,6 +43,7 @@ def client(tmp_path: Path) -> TestClient:
         data_dir=data_dir,
         auth_signing_secret="test-auth-signing-secret-is-long-enough",
         capability_signing_secret="test-capability-secret-is-long-enough",
+        lab_oracle_token="test-oracle-token-is-long-enough",
         demo_password="test-password-2026",
     )
     with TestClient(create_app(settings)) as test_client:

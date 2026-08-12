@@ -139,6 +139,47 @@ class FailingEngine:
         raise RuntimeError("simulated engine failure")
 
 
+class OrderedStore(RecordingStore):
+    def __init__(self) -> None:
+        super().__init__()
+        self.events: list[str] = []
+
+    def claim_job(self, worker_id: str, lease_seconds: float):
+        self.events.append("claim")
+        return super().claim_job(worker_id, lease_seconds)
+
+    def finish_job(self, job_id, worker_id, fencing_token, status, error=None):
+        self.events.append("finish")
+        return super().finish_job(job_id, worker_id, fencing_token, status, error)
+
+    def reconcile_orphaned_runs(self):
+        self.events.append("reconcile")
+        return []
+
+
+class OrderedEngine:
+    def __init__(self, events: list[str]) -> None:
+        self.events = events
+
+    def process(self, run_id: str, lease) -> None:
+        del run_id, lease
+        self.events.append("process")
+
+
+def test_worker_persists_claim_before_run_reconciliation_scan() -> None:
+    store = OrderedStore()
+    worker = AgentWorker(
+        store,  # type: ignore[arg-type]
+        OrderedEngine(store.events),  # type: ignore[arg-type]
+        worker_id="worker-ordered",
+        lease_seconds=1,
+        heartbeat_seconds=0.1,
+    )
+
+    assert worker.run_once() is True
+    assert store.events == ["claim", "process", "finish", "reconcile"]
+
+
 def test_worker_requeues_retryable_engine_failure() -> None:
     store = RecordingStore(attempts=1)
     worker = AgentWorker(

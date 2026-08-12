@@ -90,7 +90,7 @@ test(`${critical} 01 Login：身份登录、键盘边界和基础可访问性`, 
   await expect(page.getByText(/API v3\./)).toBeVisible()
   await expectNoSeriousA11yViolations(page)
   await login(page)
-  await expect(page.locator('.identity-chip').getByText('平台管理员', { exact: true })).toBeVisible()
+  await expect(page.getByLabel('当前身份：平台管理员')).toBeVisible()
 
   await page.getByRole('button', { name: '新建事件' }).click()
   const dialog = page.getByRole('dialog')

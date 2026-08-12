@@ -13,8 +13,14 @@ from ..registry.contracts import (
 from ..registry.runbooks import RUNBOOK_REGISTRY
 from ..registry.services import SERVICE_REGISTRY
 from ..registry.tools import register_tool
-from ..schemas import Check, RiskLevel
-from ..tools import FAULT_DEFINITIONS, LabTargetInput, ToolCallResponse, ToolSpec
+from ..schemas import Check, PlanStep, RiskLevel, RunRecord
+from ..tools import (
+    FAULT_DEFINITIONS,
+    LabTargetInput,
+    PreExecutionObservationSpec,
+    ToolCallResponse,
+    ToolSpec,
+)
 
 
 class InspectWarehouseSyncInput(LabTargetInput):
@@ -25,6 +31,32 @@ class ReplayWarehouseCheckpointInput(LabTargetInput):
     partition: str = Field(pattern=r"^[a-z0-9][a-z0-9_-]{0,63}$")
     target_checkpoint: int = Field(ge=1)
     change_ticket: str = Field(pattern=r"^CHG-\d{4,}$")
+
+
+def _fresh_sync_payload(
+    record: RunRecord, step: PlanStep
+) -> dict[str, object]:
+    experiment_id = step.tool_input.get("experiment_id") or record.incident.experiment_id
+    service = step.tool_input.get("service") or record.incident.service
+    return {
+        "experiment_id": experiment_id,
+        "service": service,
+        "window_minutes": 15,
+    }
+
+
+FRESH_SYNC_OBSERVATION = PreExecutionObservationSpec(
+    tool_name="inspect_sync_lag",
+    payload_builder=_fresh_sync_payload,
+    required_fields=frozenset(
+        {
+            "partition",
+            "applied_checkpoint",
+            "expected_checkpoint",
+            "checkpoint_gap",
+        }
+    ),
+)
 
 
 def inspect_sync_lag(
@@ -226,6 +258,7 @@ def register_warehouse_sync(*, replace: bool = False) -> None:
             required_observation_fields=frozenset(
                 {"partition", "expected_checkpoint", "checkpoint_gap"}
             ),
+            pre_execution_observations=(FRESH_SYNC_OBSERVATION,),
         ),
         lab_handler=replay_sync_checkpoint,
         replace=replace,

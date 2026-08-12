@@ -8,6 +8,7 @@ from ..tools import ToolExecutor
 from .approvals import ApprovalMixin
 from .context import NodeHandler
 from .lifecycle import LifecycleMixin
+from .pre_execution import FreshObservation, PreExecutionObserver
 from .nodes import (
     diagnose,
     execute,
@@ -66,6 +67,7 @@ class AgentEngine(ApprovalMixin, LifecycleMixin):
         self.kubernetes_connector_enabled = kubernetes_connector_enabled
         self.kubernetes_staging_namespace = kubernetes_staging_namespace
         self.workflow_timeout_seconds = workflow_timeout_seconds
+        self.pre_execution_observer = PreExecutionObserver(tool_executor)
         self.node_handlers: dict[str, NodeHandler] = {
             "intake": intake.run,
             "retrieve": retrieve.run,
@@ -78,6 +80,16 @@ class AgentEngine(ApprovalMixin, LifecycleMixin):
             "verify": verify.run,
             "finalize": finalize.run,
         }
+
+    def observe_before_execution(
+        self, record, step, lease
+    ) -> FreshObservation:
+        return self.pre_execution_observer.observe(
+            record=record,
+            step=step,
+            lease=lease,
+            lease_guard=self.lease_guard(lease),
+        )
 
 
 # Compatibility methods for internal callers that previously used helpers on the

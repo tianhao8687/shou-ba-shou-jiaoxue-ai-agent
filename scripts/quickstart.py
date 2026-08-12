@@ -61,9 +61,18 @@ def compose_command(docker: str, *arguments: str, check: bool = True) -> int:
     # Inherit stdio instead of relaying it through a Python pipe. Docker Desktop
     # uses the console handles while opening its BuildKit session on Windows;
     # piping them through another process can corrupt the session header.
+    child_environment = os.environ.copy()
+    if os.name == "nt" and not str(REPOSITORY_ROOT).isascii():
+        # Docker Desktop's BuildKit session header is ASCII-only on some Windows
+        # releases. Keep Linux/macOS and ASCII paths on BuildKit, but use the
+        # bundled classic fallback for a Unicode checkout instead of requiring
+        # the user to move or rename the repository.
+        child_environment.setdefault("DOCKER_BUILDKIT", "0")
+        child_environment.setdefault("COMPOSE_BAKE", "false")
     completed = subprocess.run(
         command,
         cwd=REPOSITORY_ROOT,
+        env=child_environment,
         check=False,
     )
     return_code = completed.returncode

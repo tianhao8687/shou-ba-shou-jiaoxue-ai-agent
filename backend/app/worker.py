@@ -92,18 +92,25 @@ class AgentWorker:
         except Exception as exc:
             self.last_error = f"registry removal {type(exc).__name__}: {exc}"
 
-    def run_once(self) -> bool:
+    def _reconcile_if_due(self) -> None:
         monotonic_now = time.monotonic()
-        if monotonic_now >= self._next_reconcile_at:
-            self._next_reconcile_at = monotonic_now + self.reconcile_seconds
-            try:
-                self.reconciled_jobs += len(self.store.reconcile_orphaned_runs())
-            except Exception as exc:
-                # Existing jobs must remain processable even if a repair scan has a
-                # transient database failure. The next bounded interval retries it.
-                self.last_error = f"reconcile {type(exc).__name__}: {exc}"
+        if monotonic_now < self._next_reconcile_at:
+            return
+        self._next_reconcile_at = monotonic_now + self.reconcile_seconds
+        try:
+            self.reconciled_jobs += len(self.store.reconcile_orphaned_runs())
+        except Exception as exc:
+            # Existing jobs must remain processable even if a repair scan has a
+            # transient database failure. The next bounded interval retries it.
+            self.last_error = f"reconcile {type(exc).__name__}: {exc}"
+
+    def run_once(self) -> bool:
+        # Claim durable work before the repair scan. Besides reducing queue latency,
+        # this makes the persisted claim observable before process() reads Run state;
+        # crash recovery can therefore fence and reclaim that exact boundary.
         job = self.store.claim_job(self.worker_id, self.lease_seconds)
         if job is None:
+            self._reconcile_if_due()
             return False
         recovered = job.attempts > 1
         if recovered:
@@ -184,6 +191,7 @@ class AgentWorker:
         finally:
             heartbeat_stop.set()
             heartbeat_thread.join(timeout=1.0)
+            self._reconcile_if_due()
 
     def run_forever(self) -> None:
         self.start_registry()

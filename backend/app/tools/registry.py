@@ -3,11 +3,12 @@ from __future__ import annotations
 from collections.abc import Iterable, Iterator, Mapping
 from dataclasses import replace
 
-from ..schemas import PlanStep, RiskLevel
+from ..schemas import PlanStep, RiskLevel, RunRecord
 from .contracts import (
     GetServiceStatusInput,
     InspectKubernetesWorkloadInput,
     InspectLogsInput,
+    PreExecutionObservationSpec,
     PrometheusServiceInput,
     QueryMetricsInput,
     RefreshCacheInput,
@@ -15,7 +16,108 @@ from .contracts import (
     RotateCredentialInput,
     ScaleKubernetesDeploymentInput,
     ScaleWorkersInput,
+    ToolCompensation,
     ToolSpec,
+)
+
+
+def _lab_service_status_payload(
+    record: RunRecord, step: PlanStep
+) -> dict[str, object]:
+    experiment_id = step.tool_input.get("experiment_id") or record.incident.experiment_id
+    service = step.tool_input.get("service") or record.incident.service
+    if not isinstance(experiment_id, str) or not experiment_id:
+        raise ValueError("lab write requires an experiment_id for fresh observation")
+    if not isinstance(service, str) or not service:
+        raise ValueError("lab write requires a service for fresh observation")
+    return {
+        "experiment_id": experiment_id,
+        "service": service,
+        "include_instances": True,
+    }
+
+
+def _kubernetes_workload_payload(
+    _record: RunRecord, step: PlanStep
+) -> dict[str, object]:
+    return {
+        "namespace": step.tool_input.get("namespace"),
+        "deployment": step.tool_input.get("deployment"),
+        "include_events": False,
+        "event_limit": 0,
+        "wait_for_ready_replicas": None,
+        "timeout_seconds": 10,
+    }
+
+
+def _scale_workers_compensation(
+    _record: RunRecord, step: PlanStep, before_state: dict[str, object]
+) -> ToolCompensation:
+    replicas = before_state.get("replicas")
+    if not isinstance(replicas, int) or isinstance(replicas, bool):
+        raise ValueError("fresh state does not contain an integer replicas value")
+    payload = {
+        "experiment_id": step.tool_input["experiment_id"],
+        "service": step.tool_input["service"],
+        "target_replicas": replicas,
+        "change_ticket": step.tool_input["change_ticket"],
+    }
+    return ToolCompensation(
+        tool_name="scale_workers",
+        payload=payload,
+        before_state={"replicas": replicas},
+        expected_state={"replicas": replicas},
+    )
+
+
+def _scale_kubernetes_compensation(
+    _record: RunRecord, step: PlanStep, before_state: dict[str, object]
+) -> ToolCompensation:
+    replicas = before_state.get("replicas")
+    if not isinstance(replicas, int) or isinstance(replicas, bool):
+        raise ValueError("fresh state does not contain an integer replicas value")
+    payload = {
+        "namespace": step.tool_input["namespace"],
+        "deployment": step.tool_input["deployment"],
+        "target_replicas": replicas,
+        "change_ticket": step.tool_input["change_ticket"],
+    }
+    return ToolCompensation(
+        tool_name="scale_kubernetes_deployment",
+        payload=payload,
+        before_state={
+            "namespace": before_state.get("namespace"),
+            "deployment": before_state.get("deployment"),
+            "replicas": replicas,
+        },
+        expected_state={"replicas": replicas},
+    )
+
+
+LAB_STATUS_FOR_RESTART = PreExecutionObservationSpec(
+    tool_name="get_service_status",
+    payload_builder=_lab_service_status_payload,
+    required_fields=frozenset({"instances"}),
+)
+LAB_STATUS_FOR_SCALE = PreExecutionObservationSpec(
+    tool_name="get_service_status",
+    payload_builder=_lab_service_status_payload,
+    required_fields=frozenset({"replicas"}),
+)
+LAB_STATUS_FOR_CREDENTIAL = PreExecutionObservationSpec(
+    tool_name="get_service_status",
+    payload_builder=_lab_service_status_payload,
+    required_fields=frozenset({"credential_version"}),
+)
+LAB_STATUS_FOR_CACHE = PreExecutionObservationSpec(
+    tool_name="get_service_status",
+    payload_builder=_lab_service_status_payload,
+    required_fields=frozenset({"cache_version", "db_version"}),
+)
+KUBERNETES_STATE_FOR_SCALE = PreExecutionObservationSpec(
+    tool_name="inspect_kubernetes_workload",
+    payload_builder=_kubernetes_workload_payload,
+    required_fields=frozenset({"namespace", "deployment", "replicas"}),
 )
 
 
@@ -71,6 +173,7 @@ _BUILTIN_TOOL_SPECS: dict[str, ToolSpec] = {
         "on-call-lead",
         False,
         "仅用于隔离 staging namespace；副本范围 1–5，不能修改镜像、命令、ServiceAccount 或 Pod 模板。",
+        pre_execution_observations=(KUBERNETES_STATE_FOR_SCALE,),
     ),
     "query_metrics": ToolSpec(
         "query_metrics", "读取实验服务的时序指标快照", RiskLevel.LOW, QueryMetricsInput, "observer", True,
@@ -87,18 +190,22 @@ _BUILTIN_TOOL_SPECS: dict[str, ToolSpec] = {
     "restart_service": ToolSpec(
         "restart_service", "滚动重启指定实例", RiskLevel.HIGH, RestartServiceInput, "on-call-lead", False,
         "仅当观测显示具体实例异常或连接池等待/超时；必须使用观测到的实例名。",
+        pre_execution_observations=(LAB_STATUS_FOR_RESTART,),
     ),
     "scale_workers": ToolSpec(
         "scale_workers", "调整消费者实例数量", RiskLevel.MEDIUM, ScaleWorkersInput, "on-call-lead", False,
         "仅当观测存在 queue_depth/oldest_age_s 且消费能力不足；服务端按生产/单副本消费速率和 20% 余量计算最小副本，不能用于连接池故障。",
+        pre_execution_observations=(LAB_STATUS_FOR_SCALE,),
     ),
     "rotate_credential": ToolSpec(
         "rotate_credential", "灰度轮换服务凭据", RiskLevel.HIGH, RotateCredentialInput, "security-on-call", False,
         "仅当观测存在凭据过期证据与 http_401_rate；需要安全值班角色。",
+        pre_execution_observations=(LAB_STATUS_FOR_CREDENTIAL,),
     ),
     "refresh_cache": ToolSpec(
         "refresh_cache", "精确刷新租户品类缓存", RiskLevel.LOW, RefreshCacheInput, "operator", False,
         "仅当观测存在 stale_sample_rate 或 cache/db 版本不一致；目标租户必须来自证据。",
+        pre_execution_observations=(LAB_STATUS_FOR_CACHE,),
     ),
 }
 
@@ -118,6 +225,8 @@ _BUILTIN_TOOL_SPECS.update(
         "scale_kubernetes_deployment": replace(
             _BUILTIN_TOOL_SPECS["scale_kubernetes_deployment"],
             rollback_contract="same-tool",
+            compensatable=True,
+            compensation_builder=_scale_kubernetes_compensation,
             required_observation_fields=frozenset(
                 {"queue_depth", "replicas", "recommended_replicas"}
             ),
@@ -144,6 +253,8 @@ _BUILTIN_TOOL_SPECS.update(
         "scale_workers": replace(
             _BUILTIN_TOOL_SPECS["scale_workers"],
             rollback_contract="same-tool",
+            compensatable=True,
+            compensation_builder=_scale_workers_compensation,
             required_observation_fields=frozenset({"queue_depth", "oldest_age_s"}),
         ),
         "rotate_credential": replace(

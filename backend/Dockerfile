@@ -15,6 +15,7 @@ RUN pip install --no-cache-dir -r /app/backend/requirements.txt
 
 COPY --chown=10001:10001 backend/app /app/backend/app
 COPY --chown=10001:10001 data /app/data
+COPY --chown=10001:10001 config /app/config
 
 WORKDIR /app/backend
 
@@ -31,6 +32,7 @@ COPY --chown=10001:10001 local_model_service /app/local_model_service
 COPY --chown=10001:10001 kubernetes_connector /app/kubernetes_connector
 COPY --chown=10001:10001 scripts/check-coverage.py /app/scripts/check-coverage.py
 COPY --chown=10001:10001 scripts/verify-kind-agent.py /app/scripts/verify-kind-agent.py
+COPY --chown=10001:10001 scripts/reliability-lab.py /app/scripts/reliability-lab.py
 ENV COVERAGE_FILE=/tmp/.coverage \
     PYTEST_ADDOPTS="-p no:cacheprovider"
 USER harbor

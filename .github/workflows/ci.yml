@@ -218,6 +218,9 @@ jobs:
           pnpm install --frozen-lockfile
           pnpm exec playwright install --with-deps chromium
 
+      - name: Verify runtime image retrieval configuration contract
+        run: python scripts/test-runtime-image.py --tag harbor-agentops-runtime-contract:ci
+
       - name: Build, start and verify the complete stack
         run: python scripts/quickstart.py up --workers 2 --timeout 240
 

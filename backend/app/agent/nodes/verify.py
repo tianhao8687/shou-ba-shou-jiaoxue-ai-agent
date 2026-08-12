@@ -9,6 +9,7 @@ from ..context import (
     topological,
 )
 from .execute import execution_actor
+from ..compensation import execute_compensation
 from ...schemas import (
     Check,
     PlanStep,
@@ -41,6 +42,24 @@ def execute_automatic_rollback(
     )
     if not acted:
         return True, "action did not commit; rollback not needed"
+    prepared = next(
+        (
+            item
+            for item in record.compensations
+            if item.original_step_id == step.id
+        ),
+        None,
+    )
+    if prepared is not None:
+        outcome = execute_compensation(
+            engine,
+            record,
+            step,
+            prepared,
+            lease,
+            execution_actor(record),
+        )
+        return outcome.restored, outcome.detail
     spec = TOOL_REGISTRY[step.rollback.tool_name]
     suffix = step.id.removeprefix("step-")
     rollback_step = PlanStep(
@@ -316,9 +335,14 @@ def run(engine: EnginePort, record: RunRecord, lease: LeaseContext) -> NodeOutco
         automatic_outcomes: list[bool] = []
         manual_required = False
         for step in reversed(topological(record.plan)):
+            if TOOL_REGISTRY[step.tool_name].read_only:
+                continue
             if step.rollback.mode == "tool":
                 passed, _ = execute_automatic_rollback(engine, record, step, lease)
                 automatic_outcomes.append(passed)
+                if not passed:
+                    manual_required = True
+                    break
             else:
                 manual_required = True
                 engine.audit(
@@ -328,6 +352,7 @@ def run(engine: EnginePort, record: RunRecord, lease: LeaseContext) -> NodeOutco
                     step.rollback.rationale,
                     {"step_id": step.id, "mode": "manual"},
                 )
+                break
         if automatic_outcomes and all(automatic_outcomes) and not manual_required:
             record.error_code = "VERIFICATION_FAILED_ROLLED_BACK"
             record.error_detail = (

@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Literal, Protocol
+from typing import Any, Callable, Literal, Protocol
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from ..schemas import RiskLevel
+from ..schemas import PlanStep, RiskLevel, RunRecord
 
 class StrictToolInput(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -74,6 +74,25 @@ class RefreshCacheInput(LabTargetInput):
 
 
 @dataclass(frozen=True)
+class PreExecutionObservationSpec:
+    """Deterministic read route required immediately before a write tool."""
+
+    tool_name: str
+    payload_builder: Callable[[RunRecord, PlanStep], dict[str, Any]]
+    required_fields: frozenset[str] = frozenset()
+
+
+@dataclass(frozen=True)
+class ToolCompensation:
+    """A deterministic inverse action built by the tool contract, never by an LLM."""
+
+    tool_name: str
+    payload: dict[str, Any]
+    before_state: dict[str, Any]
+    expected_state: dict[str, Any]
+
+
+@dataclass(frozen=True)
 class ToolSpec:
     name: str
     description: str
@@ -85,6 +104,27 @@ class ToolSpec:
     rollback_contract: Literal["none", "manual", "same-tool"] = "manual"
     idempotency_policy: Literal["read-only", "hash-bound"] = "hash-bound"
     required_observation_fields: frozenset[str] = frozenset()
+    pre_execution_observations: tuple[PreExecutionObservationSpec, ...] = ()
+    compensatable: bool = False
+    compensation_builder: Callable[
+        [RunRecord, PlanStep, dict[str, Any]], ToolCompensation
+    ] | None = None
+
+    def __post_init__(self) -> None:
+        if self.read_only and self.pre_execution_observations:
+            raise ValueError(
+                f"read-only tool {self.name} cannot require a pre-execution write guard"
+            )
+        if not self.read_only and not self.pre_execution_observations:
+            raise ValueError(
+                f"write tool {self.name} must declare a fresh observation contract"
+            )
+        if self.read_only and self.compensatable:
+            raise ValueError(f"read-only tool {self.name} cannot be compensatable")
+        if self.compensatable != (self.compensation_builder is not None):
+            raise ValueError(
+                f"tool {self.name} must declare compensatable and builder together"
+            )
 
 @dataclass(frozen=True)
 class ToolCallResponse:

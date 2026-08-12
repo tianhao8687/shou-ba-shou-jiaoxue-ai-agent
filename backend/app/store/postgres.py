@@ -3,6 +3,7 @@ from __future__ import annotations
 from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
 import json
+import threading
 from typing import Any
 
 from ..migrations import postgres_schema_status, run_postgres_migrations
@@ -19,13 +20,63 @@ from .jobs import (
 from .runs import _parse_datetime, _with_version
 
 class PostgresStore(Store):
-    def __init__(self, database_url: str) -> None:
+    def __init__(
+        self,
+        database_url: str,
+        *,
+        pool_min_size: int = 1,
+        pool_max_size: int = 10,
+        pool_timeout_seconds: float = 10.0,
+        pool_factory=None,
+    ) -> None:
+        if pool_min_size < 0 or pool_max_size < 1:
+            raise ValueError("PostgreSQL pool sizes must be positive and bounded")
+        if pool_min_size > pool_max_size:
+            raise ValueError("PostgreSQL pool min size cannot exceed max size")
+        if pool_timeout_seconds <= 0:
+            raise ValueError("PostgreSQL pool timeout must be positive")
         self.database_url = database_url
+        if pool_factory is None:
+            from psycopg_pool import ConnectionPool
+
+            pool_factory = ConnectionPool
+        self._pool_timeout_seconds = pool_timeout_seconds
+        self._pool = pool_factory(
+            conninfo=database_url,
+            min_size=pool_min_size,
+            max_size=pool_max_size,
+            timeout=pool_timeout_seconds,
+            open=False,
+            name="harbor-agentops-store",
+        )
+        self._pool_opened = False
+        self._pool_closed = False
+        self._pool_lifecycle_lock = threading.Lock()
 
     def _connect(self):
-        import psycopg
+        self._ensure_pool_open()
+        return self._pool.connection(timeout=self._pool_timeout_seconds)
 
-        return psycopg.connect(self.database_url)
+    def _ensure_pool_open(self, *, wait: bool = False) -> None:
+        with self._pool_lifecycle_lock:
+            if self._pool_closed:
+                raise RuntimeError("PostgreSQL connection pool is closed")
+            if not self._pool_opened:
+                self._pool.open(
+                    wait=wait,
+                    timeout=self._pool_timeout_seconds,
+                )
+                self._pool_opened = True
+            elif wait:
+                self._pool.wait(timeout=self._pool_timeout_seconds)
+
+    def close(self) -> None:
+        with self._pool_lifecycle_lock:
+            if self._pool_closed:
+                return
+            self._pool_closed = True
+            if self._pool_opened:
+                self._pool.close(timeout=self._pool_timeout_seconds)
 
     @contextmanager
     def model_inference_slot(self):
@@ -41,6 +92,7 @@ class PostgresStore(Store):
                 cursor.execute(f"SELECT pg_advisory_unlock({lock_sql})")
 
     def initialize(self) -> None:
+        self._ensure_pool_open(wait=True)
         with self._connect() as connection:
             run_postgres_migrations(connection)
 

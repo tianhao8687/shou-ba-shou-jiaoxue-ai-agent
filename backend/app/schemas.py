@@ -167,6 +167,34 @@ class ToolResult(StrictModel):
     fencing_token: int | None = Field(default=None, ge=1)
 
 
+class CompensationRecord(StrictModel):
+    """Durable, tool-authored inverse action prepared before a write occurs."""
+
+    original_step_id: str
+    compensation_step_id: str
+    tool_name: str
+    tool_input: dict[str, Any]
+    before_state: dict[str, Any]
+    expected_state: dict[str, Any]
+    status: Literal[
+        "prepared",
+        "ready",
+        "running",
+        "succeeded",
+        "failed",
+        "unknown",
+        "not_required",
+    ] = "prepared"
+    original_idempotency_key: str
+    compensation_idempotency_key: str
+    manual_intervention_required: bool = False
+    external_state_unknown: bool = False
+    result_summary: str | None = None
+    error: str | None = None
+    prepared_at: datetime = Field(default_factory=utc_now)
+    updated_at: datetime = Field(default_factory=utc_now)
+
+
 class VerificationResult(StrictModel):
     step_id: str
     passed: bool
@@ -291,6 +319,7 @@ class RunRecord(BaseModel):
     risk_level: RiskLevel = RiskLevel.LOW
     approval: Approval = Field(default_factory=Approval)
     tool_results: list[ToolResult] = Field(default_factory=list)
+    compensations: list[CompensationRecord] = Field(default_factory=list)
     verification: list[VerificationResult] = Field(default_factory=list)
     resolution: str = ""
     traces: list[TraceStep] = Field(default_factory=list)

@@ -12,6 +12,7 @@
 - [v3.5 成熟度复评](./docs/项目成熟度审计与v3.5外部验证交付报告_2026-08-10.md)：外部验证加入后的重新评分、招聘映射和下一阶段差距。
 - [完整遥测 RCA 验证报告](./docs/完整遥测RCA验证报告_2026-08-11.md)：四天、54,426,202 行公开日志/指标/调用链的三阶段隔离、失败复盘与最终盲测。
 - [v3.6 可交付复评](./docs/项目成熟度审计与v3.6完整遥测交付报告_2026-08-11.md)：基于实现、测试和真实数据重新评分，并映射 20K+ 招聘要求。
+- [v3.6 生产加固整改报告](./docs/v3.6-production-hardening-report.md)：Fresh Observation、Saga、生产密钥、连接池、故障注入和最新验收边界。
 - [v3.3 成熟度审计与整改报告](./docs/项目成熟度审计与v3.3整改报告_2026-08-10.md)：按源码、容器、数据库、故障和浏览器行为复评，不用 Markdown 代替证据。
 - [v3.4 1–4 项交付与复评报告](./docs/项目成熟度审计与v3.4交付报告_2026-08-10.md)：真实 kind staging、迁移、备份恢复、可靠性和 105 项对抗评测。
 - [岗位明细 CSV](./career/厦门_AI_Agent_20K以上岗位明细_2026-08-08.csv)：逐条招聘来源和需求证据。
@@ -38,8 +39,10 @@ Harbor AgentOps 是一个本地优先、证据约束、可恢复的 AIOps Agent 
 - Run 状态变化与 durable Job 入队在同一数据库事务提交；进程崩溃不会留下“显示排队但没有任务”的孤儿状态。
 - lease 动态失效会在节点、模型和工具边界主动中止；远程工具还会拒绝较旧 fencing token。
 - 普通 production 事件只用服务端固定 PromQL 模板读取 Prometheus；空数据、401 或超时均在模型和写动作前停止。
+- 所有写工具在审批后、动作 capability 签发前重新读取真实状态；状态漂移、超时或无效数据都失败关闭，不使用旧 Observation 兜底。
 - 工具副作用与幂等记录在同一事务提交；响应丢失后复用同一 key 只返回首次结果。
 - “工具返回成功”不等于事故恢复；系统独立重读指标逐条检查 success criteria。
+- 多步骤中后续动作明确失败时，工具根据写前真实状态生成并逆序执行 Saga 补偿；Unknown Outcome 不自动重试或补偿。
 - 自动补偿也经过 Schema、角色、实验绑定、计划哈希、capability、幂等和独立复查。
 
 ## 架构
@@ -104,6 +107,15 @@ V3.3 已在本机真实运行 `OpenVINO/Qwen3-Embedding-0.6B-int4-cw-ov`：last-
 - Worker 即使空闲也写数据库进程心跳，`/api/status` 能证明当前 fleet 的在线副本，不再固定返回 `verified=false`。
 - PostgreSQL custom-format 备份已真实恢复到隔离临时库，并核对迁移版本、核心表行数与孤儿 Job 后删除临时库。
 - v4 评测为 5 类故障 × 21 个变体 = 105 case，加入工具输出注入、长上下文、Unicode 和结构化诱导，并报告 95% Wilson 区间。
+
+## 3.6 生产加固增量
+
+- Runtime 镜像明确包含 `/app/config/retrieval.json`，CI 以真实 `docker build` + `docker run` 验证加载合同。
+- 写工具在审批后执行轻量 Fresh Observation，重新验证真实前置条件；失败、超时、缺字段和类型错误全部转人工。
+- `scale_workers` 与 kind staging `scale_kubernetes_deployment` 支持工具自生成 Saga 逆操作；补偿元数据先于副作用持久化，补偿后走独立只读复验。
+- `DEMO_MODE=false` 或 `APP_ENV=production` 时，演示密码、认证签名、capability 签名和 oracle token 若为空、过短或带默认标记会直接拒绝启动。
+- PostgreSQL 使用官方 `psycopg_pool`；每个进程有有界连接池，模型 advisory lock 在同一 checkout 内加锁和解锁。
+- 可靠性实验覆盖“Job 已 claim、首次读取 Run 前数据库崩溃”的精确窗口，并验证新 fencing token 接管同一 Run。
 
 ## 3.6 完整遥测盲测增量
 
@@ -334,7 +346,7 @@ python scripts/run-telemetry-validation.py --offline --require-gates `
 ## 测试与验证
 
 ```powershell
-# 后端测试镜像：89 项 + 分层覆盖率门禁；生产镜像不携带 pytest / DuckDB
+# 后端测试镜像：131 项 + 分层覆盖率门禁；生产镜像不携带 pytest / DuckDB
 # 以下命令从仓库根目录执行
 docker build --target test -t harbor-agentops-backend-test -f backend/Dockerfile .
 docker run --rm --network harbor-agentops_default `
@@ -361,10 +373,11 @@ pnpm build
 pnpm exec playwright install chromium
 pnpm e2e
 
-# Compose 配置与 3 worker 实启
+# Compose 配置与 2 worker 实启
 cd ..
 docker compose config --quiet
-docker compose up -d --build --scale worker=3
+python scripts/test-runtime-image.py
+python scripts/quickstart.py up --workers 2
 docker compose ps
 
 # 真实 Embedding：校准集 + 独立留出集
@@ -383,24 +396,31 @@ python scripts/check-portability.py
 
 GitHub Actions 对每个 PR 和 `main` 提交执行六个稳定检查：`Quality gates`、`Pinned external data validation`、`Backend tests`、`Frontend tests`、`Compose smoke and browser E2E`、`kind least-privilege staging E2E`。外部轻量数据 job 先联网核验固定字节，再断网复跑；Compose job 执行备份恢复和依赖故障矩阵；kind job 验证真实 RBAC、审批、Scale 与独立就绪证据。约 1.90 GB 的完整遥测另设手动 workflow，并缓存验真原始文件，避免每个小改动浪费带宽和 CI 时间。
 
-2026-08-11 v3.6 本机验证：
+当前工作树的远端 CI 尚未运行；上一已推送提交 `386990612ef1c2c66702ae22bab3f1cdd29474ea` 的 Run `31582016526` 为 4/6，Compose 与 Kind 因 runtime 缺配置失败。本轮不会在新提交实际全绿前把它改写成 6/6。全绿证据将由 `scripts/generate-release-evidence.py` 从 GitHub API 生成，脚本会拒绝失败、取消、运行中或缺 Job 的 Run。
+
+2026-08-12 v3.6 生产加固本机验证：
 
 | 证据 | 结果 |
 |---|---|
-| 后端 | Linux CI 连接独立 PostgreSQL/Fault Lab：92/92；控制面覆盖率 85.24%，`store.py` 78.77%、`worker.py` 84.44%；遥测验证器独立 9/9、覆盖率 62.53% |
+| 后端 | Linux 测试镜像连接独立 PostgreSQL/Fault Lab：131/131；总覆盖率 86.33%；遥测验证器独立 9/9、覆盖率 62.53% |
 | 前端 | 21/21 组件测试；TypeScript 与生产构建通过 |
-| 浏览器 | 桌面 Chromium + Pixel 7 共 6/6；包含新遥测页、24 行账本、Axe WCAG 2A/AA、整页无溢出、只读生产事件、低风险闭环和双主体审批 |
+| 浏览器 | desktop Chromium 11/11 + Pixel 7 11/11，共 22/22；包含 Axe WCAG 2 A/AA、只读生产事件、低风险闭环和双主体审批 |
 | 完整启动入口 | 中文目录直接运行 `quickstart.py up --workers 2`，逐镜像构建、就绪等待和 HTTP smoke 全通过 |
-| 双 Worker | 两个当前容器分别处理 5 个和 4 个成功 Job；PostgreSQL 16 连接竞争单 Job 仍只领取一次 |
+| Runtime 合同 | 真实 runtime image 成功加载 `/app/config/retrieval.json`，配置哈希 `baf4d50e…` |
+| 双 Worker | 2 个独立 Worker 均为 healthy，数据库心跳注册 2/2；PostgreSQL 连接竞争单 Job 仍只领取一次 |
+| TOCTOU | 审批期间副本漂移、状态不变、观测超时、无效数据四类回归通过；三个失败路径均 0 次写入 |
+| Saga | 双成功、明确失败后补偿成功、补偿失败、Unknown、只读前序五类回归通过 |
+| 生产密钥 | demo 允许；非 demo 默认值与 production `change-me` 均 fail-fast；独立随机密钥允许 |
+| PostgreSQL Pool | 官方 `psycopg_pool` 生效；advisory lock/unlock 只 checkout 同一连接一次 |
 | 生产观测 | 正常 Prometheus 模拟返回 4/4 指标后才调用模型；空数据、401、超时均无模型调用、无写动作并转人工 |
 | readiness | 停止 Prometheus：liveness 200、readiness 503；恢复后 readiness 200 |
 | 一致性与隔离 | Run + Job 故障回滚、orphan 修复、活动 Job 去重、租约主动失效、远程 stale fence 拒绝均有回归 |
 | 租户 | Run 查询和 Evaluation 均按 tenant 在数据库层隔离；API 跨租户仍返回 404 / 空结果 |
 | 模型背压 | 单执行槽 + 有界队列；队列满与排队超时测试通过，且 429 / 503 语义和指标已实现 |
 | 历史真实模型证据 | v3.2 的 3 条真实 Qwen 抽样仍保留；本轮未把旧样本伪装成新的生产准确率测试 |
-| kind staging | RBAC 矩阵通过；审批前 1 副本，审批后真实 4/4 ready，独立验证后实验复位 |
-| 数据恢复 | 120,236-byte 备份已恢复；3 个 migration、核心表行数和 0 orphan Job 一致 |
-| 可靠性 | 8 次运行、4 次 Worker 重启、2 次 DB 重启、1 次 Prometheus 停机；0 失败 |
+| kind staging | 从零创建固定 Kind 集群，RBAC 矩阵通过；审批前 1 副本，审批后真实 4/4 ready，独立验证后复位 |
+| 数据恢复 | 26,780-byte custom-format 备份已隔离恢复；3 个 migration、核心表行数和 0 orphan Job 一致，临时库已删除 |
+| 可靠性 | 4 个 Run 全完成、0 失败；含 claim 后 DB 崩溃恢复、Worker 重启、DB 重启、Prometheus 停机；最终 Worker 2/2 |
 | 密封评测 | v4 105/105 fixture 通过、0 unsafe action；95% Wilson 区间 96.47%–100% |
 | 外部数据 | 3 个独立来源、8 个文件哈希匹配、34,984 条记录、29,125 条留出；9/9 基础门槛通过，外部自动故障覆盖 0% |
 | 完整遥测 RCA | 4 个日期归档哈希匹配、54,426,202 行；原始盲测 79.17%/29.17%，确定排序后的两次重放语义一致并为 66.67%/25.00%；两者均 10/10 门槛、0 oracle 运行时泄漏、0 危险写入 |
@@ -412,13 +432,14 @@ GitHub Actions 对每个 PR 和 `main` 提交执行六个稳定检查：`Quality
 
 ```text
 backend/app/
-  agent.py          状态机、审批、执行、验证、补偿
-  model_adapter.py  Qwen 协议、结构校验、Plan IR 物化、熔断
+  agent/            状态机节点、审批、Fresh Observation、执行守卫、Saga 补偿
+  model/            Qwen 协议、结构校验、Plan IR 提案与路由
   policy.py         工具/证据/风险/回滚的确定性编译
   retrieval.py      切块、路由、BM25/RRF、Embedding adapter
-  store.py          SQLite/PostgreSQL、CAS、job lease、fencing
+  store/            SQLite/PostgreSQL、连接池、CAS、job lease、fencing
   migrations.py     版本化 schema、校验和、SQLite/PostgreSQL 升级锁
-  tools.py          工具注册表、capability、幂等客户端
+  tools/            工具合同、注册表、capability、幂等与执行边界
+  registry/         服务、工具和 runbook 注册边界
   evaluation.py     密封实验、隐藏 oracle、逐项评分
   external_validation.py  外部来源校验、隔离切分、检测与安全评分
   telemetry_validation.py 完整遥测安全获取、Parquet 窗口分析、多模态融合与盲评分
@@ -442,7 +463,7 @@ docs/               架构和机器可读证据
 - PostgreSQL 逻辑备份与隔离恢复已实测；尚未做 WAL/PITR、跨主机集群、跨区域恢复和 2–8 小时 soak。
 - API `/api/ready` 只判断能否安全接收入持久队列；`/api/status` 通过数据库心跳报告 Worker fleet，但单个 API 200 仍不能冒充跨主机任务交付 SLO。
 - 真实 Qwen3 Embedding 已接入并完成 15+15 小型评测，但尚无大规模领域标注集、hard negatives、reranker 或在线 A/B。
-- 自动补偿目前仅白名单允许 `scale_workers`；重启、凭据和缓存回滚保持人工接管，避免假装存在安全的通用逆操作。
+- 自动 Saga 目前仅白名单允许 `scale_workers` 与隔离 staging 的 `scale_kubernetes_deployment`；重启、凭据和缓存回滚保持人工接管，避免假装存在安全的通用逆操作。
 - 本地 Qwen CPU 单次推理历史样本约 68–77 秒，不适合高并发在线决策；数据库 advisory lock 与网关有界队列能保护容量，但不能提高吞吐，生产仍需 GPU、批处理、模型路由与容量 SLO。
 - 审计可查询但不是 WORM；生产还需不可篡改存储、集中 DLP、mTLS、Vault/KMS 与安全运营接入。
 - 公开遥测 79.17%/29.17% 是原始盲测快照，不是当前可复现运行线；修复无序同分裁决后的诚实基线是故障 Top-3 66.67%、严格根因 Top-1 25.00%。两组都只代表固定日期离线证据；目标公司影子流量、漂移监测、本地 Qwen reranker A/B、真实 production connector 与长期 soak 仍必须单独验证。

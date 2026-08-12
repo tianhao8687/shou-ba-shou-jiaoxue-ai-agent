@@ -14,6 +14,9 @@ class Settings(BaseSettings):
     app_env: str = "local"
     demo_mode: bool = True
     database_url: str = "sqlite:///./harbor.db"
+    postgres_pool_min_size: int = 1
+    postgres_pool_max_size: int = 10
+    postgres_pool_timeout_seconds: float = 10.0
     vector_backend: str = "memory"
     embedding_backend: str = "lexical-feature-baseline"
     embedding_endpoint: str = ""
@@ -68,6 +71,34 @@ class Settings(BaseSettings):
     def allowed_origins(self) -> list[str]:
         origins = {self.frontend_origin, "http://localhost:4173", "http://localhost:8080"}
         return sorted(origins)
+
+
+_PROTECTED_SECRETS = (
+    "demo_password",
+    "auth_signing_secret",
+    "capability_signing_secret",
+    "lab_oracle_token",
+)
+_DEMO_SECRET_MARKERS = ("change-me", "harbor-demo", "harbor-local")
+
+
+def validate_production_settings(settings: Settings) -> None:
+    """Fail before dependencies start when a non-demo runtime uses demo credentials."""
+
+    if settings.demo_mode and settings.app_env.strip().lower() != "production":
+        return
+    invalid: list[str] = []
+    for field in _PROTECTED_SECRETS:
+        value = str(getattr(settings, field, "")).strip()
+        lowered = value.lower()
+        if len(value) < 16 or any(marker in lowered for marker in _DEMO_SECRET_MARKERS):
+            invalid.append(field)
+    if invalid:
+        names = ", ".join(sorted(invalid))
+        raise RuntimeError(
+            "unsafe production secrets detected for: "
+            f"{names}; replace demo/default values before startup"
+        )
 
 
 @lru_cache

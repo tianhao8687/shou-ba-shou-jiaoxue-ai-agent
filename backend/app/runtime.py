@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from .agent import AgentEngine
-from .config import Settings
+from .config import Settings, validate_production_settings
 from .model_adapter import (
     CoordinatedModelAdapter,
     HeuristicModelAdapter,
@@ -33,7 +33,13 @@ class AgentRuntime:
 def build_agent_runtime(settings: Settings, *, worker_id: str | None = None) -> AgentRuntime:
     """Build the same execution boundary for API-embedded and standalone workers."""
 
-    store = create_store(settings.database_url)
+    validate_production_settings(settings)
+    store = create_store(
+        settings.database_url,
+        postgres_pool_min_size=settings.postgres_pool_min_size,
+        postgres_pool_max_size=settings.postgres_pool_max_size,
+        postgres_pool_timeout_seconds=settings.postgres_pool_timeout_seconds,
+    )
     store.initialize()
     retriever = create_retriever(
         settings.data_dir,

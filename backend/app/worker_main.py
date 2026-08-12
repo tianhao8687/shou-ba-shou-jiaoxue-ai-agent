@@ -55,6 +55,7 @@ def main() -> None:
                 stopping.wait(settings.worker_poll_seconds)
     finally:
         runtime.worker.stop_registry()
+        runtime.store.close()
         LOGGER.info("worker %s stopped", worker_id)
         del metrics_endpoint
 

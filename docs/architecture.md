@@ -401,13 +401,23 @@ V3.2 的 3 Worker、真实 Qwen 与真实 Embedding 验证仍作为历史证据�
 
 四类自研运行容器采用非 root 用户、只读根文件系统、`cap_drop: ALL`、`no-new-privileges` 和显式可写 `/tmp`；fault lab 只有 `/data` 持久卷可写。生产 Python 镜像不安装 pytest，测试依赖位于单独 stage；基础镜像固定 digest。Nginx 增加 CSP/COOP/CORP，React Job 数据按 `run_id` 隔离，防止异步旧响应把另一运行的 lease/fencing 信息渲染到当前页面。
 
-## 16. 为什么不用 Elasticsearch 或 Electron
+## 16. v3.6 执行正确性与持久化边界
+
+写工具不再直接复用 Observe 阶段保存在 Run 中的状态。审批、计划哈希和角色校验通过后，`PreExecutionObserver` 按工具注册表声明的只读合同重新读取真实目标；字段缺失、类型错误、超时或外部失败全部 fail closed。只有 Fresh Observation 的前置条件仍成立、当前 Job lease 与 fencing token 仍有效时，系统才签发真正的动作 capability。
+
+可补偿工具在写入前用 Fresh Observation 生成 Before State 和确定性逆操作，并先 checkpoint 到 Run。后续步骤明确失败时只逆序补偿已经确定成功的动作；每次补偿仍经过 Schema、capability、幂等、lease/fencing 和独立状态复验。网络超时导致的 Unknown Outcome 不会自动重试或补偿，而是保留原幂等键并转人工对账。
+
+PostgreSQL Store 使用官方 `psycopg_pool.ConnectionPool` 管理进程内连接；模型推理 advisory lock 的 lock、受保护区和 unlock 始终位于同一个 pool checkout。API lifespan 与独立 Worker 退出都会关闭 pool。
+
+当前持久化仍把 Run、Observation、Tool Result、Audit 和 Compensation 聚合进 `agent_runs.payload` JSONB。这是本轮刻意保留的兼容边界，不代表最终数据库模型。若进入更高吞吐和长期审计场景，应以版本化 migration 将 events、executions、observations、audit_logs 和 compensations 拆成独立表，并设计索引、保留期、冷热分层和 WORM 导出；本轮没有为追求“架构漂亮”而冒险重写全部 persistence。
+
+## 17. 为什么不用 Elasticsearch 或 Electron
 
 当前知识库和测试语料规模不需要独立搜索集群。BM25 可在应用内复现，结构化状态与审计进入 PostgreSQL，向量进入 pgvector，少一套双写和运维故障域。若未来进入亿级日志全文检索，再根据容量和查询需求评估专用搜索系统。
 
 控制台是浏览器 Web 应用。Electron 会增加桌面运行时、升级链和攻击面，却没有离线桌面 API 需求，所以不引入。
 
-## 17. 到真实生产仍差什么
+## 18. 到真实生产仍差什么
 
 - 企业 OIDC/SSO、SCIM/JIT、离职回收、值班排班与组织目录；当前租户隔离和双人审批使用演示身份，不等于企业身份集成；
 - mTLS、网络策略、Vault/KMS、secret rotation、DLP 和 WORM audit；

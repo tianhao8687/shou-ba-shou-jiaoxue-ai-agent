@@ -298,7 +298,7 @@ export default function App() {
           <div className="topbar-actions">
             <span className={`runtime-chip ${health?.model_runtime.status === 'ready' ? 'ready' : 'degraded'}`}><i />{health?.model_runtime.status === 'ready' ? String(health.model_runtime.model ?? '本地模型') : `模型 ${String(health?.model_runtime.status ?? '未知')}`}</span>
             {canOperate && <button className="button primary topbar-run" type="button" onClick={() => setComposerOpen(true)} disabled={busy}><FilePlus2 size={16} />新建事件</button>}
-            <span className="identity-chip"><UserRound size={15} /><span><strong>{user.display_name}</strong><small>{user.tenant_id} · {user.roles.join(' · ')}</small></span></span>
+            <span className="identity-chip" role="group" aria-label={`当前身份：${user.display_name}`} title={`当前身份：${user.display_name}`}><UserRound size={15} aria-hidden="true" /><span><strong>{user.display_name}</strong><small>{user.tenant_id} · {user.roles.join(' · ')}</small></span></span>
             <button className="icon-button" type="button" onClick={() => logout()} aria-label="退出登录"><LogOut size={17} /></button>
             <a className="icon-button topbar-docs" href="http://localhost:8000/docs" target="_blank" rel="noreferrer" aria-label="打开 API 文档"><CircleHelp size={18} /></a>
           </div>

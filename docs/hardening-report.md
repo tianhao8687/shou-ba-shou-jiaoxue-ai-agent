@@ -1,5 +1,7 @@
 # Harbor AgentOps 3.2 架构收敛与可靠性强化报告
 
+> 历史基线：本文保留 v3.2 当时的验证记录，其中测试数量、Docker 可用性和 CI 状态不是当前结论。v3.6 最新整改与实际结果见 [`v3.6-production-hardening-report.md`](./v3.6-production-hardening-report.md) 和机器生成的 `release-evidence-v3.6.json`。
+
 生成日期：2026-08-12
 基线提交：`e3959c7ea63d3b2a40448b3d2031133838dd83da`
 交付状态：已完成并通过本地验证
